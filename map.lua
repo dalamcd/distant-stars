@@ -1,4 +1,5 @@
 local class = require('middleclass')
+local luastar = require('lua-star')
 local tile = require('tile')
 
 map = class('map')
@@ -6,13 +7,51 @@ map = class('map')
 function map:initialize()
 
 	self.tiles = {}
-
+	self.entities = {}
 end
 
 function map:draw()
 	for _, t in ipairs(self.tiles) do
 		t:draw()
 	end
+
+	for _, e in ipairs(self.entities) do
+		e:draw()
+	end
+end
+
+function map:addEntity(e)
+	table.insert(self.entities, e)
+end
+
+function map:pathfind(start, goal)
+
+	function isWalkable(x, y)
+		return self:getTile(x,y):isWalkable()
+	end
+
+	--path = luastar:find(mapsize, mapsize, start, goal, positionIsOpenFunc)
+	local nodes = nil
+	local route = luastar:find(self.width, self.height, start, goal, isWalkable)
+	if route then
+		nodes = {}
+		for i = #route, 2, -1 do
+			local t = self:getTile(route[i].x, route[i].y)
+			table.insert(nodes, t)
+	  	end
+	end
+
+	return nodes
+end
+
+function map:getEntityAtPos(x, y)
+	for _, e in ipairs(self.entities) do
+		if e:inBounds(x, y) then
+			return e
+		end
+	end
+
+	return nil
 end
 
 function map:getTileAtPos(x, y)
@@ -23,6 +62,10 @@ function map:getTileAtPos(x, y)
 	end
 
 	return nil
+end
+
+function map:getTile(x, y)
+	return self.tiles[(y - 1)*self.width + x]
 end
 
 function map:load(fname)
@@ -63,7 +106,12 @@ function map:load(fname)
 			self.tiles[index] = t
 		end
 	end
+end
 
+function map:update(dt)
+	for _, e in ipairs(self.entities) do
+		e:update(dt)
+	end
 end
 
 return map
