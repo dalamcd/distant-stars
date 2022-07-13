@@ -5,6 +5,7 @@ local task = require('task')
 entity = class('entity')
 
 function entity:initialize(imgPath, x, y, name)
+	name = name or "unknown entity"
 	self.sprite = love.graphics.newImage(imgPath)
 	self.x = x
 	self.y = y
@@ -13,7 +14,7 @@ function entity:initialize(imgPath, x, y, name)
 	self.steps = 0
 	self.route = {}
 	self.tasks = {}
-	self.name = name or "unknown entity"
+	self.name = name
 end
 
 function entity:draw()
@@ -38,9 +39,6 @@ function entity:draw()
 end
 
 function entity:update(dt)
-	if #self.tasks > 0 then
-		d:updateTextField("Task", self.tasks[1].desc)
-	end
 	self:handleWalking()
 	self:handleTasks()
 end
@@ -62,8 +60,7 @@ function entity:handleTasks()
 end
 
 function entity:getTasks()
-	local tmp = {unpack(self.tasks)}
-	return tmp
+	return self.tasks
 end
 
 function entity:pushTask(task)
@@ -75,8 +72,8 @@ function entity:queueTask(task)
 end
 
 function entity:inBounds(x, y)
-	if(x - self:getWorldX() - self.xOffset <= TILE_SIZE and x - self:getWorldX() - self.xOffset >= 0) then
-		if(y - self:getWorldY() - self.yOffset <= TILE_SIZE and y - self:getWorldY() - self.yOffset >= 0) then
+	if(x - self:getWorldX() <= TILE_SIZE and x - self:getWorldX() >= 0) then
+		if(y - self:getWorldY() <= TILE_SIZE and y - self:getWorldY() >= 0) then
 			return true
 		end
 	end
@@ -121,13 +118,31 @@ function entity:setRoute(route)
 	self.route = route
 end
 
-function entity:walkRoute(route, destination)
-	local str = "Going to tile " .. destination.x .. ", " .. destination.y
-	
-	function startFunc()
-		self:setRoute(route)
+function entity:walkRoute(map, destination)	
+	if self.x == destination.x and self.y == destination.y then
+		return
 	end
-	local t = task:new(str, nil, startFunc, nil, nil, nil)
+
+	function strFunc(tself)
+		return "Going to tile " .. destination.x .. ", " .. destination.y
+	end
+
+	function startFunc(tself)
+		local route = map:pathfind({x=self.x, y=self.y}, destination)
+		if route then
+			self:setRoute(route)
+		else
+			tself.finished = true
+		end
+	end
+
+	function runFunc(tself)
+		if #self.route == 0 then
+			tself.finished = true
+		end
+	end
+
+	local t = task:new(strFunc, nil, startFunc, runFunc, nil, nil)
 	self:queueTask(t)
 end
 
@@ -144,9 +159,6 @@ function entity:handleWalking()
 		self.x = self.destX
 		self.y = self.destY
 		table.remove(self.route)
-		if #self.route == 0 then
-			self.tasks[#self.tasks]:complete()
-		end
 	end
 
 	if not self.walking and table.getn(self.route) > 0 then

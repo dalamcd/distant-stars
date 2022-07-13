@@ -4,7 +4,9 @@ local game = require('game')
 local camera = require('camera')
 local debugtext = require('debugtext')
 local entity = require('entity')
+local item = require('item')
 local task = require('task')
+local context = require('context')
 
 TILE_SIZE = 32
 
@@ -26,7 +28,6 @@ function love.load()
 	d:addTextField("MouseRel", "")
 	d:addTextField("Tile under mouse", "")
 	d:addTextField("Entity under mouse", "")
-	d:addTextField("Task", "")
 
 	local c = camera:new()
 	setGameCamera(c)
@@ -38,6 +39,17 @@ function love.load()
 
 	p = entity:new("sprites/man.png", 6, 8, "Diocletian")
 	m:addEntity(p)
+
+	i = item:new("sprites/chicken.png", 2, 7, "yummy chicken")
+	m:addItem(i)
+
+	local font = love.graphics.newFont("fonts/HanyPetter.ttf")
+	addFont(font, "cursive")
+	font = love.graphics.newFont("fonts/RobotCrush.ttf", 16)
+	addFont(font, "robot")
+
+	local ctx = context:new(font)
+	setGameContext(ctx)
 
 	previousTime = love.timer.getTime()
 end
@@ -66,7 +78,7 @@ function love.update(dt)
 		getGameCamera():moveXOffset(-3*getGameCamera().scale)
 	end
 	if love.keyboard.isDown('q') then
-		love.mouse.setPosition(love.graphics.getWidth()/2, love.graphics.getHeight()/2)
+		getGameContext():clear()
 	end
 
 	local now = love.timer.getTime()
@@ -80,13 +92,14 @@ function love.update(dt)
 		delta = delta - 1/(60 * gameSpeed)
 	end
 
-
+	getGameContext():update()
 end
 
 function love.draw()
 
 	m:draw()
 	d:draw()
+	getGameContext():draw()
 
 	if getMouseSelection() then
 		drawSelectionBox()
@@ -136,11 +149,9 @@ function love.mousereleased(x, y, button)
 	end
 
 	if button == 2 then
-		if getMouseSelection() and t then
-			local route = m:pathfind(getMouseSelection():getPos(), {x=t.x, y=t.y})
-			if route then
-				getMouseSelection():walkRoute(route, t)
-			end
-		end
+		-- if getMouseSelection() and t then
+		-- 	getMouseSelection():walkRoute(m, t)
+		-- end
+		getGameContext():set(x, y, {"test", "test2", "test3", "test number 34438 and a half"})
 	end
 end

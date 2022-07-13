@@ -1,7 +1,10 @@
 local gameCamera
 local gameMap
+local gameContext
 
 local mouseSelection = nil
+
+local fonts = {}
 
 function draw(image, x, y)
 	love.graphics.draw(image, 
@@ -43,10 +46,21 @@ function drawSelectionDetails()
 	
 	for i=#mouseSelection:getTasks(), 1, -1 do
 		local idx = #mouseSelection:getTasks() - i + 1
-		love.graphics.print(mouseSelection:getTasks()[i].desc,
+		love.graphics.print(mouseSelection:getTasks()[i]:getDesc(),
 							love.graphics.getWidth() - width - textPadding,
 							love.graphics.getHeight() - height + textPadding*idx*3)
 	end
+end
+
+function drawRouteLine(startPoint, endPoint)
+	love.graphics.setLineWidth(2*gameCamera.scale)
+	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.line(gameCamera:getRelativeX(startPoint.x),
+					gameCamera:getRelativeY(startPoint.y),
+					gameCamera:getRelativeX(endPoint.x),
+					gameCamera:getRelativeY(endPoint.y))
+
+	love.graphics.reset()
 end
 
 function drawSelectionBox()
@@ -61,6 +75,14 @@ function getGameCamera()
 	return gameCamera
 end
 
+function setGameContext(ctx)
+	gameContext = ctx
+end
+
+function getGameContext()
+	return gameContext
+end
+
 function setMouseSelection(item)
 	mouseSelection = item
 end
@@ -73,15 +95,17 @@ function getMouseSelection()
 	return mouseSelection
 end
 
-function drawRouteLine(startPoint, endPoint)
-	love.graphics.setLineWidth(2*gameCamera.scale)
-	love.graphics.setColor(1, 1, 1, 1)
-	love.graphics.line(gameCamera:getRelativeX(startPoint.x),
-					gameCamera:getRelativeY(startPoint.y),
-					gameCamera:getRelativeX(endPoint.x),
-					gameCamera:getRelativeY(endPoint.y))
+function addFont(font, name)
+	table.insert(fonts, {font=font, name=name})
+end
 
-	love.graphics.reset()
+function getFont(name)
+	for _, font in ipairs(fonts) do
+		if font.name == name then
+			return font.font
+		end
+	end
+	return love.graphics.getFont()
 end
 
 function getMousePos()

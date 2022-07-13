@@ -8,11 +8,16 @@ function map:initialize()
 
 	self.tiles = {}
 	self.entities = {}
+	self.items = {}
 end
 
 function map:draw()
 	for _, t in ipairs(self.tiles) do
 		t:draw()
+	end
+
+	for _, i in ipairs(self.items) do
+		i:draw()
 	end
 
 	for _, e in ipairs(self.entities) do
@@ -22,6 +27,10 @@ end
 
 function map:addEntity(e)
 	table.insert(self.entities, e)
+end
+
+function map:addItem(i)
+	table.insert(self.items, i)
 end
 
 function map:pathfind(start, goal)
@@ -48,6 +57,16 @@ function map:getEntityAtPos(x, y)
 	for _, e in ipairs(self.entities) do
 		if e:inBounds(x, y) then
 			return e
+		end
+	end
+
+	return nil
+end
+
+function map:getItemAtPos(x, y)
+	for _, i in ipairs(self.entities) do
+		if i:inBounds(x, y) then
+			return i
 		end
 	end
 
