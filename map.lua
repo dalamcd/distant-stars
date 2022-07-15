@@ -17,7 +17,9 @@ function map:draw()
 	end
 
 	for _, i in ipairs(self.items) do
-		i:draw()
+		if not i.carried then
+			i:draw()
+		end
 	end
 
 	for _, e in ipairs(self.entities) do
@@ -64,7 +66,7 @@ function map:getEntityAtPos(x, y)
 end
 
 function map:getItemAtPos(x, y)
-	for _, i in ipairs(self.entities) do
+	for _, i in ipairs(self.items) do
 		if i:inBounds(x, y) then
 			return i
 		end
@@ -85,6 +87,52 @@ end
 
 function map:getTile(x, y)
 	return self.tiles[(y - 1)*self.width + x]
+end
+
+function map:getItemsInTile(tile)
+
+	local items = {}
+
+	for _, item in ipairs(self.items) do
+		if item.x == tile.x and item.y == tile.y then
+			table.insert(items, item)
+		end
+	end
+
+	return items
+end
+
+function map:getEntitiesInTile(tile)
+
+	local entities = {}
+
+	for _, entity in ipairs(self.entities) do
+		if entity.x == tile.x and entity.y == tile.y then
+			table.insert(entities, entity)
+		end
+	end
+
+	return entities
+end
+
+function map:getPossibleTasks(tile, entity)
+
+	local tasks = {}
+	tasks = tile:getPossibleTasks(self, entity)
+
+	for _, item in ipairs(self:getItemsInTile(tile)) do
+		for _, task in ipairs(item:getPossibleTasks(self, entity)) do
+			tasks[#tasks+1] = task
+		end
+	end
+
+	--for _, ent in ipairs(self:getEntitiesInTile(tile)) do
+		for _, task in ipairs(entity:getPossibleTasks(self, tile)) do
+			tasks[#tasks+1] = task
+		end
+	--end
+
+	return tasks
 end
 
 function map:load(fname)

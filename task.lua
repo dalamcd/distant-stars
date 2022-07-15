@@ -13,9 +13,10 @@ task = class('task')
 		}
 ]]
 
-function task:initialize(strFunc, initFunc, startFunc, runFunc, endFunc, params)
+function task:initialize(contextFunc, strFunc, initFunc, startFunc, runFunc, endFunc, params)
 		
 		strFunc = strFunc or function () return "" end
+		contextFunc = contextFunc or function () return "" end
 		startFunc = startFunc or function () self:runFunc() end
 		runFunc = runFunc or function () return end
 		endFunc = endFunc or function () return end
@@ -29,6 +30,7 @@ function task:initialize(strFunc, initFunc, startFunc, runFunc, endFunc, params)
 		self.endFunc = endFunc
 		self.initFunc = initFunc
 		self.strFunc = strFunc
+		self.contextFunc = contextFunc
 		self.started = false
 		self.finished = false
 		self:initFunc(unpack(params.initFunc or {}))
@@ -50,6 +52,10 @@ end
 
 function task:getDesc()
 	return self:strFunc(unpack(self.params.strFunc or {}))
+end
+
+function task:getContext()
+	return self:contextFunc(unpack(self.params.contextFunc or {}))
 end
 
 function task:__tostring()

@@ -20,6 +20,8 @@ local gameSpeed = 1
 
 function love.load()
 
+	love.graphics.setDefaultFilter('nearest')
+
 	m = map:new()
 	m:load('map.txt')
 
@@ -27,7 +29,7 @@ function love.load()
 	d:addTextField("MousePos", "(" .. love.mouse.getX() .. ", " .. love.mouse.getY() .. ")")
 	d:addTextField("MouseRel", "")
 	d:addTextField("Tile under mouse", "")
-	d:addTextField("Entity under mouse", "")
+	d:addTextField("Item under mouse", "")
 
 	local c = camera:new()
 	setGameCamera(c)
@@ -37,15 +39,18 @@ function love.load()
 	p = entity:new("sprites/man.png", 2, 3, "Barnaby")
 	m:addEntity(p)
 
+	setMouseSelection(p)
+
 	p = entity:new("sprites/man.png", 6, 8, "Diocletian")
 	m:addEntity(p)
 
 	i = item:new("sprites/chicken.png", 2, 7, "yummy chicken")
 	m:addItem(i)
 
-	local font = love.graphics.newFont("fonts/HanyPetter.ttf")
-	addFont(font, "cursive")
-	font = love.graphics.newFont("fonts/RobotCrush.ttf", 16)
+	i = item:new("sprites/pizza.png", 6, 3, "yummy pizza")
+	m:addItem(i)
+	
+	font = love.graphics.newFont("fonts/Instruction.otf")
 	addFont(font, "robot")
 
 	local ctx = context:new(font)
@@ -63,7 +68,7 @@ function love.update(dt)
 	d:updateTextField("MousePos", "(" .. mx .. ", " .. my .. ")")
 	d:updateTextField("MouseRel", "(" .. rx .. ", " .. ry .. ")")
 	d:updateTextField("Tile under mouse", tostring(m:getTileAtPos(rx, ry)))
-	d:updateTextField("Entity under mouse", tostring(m:getEntityAtPos(rx, ry)))
+	d:updateTextField("Item under mouse", tostring(m:getItemAtPos(rx, ry)))
 
 	if love.keyboard.isDown('w') then
 		getGameCamera():moveYOffset(3*getGameCamera().scale)
@@ -123,7 +128,7 @@ function love.keypressed(key)
 	end
 	
 	if key == 'f11' then
-	  gui.switchFullscreen()
+	  --gui.switchFullscreen()
 	end
   end
 
@@ -142,16 +147,22 @@ end
 function love.mousereleased(x, y, button)
 	local t = m:getTileAtPos(getMousePos())
 	local e = m:getEntityAtPos(getMousePos())
+	local i = m:getItemAtPos(getMousePos())
+
 	if button == 1 then
 		if e then
 			setMouseSelection(e)
 		end
+
+		if getGameContext().active then
+			getGameContext():handleClick(x, y)
+		end
 	end
 
 	if button == 2 then
-		-- if getMouseSelection() and t then
-		-- 	getMouseSelection():walkRoute(m, t)
-		-- end
-		getGameContext():set(x, y, {"test", "test2", "test3", "test number 34438 and a half"})
+		if getMouseSelection() then
+			local tlist = m:getPossibleTasks(t, getMouseSelection())
+			getGameContext():set(x, y, tlist)
+		end
 	end
 end

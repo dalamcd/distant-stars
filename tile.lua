@@ -52,6 +52,43 @@ function tile:getWorldCenterX()
 	return (self.x - 1 + 1/2)*TILE_SIZE
 end
 
+function tile:getPossibleTasks(map, entity)
+	local tasks = {}
+	-- WALK TO TILE
+	
+	if self:isWalkable() then
+		if entity.x ~= self.x or entity.y ~= self.y then
+			function strFunc(tself)
+				return "Going to tile " .. self.x .. ", " .. self.y
+			end
+
+			function startFunc(tself)
+				local route = map:pathfind({x=entity.x, y=entity.y}, self)
+				if route then
+					entity:setRoute(route)
+				else
+					tself.finished = true
+				end
+			end
+
+			function runFunc(tself)
+				if #entity.route == 0 then
+					tself.finished = true
+				end
+			end
+
+			function contextFunc(tself)
+				return "Walk here"
+			end
+
+			local walkTask = task:new(contextFunc, strFunc, nil, startFunc, runFunc, nil, nil)
+			table.insert(tasks, walkTask)
+		end
+	end
+	-- WALK TO TILE
+	return tasks
+end
+
 function tile:draw()
 	draw(self.sprite, (self.x - 1)*TILE_SIZE, (self.y - 1)*TILE_SIZE)
 end

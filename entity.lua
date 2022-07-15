@@ -4,6 +4,8 @@ local task = require('task')
 
 entity = class('entity')
 
+entity.static.base_tile_walk_distance = 30
+
 function entity:initialize(imgPath, x, y, name)
 	name = name or "unknown entity"
 	self.sprite = love.graphics.newImage(imgPath)
@@ -14,6 +16,7 @@ function entity:initialize(imgPath, x, y, name)
 	self.steps = 0
 	self.route = {}
 	self.tasks = {}
+	self.inventory = {}
 	self.name = name
 end
 
@@ -36,11 +39,21 @@ function entity:draw()
 					--{x=self.route[i]:getWorldCenterX(), y=self.route[i]:getWorldCenterY()})		
 	end
 	draw(self.sprite, (self.x - 1)*TILE_SIZE + self.xOffset, (self.y - 1)*TILE_SIZE + self.yOffset)
+
+	if #self.inventory > 0 then
+		for _, item in ipairs(self.inventory) do
+			item:draw()
+		end
+	end
 end
 
 function entity:update(dt)
 	self:handleWalking()
 	self:handleTasks()
+
+	for _, item in ipairs(self.inventory) do
+		item:setPos(self.x, self.y, self.xOffset, self.yOffset)
+	end
 end
 
 function entity:handleTasks()
@@ -49,9 +62,15 @@ function entity:handleTasks()
 		local t = self.tasks[#self.tasks]
 		if not t.started then
 			t:start()
+			-- This recursion works currently, but needs more testing
+			self:handleTasks()
+			return
 		else
 			if t.finished then
 				table.remove(self.tasks)
+				-- This recursion works currently, but needs more testing
+				self:handleTasks()
+				return
 			else
 				t:run()
 			end
@@ -89,24 +108,75 @@ function entity:getWorldY()
 end
 
 function entity:getWorldCenterY()
-	return (self.y - 1 + 1/2)*TILE_SIZE + self.yOffset
+	return (self.y - 1/2)*TILE_SIZE + self.yOffset
 end
 
 function entity:getWorldCenterX()
-	return (self.x - 1 + 1/2)*TILE_SIZE + self.xOffset
+	return (self.x - 1/2)*TILE_SIZE + self.xOffset
 end
 
 function entity:getPos()
 	return {x=self.x, y=self.y}
 end
 
-function entity:moveToTile(x, y)
+function entity:pickUp(item)
+	table.insert(self.inventory, item)
+end
+
+function entity:drop(item)
+	for i, invItem in ipairs(self.inventory) do
+		if item == invItem then
+			table.remove(self.inventory, i)
+			item:beDropped(self)
+		end
+	end
+end
+
+function entity:getPossibleTasks(map, tile)
+	local tasks = {}
+	
+	-- DROP CARRIED ITEM
+	for _, item in ipairs(self.inventory) do
+		
+		function runFunc(tself)
+			if not self.walking then
+				self:drop(item)
+				tself:complete()
+			end
+		end
+		
+		function startFunc(tself)
+			if self.x ~= tile.x or self.y ~= tile.y then
+				self:walkRoute(map, {x=tile.x, y=tile.y}, false)
+			else
+				tself:complete()
+			end
+		end
+
+		function contextFunc(tself)
+			return "Drop " .. item.name
+		end
+
+		function strFunc(tself)
+			return "Dropping " .. item.name
+		end
+
+		local dropTask = task:new(contextFunc, strFunc, nil, startFunc, runFunc, nil, nil)
+		table.insert(tasks, dropTask)
+	end
+	-- END DROP CARRIED ITEM
+
+	return tasks
+end
+
+function entity:moveToTile(x, y, speed, steps)
 	local dx = TILE_SIZE*(x - self.x)
 	local dy = TILE_SIZE*(y - self.y)
-
+	speed = speed or 1
+	steps = steps or entity.base_tile_walk_distance
 	self.destX = x
 	self.destY = y
-	self.steps = 30
+	self.steps = steps / speed
 	self.walking = true
 
 	self.xStep = dx/self.steps
@@ -116,9 +186,13 @@ end
 
 function entity:setRoute(route)
 	self.route = route
+	self:handleWalking()
 end
 
-function entity:walkRoute(map, destination)	
+function entity:walkRoute(map, destination, queue)
+
+	queue = queue or false
+
 	if self.x == destination.x and self.y == destination.y then
 		return
 	end
@@ -142,8 +216,9 @@ function entity:walkRoute(map, destination)
 		end
 	end
 
-	local t = task:new(strFunc, nil, startFunc, runFunc, nil, nil)
-	self:queueTask(t)
+	local t = task:new(nil, strFunc, nil, startFunc, runFunc, nil, nil)
+	if queue then self:queueTask(t)
+	else self:pushTask(t) end
 end
 
 function entity:handleWalking()
