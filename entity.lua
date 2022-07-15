@@ -13,15 +13,29 @@ function entity:initialize(imgPath, x, y, name)
 	self.y = y
 	self.xOffset = 0
 	self.yOffset = 0
+	self.imgYOffset = TILE_SIZE - self.sprite:getHeight()
+	self.imgXOffset = (TILE_SIZE - self.sprite:getWidth())/2
 	self.steps = 0
 	self.route = {}
 	self.tasks = {}
 	self.inventory = {}
 	self.name = name
+	self.speed = 1
 end
 
 function entity:draw()
 	
+	self:drawRoute()
+	draw(self.sprite, (self.x - 1)*TILE_SIZE + self.xOffset + self.imgXOffset, (self.y - 1)*TILE_SIZE + self.yOffset + self.imgYOffset)
+
+	if #self.inventory > 0 then
+		for _, item in ipairs(self.inventory) do
+			item:draw()
+		end
+	end
+end
+
+function entity:drawRoute()
 	if #self.route > 1 then
 		for i=#self.route, 2, -1 do
 			if i == #self.route then
@@ -35,18 +49,8 @@ function entity:draw()
 		drawRouteLine({x=self:getWorldCenterX(), y=self:getWorldCenterY()},
 					{x=self.route[1]:getWorldCenterX(), y=self.route[1]:getWorldCenterY()})
 
-		--drawRouteLine({x=self.route[i-1]:getWorldCenterX(), y=self.route[i-1]:getWorldCenterY()},
-					--{x=self.route[i]:getWorldCenterX(), y=self.route[i]:getWorldCenterY()})		
-	end
-	draw(self.sprite, (self.x - 1)*TILE_SIZE + self.xOffset, (self.y - 1)*TILE_SIZE + self.yOffset)
-
-	if #self.inventory > 0 then
-		for _, item in ipairs(self.inventory) do
-			item:draw()
-		end
 	end
 end
-
 function entity:update(dt)
 	self:handleWalking()
 	self:handleTasks()
@@ -91,8 +95,8 @@ function entity:queueTask(task)
 end
 
 function entity:inBounds(x, y)
-	if(x - self:getWorldX() <= TILE_SIZE and x - self:getWorldX() >= 0) then
-		if(y - self:getWorldY() <= TILE_SIZE and y - self:getWorldY() >= 0) then
+	if(x - self:getWorldX() <= self.sprite:getWidth() and x - self:getWorldX() >= 0) then
+		if(y - self:getWorldY() <= self.sprite:getHeight() and y - self:getWorldY() >= 0) then
 			return true
 		end
 	end
@@ -100,19 +104,19 @@ function entity:inBounds(x, y)
 end
 
 function entity:getWorldX()
-	return (self.x - 1)*TILE_SIZE + self.xOffset
+	return (self.x - 1)*TILE_SIZE + self.xOffset + self.imgXOffset
 end
 
 function entity:getWorldY()
-	return (self.y - 1)*TILE_SIZE + self.yOffset
+	return (self.y - 1)*TILE_SIZE + self.yOffset + self.imgYOffset
 end
 
 function entity:getWorldCenterY()
-	return (self.y - 1/2)*TILE_SIZE + self.yOffset
+	return (self.y - 1/2)*TILE_SIZE + self.yOffset + self.imgXOffset
 end
 
 function entity:getWorldCenterX()
-	return (self.x - 1/2)*TILE_SIZE + self.xOffset
+	return (self.x - 1/2)*TILE_SIZE + self.xOffset + self.imgYOffset
 end
 
 function entity:getPos()
@@ -134,21 +138,27 @@ end
 
 function entity:getPossibleTasks(map, tile)
 	local tasks = {}
-	
+	local params = {}
+	params.startFunc = {}
+	params.startFunc.routeFound = true
+
 	-- DROP CARRIED ITEM
 	for _, item in ipairs(self.inventory) do
 		
 		function runFunc(tself)
-			if not self.walking then
+			if not self.walking and self.x == tile.x and self.y == tile.y then
 				self:drop(item)
 				tself:complete()
+			elseif not tself.params.startFunc.routeFound then
+				tself.finished = true
 			end
 		end
 		
 		function startFunc(tself)
 			if self.x ~= tile.x or self.y ~= tile.y then
-				self:walkRoute(map, {x=tile.x, y=tile.y}, false)
+				self:walkRoute(map, {x=tile.x, y=tile.y}, false, params)
 			else
+				self:drop(item)
 				tself:complete()
 			end
 		end
@@ -161,7 +171,7 @@ function entity:getPossibleTasks(map, tile)
 			return "Dropping " .. item.name
 		end
 
-		local dropTask = task:new(contextFunc, strFunc, nil, startFunc, runFunc, nil, nil)
+		local dropTask = task:new(contextFunc, strFunc, nil, startFunc, runFunc, nil, params)
 		table.insert(tasks, dropTask)
 	end
 	-- END DROP CARRIED ITEM
@@ -172,8 +182,7 @@ end
 function entity:moveToTile(x, y, speed, steps)
 	local dx = TILE_SIZE*(x - self.x)
 	local dy = TILE_SIZE*(y - self.y)
-	speed = speed or 1
-	steps = steps or entity.base_tile_walk_distance
+
 	self.destX = x
 	self.destY = y
 	self.steps = steps / speed
@@ -189,9 +198,10 @@ function entity:setRoute(route)
 	self:handleWalking()
 end
 
-function entity:walkRoute(map, destination, queue)
+function entity:walkRoute(map, destination, queue, params)
 
 	queue = queue or false
+	params = params or nil
 
 	if self.x == destination.x and self.y == destination.y then
 		return
@@ -206,6 +216,7 @@ function entity:walkRoute(map, destination, queue)
 		if route then
 			self:setRoute(route)
 		else
+			params.startFunc.routeFound = false
 			tself.finished = true
 		end
 	end
@@ -238,7 +249,7 @@ function entity:handleWalking()
 
 	if not self.walking and table.getn(self.route) > 0 then
 		local t = self.route[#self.route]
-		self:moveToTile(t.x, t.y)
+		self:moveToTile(t.x, t.y, self.speed, entity.base_tile_walk_distance)
 	end
 end
 

@@ -11,11 +11,13 @@ function item:initialize(imgPath, x, y, name)
 	self.y = y
 	self.xOffset = 0
 	self.yOffset = 0
+	self.imgYOffset = TILE_SIZE - self.sprite:getHeight()
+	self.imgXOffset = (TILE_SIZE - self.sprite:getWidth())/2
 	self.name = name
 end
 
 function item:draw()
-	draw(self.sprite, (self.x - 1)*TILE_SIZE + self.xOffset, (self.y - 1)*TILE_SIZE + self.yOffset)
+	draw(self.sprite, (self.x - 1)*TILE_SIZE + self.xOffset + self.imgXOffset, (self.y - 1)*TILE_SIZE + self.yOffset + self.imgYOffset)
 end
 
 function item:inBounds(x, y)
@@ -36,11 +38,14 @@ function item:getPossibleTasks(map, entity)
 	local tasks = {}
 
 	if self.carried then return {} end
+	local params = {}
+	params.startFunc = {}
+	params.startFunc.routeFound = true
 
 	-- PICKUP ITEM
 	function startFunc(tself)
 		if entity.x ~= self.x or entity.y ~= self.y then
-			entity:walkRoute(map, {x=self.x, y=self.y}, false)
+			entity:walkRoute(map, {x=self.x, y=self.y}, false, params)
 		else
 			tself:complete()
 		end
@@ -49,6 +54,8 @@ function item:getPossibleTasks(map, entity)
 	function runFunc(tself)
 		if entity.x == self.x and entity.y == self.y then
 			tself:complete()
+		elseif not tself.params.startFunc.routeFound then
+			tself.finished = true
 		end
 	end
 
@@ -65,7 +72,7 @@ function item:getPossibleTasks(map, entity)
 		return "Pick up " .. self.name
 	end
 
-	local pickupTask = task:new(contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil)
+	local pickupTask = task:new(contextFunc, strFunc, nil, startFunc, runFunc, endFunc, params)
 	table.insert(tasks, pickupTask)
 	-- END PICKUP ITEM
 

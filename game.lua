@@ -64,7 +64,8 @@ function drawRouteLine(startPoint, endPoint)
 end
 
 function drawSelectionBox()
-	rect("line", mouseSelection:getWorldX(), mouseSelection:getWorldY(), TILE_SIZE, TILE_SIZE)
+	rect("line", mouseSelection:getWorldX(), mouseSelection:getWorldY(),
+				mouseSelection.sprite:getWidth(), mouseSelection.sprite:getHeight())
 end
 
 function setGameCamera(c)

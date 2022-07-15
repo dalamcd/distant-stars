@@ -9,6 +9,7 @@ function map:initialize()
 	self.tiles = {}
 	self.entities = {}
 	self.items = {}
+	self.furniture = {}
 end
 
 function map:draw()
@@ -25,6 +26,10 @@ function map:draw()
 	for _, e in ipairs(self.entities) do
 		e:draw()
 	end
+
+	for _, f in ipairs(self.furniture) do
+		f:draw()
+	end
 end
 
 function map:addEntity(e)
@@ -35,10 +40,37 @@ function map:addItem(i)
 	table.insert(self.items, i)
 end
 
+function map:addFurniture(f)
+	table.insert(self.furniture, f)
+end
+
+function map:isWalkable(x, y)
+	local tile = self:getTile(x,y)
+	
+	local walkable = true
+	
+	if not tile:isWalkable() then
+		walkable = false
+	end
+
+	for _, furn in ipairs(self.furniture) do
+		if furn:inTile(x, y) then
+			walkable = false
+		end
+	end
+
+	for _, ent in ipairs(self.entities) do
+		if ent.x == x and ent.y == y then
+			walkable = false
+		end
+	end
+
+	return walkable
+end
 function map:pathfind(start, goal)
 
 	function isWalkable(x, y)
-		return self:getTile(x,y):isWalkable()
+		return self:isWalkable(x,y)
 	end
 
 	--path = luastar:find(mapsize, mapsize, start, goal, positionIsOpenFunc)
@@ -85,6 +117,16 @@ function map:getTileAtPos(x, y)
 	return nil
 end
 
+function map:getFurnitureAtPos(x, y)
+	for _, f in ipairs(self.furniture) do
+		if f:inBounds(x, y) then
+			return f
+		end
+	end
+
+	return nil
+end
+
 function map:getTile(x, y)
 	return self.tiles[(y - 1)*self.width + x]
 end
@@ -113,6 +155,19 @@ function map:getEntitiesInTile(tile)
 	end
 
 	return entities
+end
+
+function map:getFurnitureInTile(tile)
+
+	local furniture = {}
+
+	for _, furn in ipairs(self.entities) do
+		if furn.x == tile.x and furn.y == tile.y then
+			table.insert(furniture, furn)
+		end
+	end
+
+	return furniture
 end
 
 function map:getPossibleTasks(tile, entity)

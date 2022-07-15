@@ -5,6 +5,7 @@ local camera = require('camera')
 local debugtext = require('debugtext')
 local entity = require('entity')
 local item = require('item')
+local furniture = require('furniture')
 local task = require('task')
 local context = require('context')
 
@@ -29,27 +30,36 @@ function love.load()
 	d:addTextField("MousePos", "(" .. love.mouse.getX() .. ", " .. love.mouse.getY() .. ")")
 	d:addTextField("MouseRel", "")
 	d:addTextField("Tile under mouse", "")
-	d:addTextField("Item under mouse", "")
+	d:addTextField("Furn under mouse", "")
 
 	local c = camera:new()
 	setGameCamera(c)
 	c:moveXOffset(love.graphics.getWidth()/3.2)
 	c:moveYOffset(love.graphics.getHeight()/5)
 
-	p = entity:new("sprites/man.png", 2, 3, "Barnaby")
+	local p = entity:new("sprites/man.png", 2, 3, "Barnaby")
 	m:addEntity(p)
 
 	setMouseSelection(p)
 
-	p = entity:new("sprites/man.png", 6, 8, "Diocletian")
+	p = entity:new("sprites/tallman.png", 6, 8, "Diocletian")
 	m:addEntity(p)
-
-	i = item:new("sprites/chicken.png", 2, 7, "yummy chicken")
+	
+	p = entity:new("sprites/cow.png", 7, 3, "cow")
+	m:addEntity(p)
+	
+	local i = item:new("sprites/chicken.png", 2, 7, "yummy chicken")
 	m:addItem(i)
 
-	i = item:new("sprites/pizza.png", 6, 3, "yummy pizza")
+	i = item:new("sprites/pizza.png", 5, 3, "yummy pizza")
 	m:addItem(i)
 	
+	i = item:new("sprites/streetlight.png", 2, 10, "yummy pizza")
+	m:addItem(i)
+
+	local f = furniture:new("sprites/dresser.png", 7, 2, 2, 1, "dresser")
+	m:addFurniture(f)
+
 	font = love.graphics.newFont("fonts/Instruction.otf")
 	addFont(font, "robot")
 
@@ -68,7 +78,7 @@ function love.update(dt)
 	d:updateTextField("MousePos", "(" .. mx .. ", " .. my .. ")")
 	d:updateTextField("MouseRel", "(" .. rx .. ", " .. ry .. ")")
 	d:updateTextField("Tile under mouse", tostring(m:getTileAtPos(rx, ry)))
-	d:updateTextField("Item under mouse", tostring(m:getItemAtPos(rx, ry)))
+	d:updateTextField("Furn under mouse", tostring(m:getFurnitureAtPos(rx, ry)))
 
 	if love.keyboard.isDown('w') then
 		getGameCamera():moveYOffset(3*getGameCamera().scale)
@@ -150,12 +160,12 @@ function love.mousereleased(x, y, button)
 	local i = m:getItemAtPos(getMousePos())
 
 	if button == 1 then
-		if e then
-			setMouseSelection(e)
-		end
-
-		if getGameContext().active then
+		if getGameContext().active and getGameContext():inBounds(x, y) then
 			getGameContext():handleClick(x, y)
+		else
+			if e then
+				setMouseSelection(e)
+			end
 		end
 	end
 

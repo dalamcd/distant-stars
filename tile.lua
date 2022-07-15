@@ -56,7 +56,7 @@ function tile:getPossibleTasks(map, entity)
 	local tasks = {}
 	-- WALK TO TILE
 	
-	if self:isWalkable() then
+	if map:isWalkable(self.x, self.y) then
 		if entity.x ~= self.x or entity.y ~= self.y then
 			function strFunc(tself)
 				return "Going to tile " .. self.x .. ", " .. self.y
