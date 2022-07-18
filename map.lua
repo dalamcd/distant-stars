@@ -23,13 +23,14 @@ function map:draw()
 		end
 	end
 
+	for _, f in ipairs(self.furniture) do
+		f:draw()
+	end
+
 	for _, e in ipairs(self.entities) do
 		e:draw()
 	end
 
-	for _, f in ipairs(self.furniture) do
-		f:draw()
-	end
 end
 
 function map:addEntity(e)
@@ -55,13 +56,13 @@ function map:isWalkable(x, y)
 
 	for _, furn in ipairs(self.furniture) do
 		if furn:inTile(x, y) then
-			walkable = false
+			walkable = furn:isWalkable()
 		end
 	end
 
 	for _, ent in ipairs(self.entities) do
 		if ent.x == x and ent.y == y then
-			walkable = false
+			walkable = ent:isWalkable()
 		end
 	end
 
@@ -87,29 +88,9 @@ function map:pathfind(start, goal)
 	return nodes
 end
 
-function map:getEntityAtPos(x, y)
-	for _, e in ipairs(self.entities) do
-		if e:inBounds(x, y) then
-			return e
-		end
-	end
-
-	return nil
-end
-
-function map:getItemAtPos(x, y)
-	for _, i in ipairs(self.items) do
-		if i:inBounds(x, y) then
-			return i
-		end
-	end
-
-	return nil
-end
-
-function map:getTileAtPos(x, y)
+function map:getTileAtWorld(worldX, worldY)
 	for _, t in ipairs(self.tiles) do
-		if t:inBounds(x, y) then
+		if t:inBounds(worldX, worldY) then
 			return t
 		end
 	end
@@ -117,14 +98,53 @@ function map:getTileAtPos(x, y)
 	return nil
 end
 
-function map:getFurnitureAtPos(x, y)
-	for _, f in ipairs(self.furniture) do
-		if f:inBounds(x, y) then
-			return f
+function map:getEntitiesAtWorld(worldX, y)
+	local entities = {}
+	for _, e in ipairs(self.entities) do
+		if e:inBounds(worldX, y) then
+			table.insert(entities, e)
+		end
+	end
+	--if #entities > 0 then print(#entities) end
+	return entities
+end
+
+function map:getItemsAtWorld(worldX, worldY)
+	local items = {}
+	for _, i in ipairs(self.items) do
+		if i:inBounds(worldX, worldY) then
+			table.insert(items, i)
 		end
 	end
 
-	return nil
+	return items
+end
+
+function map:getFurnitureAtWorld(worldX, worldY)
+	local furniture = {}
+	for _, f in ipairs(self.furniture) do
+		if f:inBounds(worldX, worldY) then
+			table.insert(furniture, f)
+		end
+	end
+
+	return furniture
+end
+
+function map:getObjectsAtWorld(worldX, worldY)
+	local objects = {}
+
+	for _, e in ipairs(self:getEntitiesAtWorld(worldX, worldY)) do
+		table.insert(objects, e)
+	end
+	for _, i in ipairs(self:getItemsAtWorld(worldX, worldY)) do
+		table.insert(objects, i)
+	end
+	for _, f in ipairs(self:getFurnitureAtWorld(worldX, worldY)) do
+		table.insert(objects, f)
+	end
+
+	return objects
 end
 
 function map:getTile(x, y)
@@ -161,13 +181,29 @@ function map:getFurnitureInTile(tile)
 
 	local furniture = {}
 
-	for _, furn in ipairs(self.entities) do
+	for _, furn in ipairs(self.furniture) do
 		if furn.x == tile.x and furn.y == tile.y then
 			table.insert(furniture, furn)
 		end
 	end
 
 	return furniture
+end
+
+function map:getObjectsInTile(tile)
+	local objects = {}
+
+	for _, e in ipairs(self:getEntitiesInTile(tile)) do
+		table.insert(objects, e)
+	end
+	for _, i in ipairs(self:getItemsInTile(tile)) do
+		table.insert(objects, i)
+	end
+	for _, f in ipairs(self:getFurnitureInTile(tile)) do
+		table.insert(objects, f)
+	end
+
+	return objects
 end
 
 function map:getPossibleTasks(tile, entity)
@@ -224,7 +260,12 @@ function map:load(fname)
 	for r = 1, self.height do
 		for c = 1, self.width do
 			local index = ((r - 1) * self.width) + c
-			local t = tile:new(grid[index], c, r, index)
+			local t
+			if grid[index] == 1 then
+				t = tile:new("floorTile", TILE_SIZE, 0, "metal wall", c, r, index, false)
+			elseif grid[index] == 2 then
+				t = tile:new("floorTile", 0, 0, "metal floor", c, r, index, true)
+			end
 			self.tiles[index] = t
 		end
 	end
@@ -233,6 +274,12 @@ end
 function map:update(dt)
 	for _, e in ipairs(self.entities) do
 		e:update(dt)
+	end
+	for _, f in ipairs(self.furniture) do
+		f:update(dt)
+	end
+	for _, i in ipairs(self.items) do
+		i:update(dt)
 	end
 end
 

@@ -6,8 +6,9 @@ local mouseSelection = nil
 
 local fonts = {}
 
-function draw(image, x, y)
-	love.graphics.draw(image, 
+function draw(tileset, quad, x, y)
+	love.graphics.draw(tileset,
+					quad, 
 					gameCamera:getRelativeX(x),
 					gameCamera:getRelativeY(y),
 					0,
@@ -43,12 +44,17 @@ function drawSelectionDetails()
 	love.graphics.print(mouseSelection.name,
 						love.graphics.getWidth() - width - textPadding,
 						love.graphics.getHeight() - height - textPadding)
-	
-	for i=#mouseSelection:getTasks(), 1, -1 do
-		local idx = #mouseSelection:getTasks() - i + 1
-		love.graphics.print(mouseSelection:getTasks()[i]:getDesc(),
-							love.graphics.getWidth() - width - textPadding,
-							love.graphics.getHeight() - height + textPadding*idx*3)
+	if mouseSelection:getType() == "entity" then
+		local tlist = mouseSelection:getTasks()
+		local itemNum = 1
+		for i=#tlist, 1, -1 do
+			if not tlist[i]:isChild() then
+				love.graphics.print(tlist[i]:getDesc(),
+									love.graphics.getWidth() - width - textPadding,
+									love.graphics.getHeight() - height + textPadding*itemNum*3)
+				itemNum = itemNum + 1
+			end
+		end
 	end
 end
 
@@ -65,7 +71,7 @@ end
 
 function drawSelectionBox()
 	rect("line", mouseSelection:getWorldX(), mouseSelection:getWorldY(),
-				mouseSelection.sprite:getWidth(), mouseSelection.sprite:getHeight())
+				mouseSelection.spriteWidth, mouseSelection.spriteHeight)
 end
 
 function setGameCamera(c)
@@ -78,6 +84,14 @@ end
 
 function setGameContext(ctx)
 	gameContext = ctx
+end
+
+function getGameMap()
+	return gameMap
+end
+
+function setGameMap(map)
+	gameMap = map
 end
 
 function getGameContext()

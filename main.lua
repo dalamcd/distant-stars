@@ -8,6 +8,7 @@ local item = require('item')
 local furniture = require('furniture')
 local task = require('task')
 local context = require('context')
+local door = require('door')
 
 TILE_SIZE = 32
 
@@ -19,45 +20,57 @@ local delta = 0
 local pause = false
 local gameSpeed = 1
 
+d = debugtext:new()
+
 function love.load()
+
+	--love.window.setMode(1025,768, {vsync=true})
 
 	love.graphics.setDefaultFilter('nearest')
 
-	m = map:new()
-	m:load('map.txt')
-
-	d = debugtext:new()
 	d:addTextField("MousePos", "(" .. love.mouse.getX() .. ", " .. love.mouse.getY() .. ")")
 	d:addTextField("MouseRel", "")
 	d:addTextField("Tile under mouse", "")
-	d:addTextField("Furn under mouse", "")
+	d:addTextField("Objects under mouse", "")
 
 	local c = camera:new()
 	setGameCamera(c)
 	c:moveXOffset(love.graphics.getWidth()/3.2)
 	c:moveYOffset(love.graphics.getHeight()/5)
 
-	local p = entity:new("sprites/man.png", 2, 3, "Barnaby")
-	m:addEntity(p)
-
 	setMouseSelection(p)
+	
+	drawable:addTileset("entity", "sprites/tilesheets/entities.png")
+	drawable:addTileset("item", "sprites/tilesheets/items.png")
+	drawable:addTileset("furniture", "sprites/tilesheets/furniture.png")
+	drawable:addTileset("floorTile", "sprites/tilesheets/tiles.png")
 
-	p = entity:new("sprites/tallman.png", 6, 8, "Diocletian")
+	m = map:new()
+	m:load('map.txt')
+	setGameMap(m)
+
+	local p = entity:new("entity", 0, 0, TILE_SIZE, TILE_SIZE, "Barnaby", 2, 3)
+	m:addEntity(p)
+
+	p = entity:new("entity", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE + 9, "Diocletian", 6, 8)
 	m:addEntity(p)
 	
-	p = entity:new("sprites/cow.png", 7, 3, "cow")
+	p = entity:new("entity", TILE_SIZE*2, 0, TILE_SIZE*2, TILE_SIZE+10, "cow", 7, 3)
 	m:addEntity(p)
 	
-	local i = item:new("sprites/chicken.png", 2, 7, "yummy chicken")
+	local i = item:new("item", 0, 0, TILE_SIZE, TILE_SIZE, "yummy chicken", 2, 7)
 	m:addItem(i)
 
-	i = item:new("sprites/pizza.png", 5, 3, "yummy pizza")
+	i = item:new("item", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, "yummy pizza", 5, 3)
 	m:addItem(i)
 	
-	i = item:new("sprites/streetlight.png", 2, 10, "yummy pizza")
+	i = item:new("item", TILE_SIZE*2, 0, TILE_SIZE + 15, TILE_SIZE*2, "street light", 2, 10)
 	m:addItem(i)
 
-	local f = furniture:new("sprites/dresser.png", 7, 2, 2, 1, "dresser")
+	local newDoor = door:new("furniture", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE, "door", 2, 4)
+	m:addFurniture(newDoor)
+	
+	local f = furniture:new("furniture", 0, 0, TILE_SIZE*2, TILE_SIZE+14, "dresser", 7, 2, 2, 1)
 	m:addFurniture(f)
 
 	font = love.graphics.newFont("fonts/Instruction.otf")
@@ -77,8 +90,18 @@ function love.update(dt)
 
 	d:updateTextField("MousePos", "(" .. mx .. ", " .. my .. ")")
 	d:updateTextField("MouseRel", "(" .. rx .. ", " .. ry .. ")")
-	d:updateTextField("Tile under mouse", tostring(m:getTileAtPos(rx, ry)))
-	d:updateTextField("Furn under mouse", tostring(m:getFurnitureAtPos(rx, ry)))
+	d:updateTextField("Tile under mouse", tostring(m:getTileAtWorld(rx, ry)))
+	
+	local objStr = ""
+	local objects = m:getObjectsAtWorld(rx, ry)
+	for idx, obj in ipairs(objects) do
+		if idx ~= #objects then
+			objStr = objStr .. tostring(obj) .. ", "
+		else
+			objStr = objStr .. tostring(obj)
+		end
+	end
+	d:updateTextField("Objects under mouse", objStr)
 
 	if love.keyboard.isDown('w') then
 		getGameCamera():moveYOffset(3*getGameCamera().scale)
@@ -120,11 +143,11 @@ function love.draw()
 		drawSelectionBox()
 		drawSelectionDetails()
 	end
-
 end
 
 function love.keypressed(key)
-  
+	local f = m:getFurnitureAtWorld(getMousePos())[1]
+
 	if key == 'space' then
 	  paused = not paused
 	end
@@ -140,7 +163,15 @@ function love.keypressed(key)
 	if key == 'f11' then
 	  --gui.switchFullscreen()
 	end
-  end
+
+	if key == 'q' and f and f:getType() == "door" then
+		if f:isOpen() then
+			f:closeDoor()
+		else
+			f:openDoor()
+		end
+	end
+end
 
 function love.wheelmoved(x, y)
 	if y > 0 then
@@ -155,22 +186,23 @@ function love.wheelmoved(x, y)
 end
 
 function love.mousereleased(x, y, button)
-	local t = m:getTileAtPos(getMousePos())
-	local e = m:getEntityAtPos(getMousePos())
-	local i = m:getItemAtPos(getMousePos())
+	local t = m:getTileAtWorld(getMousePos())
+	local e = m:getEntitiesAtWorld(getMousePos())[1]
+	local i = m:getItemsAtWorld(getMousePos())[1]
+	local f = m:getFurnitureAtWorld(getMousePos())[1]
 
 	if button == 1 then
 		if getGameContext().active and getGameContext():inBounds(x, y) then
 			getGameContext():handleClick(x, y)
 		else
-			if e then
-				setMouseSelection(e)
-			end
+			if i then setMouseSelection(i) end
+			if f then setMouseSelection(f) end
+			if e then setMouseSelection(e) end
 		end
 	end
 
 	if button == 2 then
-		if getMouseSelection() then
+		if getMouseSelection() and t and getMouseSelection():getType() == "entity" then
 			local tlist = m:getPossibleTasks(t, getMouseSelection())
 			getGameContext():set(x, y, tlist)
 		end

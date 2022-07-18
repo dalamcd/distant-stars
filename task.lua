@@ -2,18 +2,7 @@ local class = require('middleclass')
 
 task = class('task')
 
---[[
-	params for a task should look like:
-		params = {
-			startFunc = {param1, param2, ...},
-			runFunc = {param1, param2, ...},
-			endFunc = {param1, param2, ...},
-			strFunc = {param1, param2, ...},
-			initFunc = {param1, param2, ...}
-		}
-]]
-
-function task:initialize(contextFunc, strFunc, initFunc, startFunc, runFunc, endFunc, params)
+function task:initialize(params, contextFunc, strFunc, initFunc, startFunc, runFunc, endFunc, abandonFunc, parent)
 		
 		strFunc = strFunc or function () return "" end
 		contextFunc = contextFunc or function () return "" end
@@ -21,45 +10,75 @@ function task:initialize(contextFunc, strFunc, initFunc, startFunc, runFunc, end
 		runFunc = runFunc or function () return end
 		endFunc = endFunc or function () return end
 		initFunc = initFunc or function () return end
+		abandonFunc = abandonFunc or function () return end
 		params = params or {}
 
 		self.desc = desc
 		self.params = params
+		self.parent = parent
 		self.runFunc = runFunc
 		self.startFunc = startFunc
 		self.endFunc = endFunc
 		self.initFunc = initFunc
 		self.strFunc = strFunc
 		self.contextFunc = contextFunc
+		self.abandonFunc = abandonFunc
 		self.started = false
 		self.finished = false
-		self:initFunc(unpack(params.initFunc or {}))
+		self.abandoned = false
+		self:initFunc()
 end
 
 function task:start()
 	self.started = true
-	self:startFunc(unpack(self.params.startFunc or {}))
+	self:startFunc()
 end
 
 function task:run()
-	self:runFunc(unpack(self.params.runFunc or {}))
+	self:runFunc()
 end
 
 function task:complete()
 	self.finished = true
-	self:endFunc(unpack(self.params.endFunc or {}))
+	self:endFunc()
+end
+
+function task:abandon()
+	print("task:abandon()")
+	self.abandoned = true
+	self:abandonFunc()
 end
 
 function task:getDesc()
-	return self:strFunc(unpack(self.params.strFunc or {}))
+	if self.parent then
+		return self.parent:strFunc()
+	else
+		return self:strFunc()
+	end
 end
 
 function task:getContext()
-	return self:contextFunc(unpack(self.params.contextFunc or {}))
+	return self:contextFunc()
+end
+
+function task:getParams()
+	if self.parent then
+		return self.parent:getParams()
+	else
+		return self.params
+	end
+end
+
+function task:isChild()
+	if self.parent then
+		return true
+	end
+	
+	return false
 end
 
 function task:__tostring()
-	return self.desc
+	return self.getDesc()
 end
 
 return task

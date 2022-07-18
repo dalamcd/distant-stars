@@ -2,50 +2,37 @@ local class = require('middleclass')
 local game = require('game')
 local task = require('task')
 
-item = class('item')
+item = class('item', drawable)
 
-function item:initialize(imgPath, x, y, name)
+function item:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, posX, posY)
+	drawable.initialize(self, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, posX, posY, 1, 1)
+
 	name = name or "unknown item"
-	self.sprite = love.graphics.newImage(imgPath)
-	self.x = x
-	self.y = y
-	self.xOffset = 0
-	self.yOffset = 0
-	self.imgYOffset = TILE_SIZE - self.sprite:getHeight()
-	self.imgXOffset = (TILE_SIZE - self.sprite:getWidth())/2
 	self.name = name
 end
 
 function item:draw()
-	draw(self.sprite, (self.x - 1)*TILE_SIZE + self.xOffset + self.imgXOffset, (self.y - 1)*TILE_SIZE + self.yOffset + self.imgYOffset)
-end
-
-function item:inBounds(x, y)
-	if(x - self:getWorldX() <= TILE_SIZE and x - self:getWorldX() >= 0) then
-		if(y - self:getWorldY() <= TILE_SIZE and y - self:getWorldY() >= 0) then
-			return true
-		end
-	end
-	return false
+	drawable.draw(self, (self.x - 1)*TILE_SIZE, (self.y - 1)*TILE_SIZE)
 end
 
 function item:beDropped(entity)
+	self.xOffset = self.origXOffset
+	self.yOffset = self.origYOffset
 	self.carried = false
 end
 
 
 function item:getPossibleTasks(map, entity)
 	local tasks = {}
+	local params = {startFunc = {}}
 
 	if self.carried then return {} end
-	local params = {}
-	params.startFunc = {}
-	params.startFunc.routeFound = true
 
 	-- PICKUP ITEM
 	function startFunc(tself)
 		if entity.x ~= self.x or entity.y ~= self.y then
-			entity:walkRoute(map, {x=self.x, y=self.y}, false, params)
+			local walkTask = entity:getWalkTask(map, map:getTile(self.x, self.y), tself)
+			entity:pushTask(walkTask)
 		else
 			tself:complete()
 		end
@@ -54,7 +41,7 @@ function item:getPossibleTasks(map, entity)
 	function runFunc(tself)
 		if entity.x == self.x and entity.y == self.y then
 			tself:complete()
-		elseif not tself.params.startFunc.routeFound then
+		elseif not tself:getParams().startFunc.routeFound then
 			tself.finished = true
 		end
 	end
@@ -72,7 +59,7 @@ function item:getPossibleTasks(map, entity)
 		return "Pick up " .. self.name
 	end
 
-	local pickupTask = task:new(contextFunc, strFunc, nil, startFunc, runFunc, endFunc, params)
+	local pickupTask = task:new(params, contextFunc, strFunc, nil, startFunc, runFunc, endFunc)
 	table.insert(tasks, pickupTask)
 	-- END PICKUP ITEM
 
@@ -86,24 +73,8 @@ function item:setPos(x, y, xOffset, yOffset)
 	self.yOffset = yOffset
 end
 
-function item:getWorldX()
-	return (self.x - 1)*TILE_SIZE + self.xOffset
-end
-
-function item:getWorldY()
-	return (self.y - 1)*TILE_SIZE + self.yOffset
-end
-
-function item:getWorldCenterY()
-	return (self.y - 1 + 1/2)*TILE_SIZE + self.yOffset
-end
-
-function item:getWorldCenterX()
-	return (self.x - 1 + 1/2)*TILE_SIZE + self.xOffset
-end
-
-function item:getPos()
-	return {x=self.x, y=self.y}
+function item:getType()
+	return "item"
 end
 
 function item:__tostring()

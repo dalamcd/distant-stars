@@ -62,7 +62,7 @@ end
 function context:handleClick(x, y)
 	for i, item in ipairs(self.items) do
 		if self:inBounds(x, y, item) then
-			getMouseSelection():queueTask(item)
+			getMouseSelection():setTask(item)
 			self:clear()
 		end
 	end
