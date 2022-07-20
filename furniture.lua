@@ -24,8 +24,12 @@ function furniture:getType()
 	return "furniture"
 end
 
+function furniture:isWalkable()
+	return false
+end
+
 function furniture:__tostring()
-	return "Furniture(" .. self.name .. ", " .. self.x .. ", " .. self.y .. ")"
+	return "Furniture(".. self.name .."["..self.uid.."], "..self.x..", "..self.y..")"
 end
 
 return furniture

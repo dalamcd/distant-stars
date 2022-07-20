@@ -5,6 +5,7 @@ local gameContext
 local mouseSelection = nil
 
 local fonts = {}
+local bg
 
 function draw(tileset, quad, x, y)
 	love.graphics.draw(tileset,
@@ -21,6 +22,15 @@ function rect(mode, x, y, width, height)
 							gameCamera:getRelativeY(y),
 							gameCamera.scale*width,
 							gameCamera.scale*height)
+end
+
+function line(x1, y1, x2, y2)
+	love.graphics.line(gameCamera:getRelativeX(x1), gameCamera:getRelativeY(y1),
+						gameCamera:getRelativeX(x2), gameCamera:getRelativeY(y2))
+end
+
+function circ(mode, x, y, r)
+	love.graphics.circle(mode, gameCamera:getRelativeX(x), gameCamera:getRelativeY(y), gameCamera.scale*r)
 end
 
 function drawSelectionDetails()
@@ -41,12 +51,21 @@ function drawSelectionDetails()
 									height -1)
 	love.graphics.reset()
 
-	love.graphics.print(mouseSelection.name,
+	love.graphics.print(mouseSelection.name .."["..mouseSelection.uid.."]",
 						love.graphics.getWidth() - width - textPadding,
 						love.graphics.getHeight() - height - textPadding)
+	
 	if mouseSelection:getType() == "entity" then
 		local tlist = mouseSelection:getTasks()
 		local itemNum = 1
+		local idleSeconds = math.floor(mouseSelection.idleTime/60)
+		if idleSeconds > 0 then
+			love.graphics.print("Idle for " .. idleSeconds .. " seconds",
+								love.graphics.getWidth() - width - textPadding,
+								love.graphics.getHeight() - height + textPadding*itemNum*3)
+			itemNum = itemNum + 1
+		end
+
 		for i=#tlist, 1, -1 do
 			if not tlist[i]:isChild() then
 				love.graphics.print(tlist[i]:getDesc(),
@@ -54,6 +73,12 @@ function drawSelectionDetails()
 									love.graphics.getHeight() - height + textPadding*itemNum*3)
 				itemNum = itemNum + 1
 			end
+		end
+	elseif mouseSelection:getType() == "stockpile" then
+		for i, item in ipairs(mouseSelection.contents) do
+			love.graphics.print(item.name,
+								love.graphics.getWidth() - width - textPadding,
+								love.graphics.getHeight() - height + textPadding*i*3)
 		end
 	end
 end
@@ -94,15 +119,30 @@ function setGameMap(map)
 	gameMap = map
 end
 
+function setBackground(background)
+	bg = background
+end
+
+function getBackground()
+	return bg
+end
+
 function getGameContext()
 	return gameContext
 end
 
 function setMouseSelection(item)
+	if mouseSelection then
+		mouseSelection:deselect()
+	end
+	item:select()
 	mouseSelection = item
 end
 
 function clearMouseSelection()
+	if mouseSelection then
+		mouseSelection:deselect()
+	end
 	mouseSelection = nil
 end
 

@@ -9,36 +9,39 @@ local furniture = require('furniture')
 local task = require('task')
 local context = require('context')
 local door = require('door')
+local stockpile = require('stockpile')
+local background = require('background')
 
 TILE_SIZE = 32
 
 local pawns = {}
 
 local previousTime
-local tickUnit = 10^6.0 / 60
 local delta = 0
 local pause = false
 local gameSpeed = 1
 
 d = debugtext:new()
+tmpTiles = {}
+local oTmpTiles = {}
 
 function love.load()
 
 	--love.window.setMode(1025,768, {vsync=true})
 
 	love.graphics.setDefaultFilter('nearest')
+	love.math.setRandomSeed(-love.timer.getTime(), love.timer.getTime())
 
 	d:addTextField("MousePos", "(" .. love.mouse.getX() .. ", " .. love.mouse.getY() .. ")")
 	d:addTextField("MouseRel", "")
 	d:addTextField("Tile under mouse", "")
 	d:addTextField("Objects under mouse", "")
+	d:addTextField("Is walkable", "")
 
 	local c = camera:new()
 	setGameCamera(c)
 	c:moveXOffset(love.graphics.getWidth()/3.2)
 	c:moveYOffset(love.graphics.getHeight()/5)
-
-	setMouseSelection(p)
 	
 	drawable:addTileset("entity", "sprites/tilesheets/entities.png")
 	drawable:addTileset("item", "sprites/tilesheets/items.png")
@@ -46,32 +49,40 @@ function love.load()
 	drawable:addTileset("floorTile", "sprites/tilesheets/tiles.png")
 
 	m = map:new()
-	m:load('map.txt')
+	m:load('newmap.txt')
 	setGameMap(m)
 
-	local p = entity:new("entity", 0, 0, TILE_SIZE, TILE_SIZE, "Barnaby", 2, 3)
+	local p = entity:new("entity", 0, 0, TILE_SIZE, TILE_SIZE, "Dylan", 6, 7)
 	m:addEntity(p)
 
-	p = entity:new("entity", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE + 9, "Diocletian", 6, 8)
+	p = entity:new("entity", 0, 0, TILE_SIZE, TILE_SIZE, "Barnaby", 4, 5)
+
+
+	p = entity:new("entity", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE + 9, "Diocletian", 6, 3)
 	m:addEntity(p)
 	
-	p = entity:new("entity", TILE_SIZE*2, 0, TILE_SIZE*2, TILE_SIZE+10, "cow", 7, 3)
+	p = entity:new("entity", TILE_SIZE*4, 0, TILE_SIZE*2, TILE_SIZE+10, "cow", 8, 5)
 	m:addEntity(p)
 	
 	local i = item:new("item", 0, 0, TILE_SIZE, TILE_SIZE, "yummy chicken", 2, 7)
 	m:addItem(i)
 
-	i = item:new("item", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, "yummy pizza", 5, 3)
+	i = item:new("item", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, "yummy pizza", 3, 8)
 	m:addItem(i)
 	
-	i = item:new("item", TILE_SIZE*2, 0, TILE_SIZE + 15, TILE_SIZE*2, "street light", 2, 10)
-	m:addItem(i)
-
-	local newDoor = door:new("furniture", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE, "door", 2, 4)
-	m:addFurniture(newDoor)
+	--i = item:new("item", TILE_SIZE*2, 0, TILE_SIZE + 15, TILE_SIZE*2, "street light", 2, 10)
+	--m:addItem(i)
 	
 	local f = furniture:new("furniture", 0, 0, TILE_SIZE*2, TILE_SIZE+14, "dresser", 7, 2, 2, 1)
 	m:addFurniture(f)
+
+	local tmp = m:getTilesInRectangle(2, 5, 3, 3)
+
+	local sp = stockpile:new(tmp, "new stockpile")
+	m:addStockpile(sp)
+
+	local b = background:new(500)
+	setBackground(b)
 
 	font = love.graphics.newFont("fonts/Instruction.otf")
 	addFont(font, "robot")
@@ -104,16 +115,16 @@ function love.update(dt)
 	d:updateTextField("Objects under mouse", objStr)
 
 	if love.keyboard.isDown('w') then
-		getGameCamera():moveYOffset(3*getGameCamera().scale)
+		getGameCamera():moveYOffset(5*getGameCamera().scale)
 	end
 	if love.keyboard.isDown('a') then
-		getGameCamera():moveXOffset(3*getGameCamera().scale)
+		getGameCamera():moveXOffset(5*getGameCamera().scale)
 	end
 	if love.keyboard.isDown('s') then
-		getGameCamera():moveYOffset(-3*getGameCamera().scale)
+		getGameCamera():moveYOffset(-5*getGameCamera().scale)
 	end
 	if love.keyboard.isDown('d') then
-		getGameCamera():moveXOffset(-3*getGameCamera().scale)
+		getGameCamera():moveXOffset(-5*getGameCamera().scale)
 	end
 	if love.keyboard.isDown('q') then
 		getGameContext():clear()
@@ -125,6 +136,7 @@ function love.update(dt)
 
 	while delta >= 1/(60 * gameSpeed) do
 		if not paused then
+			getBackground():update(dt)
 			m:update(dt)
 		end
 		delta = delta - 1/(60 * gameSpeed)
@@ -133,16 +145,40 @@ function love.update(dt)
 	getGameContext():update()
 end
 
+local nr, nb, ng = 1, 1, 1
+
 function love.draw()
 
+	getBackground():draw()
 	m:draw()
 	d:draw()
-	getGameContext():draw()
 
 	if getMouseSelection() then
-		drawSelectionBox()
+		if getMouseSelection():getType() ~= "stockpile" then
+			drawSelectionBox()
+		end
 		drawSelectionDetails()
 	end
+
+	getGameContext():draw()
+
+	
+	if oTmpTiles ~= tmpTiles then
+		oTmpTiles = tmpTiles
+		nr = math.random(50, 100)/100
+		ng = math.random(50, 100)/100
+		nb = math.random(50, 100)/100
+	end
+	
+	for _, t in ipairs(tmpTiles) do
+		local br, bg, bb, ba = love.graphics.getColor() 
+		love.graphics.setColor(nr, ng, nb, 1)
+		circ("fill", (t.x-1/2)*TILE_SIZE, (t.y-1/2)*TILE_SIZE, 2)
+		love.graphics.setColor(br, bg, bb, ba)
+	end
+
+	love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
+
 end
 
 function love.keypressed(key)
@@ -171,6 +207,11 @@ function love.keypressed(key)
 			f:openDoor()
 		end
 	end
+
+	if key == 'e' then
+		table.remove(tmpTiles)
+		table.insert(tmpTiles, getGameMap():getRandomWalkableTileInRadius(1, 1, 1))
+	end
 end
 
 function love.wheelmoved(x, y)
@@ -190,13 +231,15 @@ function love.mousereleased(x, y, button)
 	local e = m:getEntitiesAtWorld(getMousePos())[1]
 	local i = m:getItemsAtWorld(getMousePos())[1]
 	local f = m:getFurnitureAtWorld(getMousePos())[1]
+	local s = m:getStockpileAtWorld(getMousePos())
 
 	if button == 1 then
 		if getGameContext().active and getGameContext():inBounds(x, y) then
 			getGameContext():handleClick(x, y)
 		else
-			if i then setMouseSelection(i) end
+			if s then setMouseSelection(s) end
 			if f then setMouseSelection(f) end
+			if i then setMouseSelection(i) end
 			if e then setMouseSelection(e) end
 		end
 	end

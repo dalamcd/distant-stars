@@ -26,12 +26,16 @@ function tile:isWalkable()
 	return self.walkable
 end
 
+function tile:isWall()
+	return not self.walkable
+end
+
 function tile:getPossibleTasks(map, entity)
 	local tasks = {}
 
-	if map:isWalkable(self.x, self.y) then
+	if map:isWalkable(self.x, self.y) and #map:getEntitiesInTile(self) == 0 then
 		if entity.x ~= self.x or entity.y ~= self.y then
-			local walkTask = entity:getWalkTask(map, self)
+			local walkTask = entity:getWalkTask(self)
 			table.insert(tasks, walkTask)
 		end
 	end

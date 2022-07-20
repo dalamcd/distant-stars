@@ -21,34 +21,80 @@ function item:beDropped(entity)
 	self.carried = false
 end
 
-
-function item:getPossibleTasks(map, entity)
+function item:getAvailableJobs()
 	local tasks = {}
-	local params = {startFunc = {}}
+	
+	if self.x ~= 2 or self.y ~= 8 then
+		function startFunc(tself)
+			local p = tself:getParams()
+			p.pickup = self:getPickupTask(tself)
+			p.drop = self:getDropTask(tself)
+			p.dest = getGameMap():getTile(2, 8)
+			if not self.carried then
+				p.entity:pushTask(p.pickup)
+			else
+				p.entity:pushTask(p.drop)
+			end
+		end
+
+		function runFunc(tself)
+			local p = tself:getParams()
+			if not p.pickedUp and not p.dropped then
+				p.entity:pushTask(p.pickup)
+			elseif p.pickedUp and not p.dropped then
+				p.entity:pushTask(p.drop)
+			elseif p.dropped then
+				tself:complete()
+			end
+		end
+
+		function strFunc(tself)
+			return "Hauling " .. self.name .. " to tile (1, 1)"
+		end
+
+		local haulTask = task:new(nil, nil, strFunc, nil, startFunc, runFunc, nil, nil, nil)
+		table.insert(tasks, haulTask)
+	end
+
+	return tasks
+end
+
+function item:getPossibleTasks()
+	local tasks = {}
 
 	if self.carried then return {} end
 
-	-- PICKUP ITEM
+	local pickupTask = self:getPickupTask()
+	table.insert(tasks, pickupTask)
+
+	return tasks
+end
+
+function item:getPickupTask(parentTask)
 	function startFunc(tself)
-		if entity.x ~= self.x or entity.y ~= self.y then
-			local walkTask = entity:getWalkTask(map, map:getTile(self.x, self.y), tself)
-			entity:pushTask(walkTask)
+		local p = tself:getParams()
+		if p.entity.x ~= self.x or p.entity.y ~= self.y then
+			local walkTask = p.entity:getWalkTask(p.map:getTile(self.x, self.y), tself)
+			p.entity:pushTask(walkTask)
 		else
 			tself:complete()
 		end
 	end
 
 	function runFunc(tself)
-		if entity.x == self.x and entity.y == self.y then
+		local p = tself:getParams()
+		if not p.entity.walking and p.entity.x == self.x and p.entity.y == self.y then
 			tself:complete()
-		elseif not tself:getParams().startFunc.routeFound then
+		elseif not p.routeFound then
 			tself.finished = true
 		end
 	end
 
 	function endFunc(tself)
+		local p = tself:getParams()
 		self.carried = true
-		entity:pickUp(self)
+		p.pickedUp = true
+		p.entity:pickUp(self)
 	end
 
 	function strFunc(tself)
@@ -59,11 +105,53 @@ function item:getPossibleTasks(map, entity)
 		return "Pick up " .. self.name
 	end
 
-	local pickupTask = task:new(params, contextFunc, strFunc, nil, startFunc, runFunc, endFunc)
-	table.insert(tasks, pickupTask)
-	-- END PICKUP ITEM
+	local pickupTask = task:new(params, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
+	return pickupTask
+end
 
-	return tasks
+-- requires params.dest (destination tile)
+function item:getDropTask(parentTask)
+	function runFunc(tself)
+		local p = tself:getParams()
+		if not p.entity.walking and p.entity.x == p.dest.x and p.entity.y == p.dest.y then
+			p.entity:drop(self)
+			tself:complete()
+		elseif not p.routeFound then
+			tself.finished = true
+		end
+	end
+	
+	function startFunc(tself)
+		local p = tself:getParams()
+		if not self.carried then
+			tself:complete()
+			return
+		end
+
+		if p.entity.x ~= p.dest.x or p.entity.y ~= p.dest.y then
+			local walkTask = p.entity:getWalkTask(p.dest, tself)
+			p.entity:pushTask(walkTask)			
+		else
+			p.entity:drop(self)
+			tself:complete()
+		end
+	end
+
+	function endFunc(tself)
+		local p = tself:getParams()
+		if not tself.abandoned then p.dropped = true end
+	end
+
+	function contextFunc(tself)
+		return "Drop " .. self.name
+	end
+
+	function strFunc(tself)
+		return "Dropping " .. self.name
+	end
+
+	local dropTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, abandonFunc, parentTask)
+	return dropTask
 end
 
 function item:setPos(x, y, xOffset, yOffset)
@@ -77,8 +165,12 @@ function item:getType()
 	return "item"
 end
 
+function item:getPluralName()
+	return self.name + "s"
+end
+
 function item:__tostring()
-	return "Item(" .. self.name .. ", " .. self.x .. ", " .. self.y .. ")"
+	return "Item(".. self.name .."["..self.uid.."], "..self.x..", "..self.y..")"
 end
 
 return item

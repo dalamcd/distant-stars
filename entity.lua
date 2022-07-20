@@ -16,9 +16,11 @@ function entity:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeigh
 	self.walkYOffset = 0
 	self.destination = nil
 	self.tasks = {}
+	self.jobs = {}
 	self.inventory = {}
 	self.name = name
 	self.speed = 1
+	self.idleTime = 0
 end
 
 function entity:draw()
@@ -56,8 +58,67 @@ function entity:update(dt)
 	self:handleWalking()
 	self:handleTasks()
 
-	for _, item in ipairs(self.inventory) do
-		item:setPos(self.x, self.y, self.xOffset + self.walkXOffset, self.yOffset + self.walkYOffset)
+	if self:isIdle() and not self.walking and #self.tasks == 0 then
+		local m = getGameMap()
+		local entities = m:getEntitiesInTile(m:getTile(self.x, self.y))
+		
+		-- Handle multiple entities residing in (i.e, not just passing through) the same tile by dispersing them
+		if #entities > 1 then
+			for _, ent in ipairs(entities) do
+				if not ent.walking and ent.uid ~= self.uid then
+					local t = m:getWalkableTileInRadius(self.x, self.y, 1)
+					if not t then
+						-- If there is not a tile we can escape to immediately around us, expand the search radius
+						for i=2, 10 do
+							t = m:getWalkableTileInRadius(self.x, self.y, i)
+							if t then break end
+						end
+					end
+					
+					if not t then print("entity "..self.name.."("..self.uid..")".."is very thoroughly trapped") break end
+					local walkTask = self:getWalkTask(t)
+					walkTask.params.map = m
+					self:pushTask(walkTask)
+					self.walking = true
+					break
+				end
+			end
+		end
+	end
+
+	if self:isIdle() and (self.idleTime / 60) % 10 == 0 then
+			self:wanderAimlessly()
+	end
+end
+
+function entity:isIdle()
+	return self.idleTime > 0
+end
+
+function entity:wanderAimlessly()
+	local tile = getGameMap():getRandomWalkableTileInRadius(self.x, self.y, 2)
+	if getGameMap():isOccupied(tile.x, tile.y) then return end
+	local walkTask = self:getWalkTask(tile)
+	walkTask.params.map = getGameMap()
+
+	function strFunc(tself)
+		return "Wandering aimlessly"
+	end
+
+	walkTask.strFunc = strFunc
+	walkTask.keepIdle = true
+
+	self:setTask(walkTask)
+end
+
+function entity:setJobList(jlist)
+	self.jobs = jlist
+end
+
+function entity:getNextJob()
+	if #self.jobs > 0 then
+		self:setTask(self.jobs[#self.jobs])
+		getGameMap():removeJobFromJobList(self.jobs[#self.jobs])
 	end
 end
 
@@ -65,6 +126,11 @@ function entity:handleTasks()
 
 	if #self.tasks > 0 then
 		local t = self.tasks[#self.tasks]
+		if t.keepIdle then
+			self.idleTime = self.idleTime + 1
+		else
+			self.idleTime = 0
+		end
 		if not t.started then
 			t:start()
 			-- This recursion works currently, but needs more testing
@@ -80,6 +146,8 @@ function entity:handleTasks()
 				t:run()
 			end
 		end
+	else
+		self.idleTime = self.idleTime + 1
 	end
 end
 
@@ -88,19 +156,20 @@ function entity:getTasks()
 end
 
 function entity:pushTask(task)
+	task.params.entity = self
 	table.insert(self.tasks, task)
 end
 
 function entity:queueTask(task)
+	task.params.entity = self
 	table.insert(self.tasks, 1, task)
 end
 
 function entity:setTask(task)
 	local count = #self.tasks
 	if count > 0 then
-		print("count > 0")
 		-- Save a copy of the current task then clear the task list
-		local t = self.tasks[1]
+		local t = self.tasks[#self.tasks]
 		for i=0, count do self.tasks[i]=nil end
 		t:abandon()
 		-- We add the abandoned task back to the task list so the entity can properly dispose of it
@@ -114,6 +183,9 @@ function entity:setTask(task)
 end
 
 function entity:pickUp(item)
+	if #self.inventory > 0 then
+		self:drop(self.inventory[1])
+	end
 	table.insert(self.inventory, item)
 end
 
@@ -126,49 +198,14 @@ function entity:drop(item)
 	end
 end
 
-function entity:getPossibleTasks(map, tile)
+function entity:getPossibleTasks(tile)
 	local tasks = {}
-	local params = {startFunc={}}
 
-	-- DROP CARRIED ITEM
 	for _, item in ipairs(self.inventory) do
-		
-		function runFunc(tself)
-			if not self.walking and self.x == tile.x and self.y == tile.y then
-				self:drop(item)
-				tself:complete()
-			elseif not tself:getParams().startFunc.routeFound then
-				tself.finished = true
-			end
-		end
-		
-		function startFunc(tself)
-			if not item.carried then
-				tself:complete()
-				return
-			end
-
-			if self.x ~= tile.x or self.y ~= tile.y then
-				local walkTask = self:getWalkTask(map, tile, tself)
-				self:pushTask(walkTask)			
-			else
-				self:drop(item)
-				tself:complete()
-			end
-		end
-
-		function contextFunc(tself)
-			return "Drop " .. item.name
-		end
-
-		function strFunc(tself)
-			return "Dropping " .. item.name
-		end
-
-		local dropTask = task:new(params, contextFunc, strFunc, nil, startFunc, runFunc, nil)
+		local dropTask = item:getDropTask()
+		dropTask.params.dest = tile
 		table.insert(tasks, dropTask)
 	end
-	-- END DROP CARRIED ITEM
 
 	return tasks
 end
@@ -177,22 +214,21 @@ function entity:setDestination(tile)
 	self.destination = tile
 end
 
-function entity:getWalkTask(map, destination, parentTask)
-
-	local params = {}
+function entity:getWalkTask(destination, parentTask)
 
 	function strFunc(tself)
 		return "Going to tile " .. destination.x .. ", " .. destination.y
 	end
 
 	function startFunc(tself)
-		local route = map:pathfind({x=self.x, y=self.y}, destination)
+		local p = tself:getParams()
+		local route = p.map:pathfind({x=self.x, y=self.y}, destination)
 		if route then
-			tself:getParams().routeFound = true
+			p.routeFound = true
 			self:setDestination(destination)
 			self:setRoute(route)
 		else
-			tself:getParams().routeFound = false
+			p.routeFound = false
 			tself.finished = true
 		end
 	end
@@ -217,7 +253,7 @@ function entity:getWalkTask(map, destination, parentTask)
 		return "Walk here"
 	end
 
-	local t = task:new(params, contextFunc, strFunc, nil, startFunc, runFunc, nil, abandonFunc, parentTask)
+	local t = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, nil, abandonFunc, parentTask)
 	return t
 end
 
@@ -234,6 +270,10 @@ function entity:handleWalking()
 		--self.x = self.destX
 		--self.y = self.destY
 		table.remove(self.route)
+	end
+
+	for _, item in ipairs(self.inventory) do
+		item:setPos(self.x, self.y, self.xOffset + self.walkXOffset, self.yOffset + self.walkYOffset)
 	end
 
 	if not self.walking and #self.route > 0 then
@@ -262,6 +302,18 @@ end
 function entity:moveToTile(x, y, speed, steps)
 	local dx = TILE_SIZE*(x - self.x)
 	local dy = TILE_SIZE*(y - self.y)
+
+	if dy < 0 then
+		self.sprite = self.northFacingQuad
+	elseif dy > 0 then
+		self.sprite = self.southFacingQuad
+	end
+
+	if dx > 0 then
+		self.sprite = self.eastFacingQuad
+	elseif dx < 0 then
+		self.sprite = self.westFacingQuad
+	end
 
 	self.previousX = self.x
 	self.previousY = self.y
@@ -302,7 +354,7 @@ function entity:getType()
 end
 
 function entity:__tostring()
-	return "Entity(" .. self.name .. ", " .. self.x .. ", " .. self.y .. ")"
+	return "Entity(".. self.name .."["..self.uid.."], "..self.x..", "..self.y..")"
 end
 
 return entity

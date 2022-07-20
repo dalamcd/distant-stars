@@ -1,4 +1,5 @@
 local class = require('middleclass')
+local utils = require('utils')
 
 task = class('task')
 
@@ -13,6 +14,7 @@ function task:initialize(params, contextFunc, strFunc, initFunc, startFunc, runF
 		abandonFunc = abandonFunc or function () return end
 		params = params or {}
 
+		self.uid = getUID()
 		self.desc = desc
 		self.params = params
 		self.parent = parent
@@ -44,9 +46,11 @@ function task:complete()
 end
 
 function task:abandon()
-	print("task:abandon()")
 	self.abandoned = true
 	self:abandonFunc()
+	if self.parent then
+		self.parent:abandon()
+	end
 end
 
 function task:getDesc()

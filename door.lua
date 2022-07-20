@@ -121,6 +121,10 @@ function door:isWalkable()
 	return true
 end
 
+function door:isWall()
+	return true
+end
+
 function door:getType()
 	return "door"
 end

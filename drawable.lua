@@ -1,5 +1,6 @@
 local class = require('middleclass')
 local game = require('game')
+local utils = require('utils')
 
 drawable = class('drawable')
 
@@ -18,9 +19,19 @@ function drawable:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHei
 	local ts = drawable:getTileset(tileset)
 
 	if ts then
-		local quad = love.graphics.newQuad(tilesetX, tilesetY, spriteWidth, spriteHeight, ts:getWidth(), ts:getHeight())
+		local distanceRight = math.ceil(spriteWidth / TILE_SIZE) * TILE_SIZE
+		local distanceDown = math.ceil(spriteHeight / TILE_SIZE) * TILE_SIZE
+		local southFacingQuad = love.graphics.newQuad(tilesetX, tilesetY, spriteWidth, spriteHeight, ts:getWidth(), ts:getHeight())
+		local northFacingQuad = love.graphics.newQuad(tilesetX + distanceRight, tilesetY, spriteWidth, spriteHeight, ts:getWidth(), ts:getHeight())
+		local westFacingQuad = love.graphics.newQuad(tilesetX, tilesetY + distanceDown, spriteWidth, spriteHeight, ts:getWidth(), ts:getHeight())
+		local eastFacingQuad = love.graphics.newQuad(tilesetX + distanceRight, tilesetY + distanceDown, spriteWidth, spriteHeight, ts:getWidth(), ts:getHeight())
+		self.uid = getUID()
 		self.tileset = ts
-		self.sprite = quad
+		self.sprite = southFacingQuad
+		self.northFacingQuad = northFacingQuad
+		self.southFacingQuad = southFacingQuad
+		self.westFacingQuad = westFacingQuad
+		self.eastFacingQuad = eastFacingQuad
 		self.spriteWidth = spriteWidth
 		self.spriteHeight = spriteHeight
 		self.x = posX
@@ -31,6 +42,7 @@ function drawable:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHei
 		self.yOffset = TILE_SIZE*self.height - spriteHeight
 		self.origXOffset = self.xOffset
 		self.origYOffset = self.yOffset
+		self.selected = false
 	else
 		error("drawable initialized, but no matching tileset named " .. tileset .. " was found")
 	end
@@ -94,7 +106,23 @@ function drawable:getType()
 end
 
 function drawable:isWalkable()
-	return false
+	return true
+end
+
+function drawable:select()
+	self.selected = true
+end
+
+function drawable:deselect()
+	self.selected = false
+end
+
+function drawable:getPossibleTasks()
+	return {}
+end
+
+function drawable:getPossibleJobs()
+	return {}
 end
 
 return drawable
