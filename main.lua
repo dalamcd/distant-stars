@@ -77,6 +77,7 @@ function love.load()
 	m:addFurniture(f)
 
 	local tmp = m:getTilesInRectangle(2, 5, 3, 3)
+	table.insert(tmp, m:getTile(8, 7))
 
 	local sp = stockpile:new(tmp, "new stockpile")
 	m:addStockpile(sp)

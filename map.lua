@@ -320,6 +320,15 @@ function map:getTile(x, y)
 	return self.tiles[(y - 1)*self.width + x]
 end
 
+function map:inStockpile(x, y)
+	for _, s in ipairs(self.stockpiles) do
+		if s:inTile(x, y) then
+			return s
+		end
+	end
+	return nil
+end
+
 function map:getItemsInTile(tile)
 	local items = {}
 	for _, item in ipairs(self.items) do

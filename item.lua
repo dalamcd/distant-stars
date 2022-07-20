@@ -92,9 +92,16 @@ function item:getPickupTask(parentTask)
 
 	function endFunc(tself)
 		local p = tself:getParams()
-		self.carried = true
-		p.pickedUp = true
-		p.entity:pickUp(self)
+		if not tself.abandoned then
+			local m = getGameMap()
+			local s = m:inStockpile(self.x, self.y)
+			self.carried = true
+			if s then
+				s:removeFromStockpile(self)
+			end
+			p.pickedUp = true
+			p.entity:pickUp(self)
+		end
 	end
 
 	function strFunc(tself)
@@ -139,7 +146,14 @@ function item:getDropTask(parentTask)
 
 	function endFunc(tself)
 		local p = tself:getParams()
-		if not tself.abandoned then p.dropped = true end
+		if not tself.abandoned then
+			local m = getGameMap()
+			local s = m:inStockpile(self.x, self.y)
+			p.dropped = true
+			if s then
+				s:addToStockpile(self)
+			end
+		end
 	end
 
 	function contextFunc(tself)

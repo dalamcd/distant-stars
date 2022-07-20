@@ -30,7 +30,7 @@ end
 function stockpile:detectEdgeTiles()
 
 	for _, tile in ipairs(self.tiles) do
-		local right = getGameMap():getTile(tile.x + 1, tile.y, true) 
+		local right = getGameMap():getTile(tile.x + 1, tile.y) 
 		local bottom = getGameMap():getTile(tile.x, tile.y + 1) 
 		local left = getGameMap():getTile(tile.x - 1, tile.y) 
 		local top = getGameMap():getTile(tile.x, tile.y - 1)
@@ -52,6 +52,26 @@ end
 
 function stockpile:update(dt)
 
+end
+
+function stockpile:removeFromStockpile(itemToRemove)
+	for i, item in ipairs(self.contents) do
+		if item.uid == itemToRemove.uid then
+			table.remove(self.contents, i)
+		end
+	end
+end
+
+function stockpile:addToStockpile(item)
+	table.insert(self.contents, item)
+end
+
+function stockpile:inStockpile(item)
+	for _, i in ipairs(self.contents) do
+		if i.uid == item.uid then
+			return true
+		end
+	end 
 end
 
 function stockpile:draw()
