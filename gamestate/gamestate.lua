@@ -52,6 +52,7 @@ end
 
 function gamestate.static:draw()
 	for i=#self._drawStack, 1, -1 do
+		love.graphics.reset()
 		self._drawStack[i]:draw()
 	end
 end

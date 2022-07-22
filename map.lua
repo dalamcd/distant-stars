@@ -222,10 +222,9 @@ function map:getWalkableTileInRadius(x, y, r)
 	local tiles = self:getTilesFromPoints(points)
 	local num = #points
 	local max = num*num
-	tmpTiles = tiles
-
 	local walkable
 	local occupied
+
 	repeat
 		local random = math.random(num)
 		t = self:getTile(points[random].x, points[random].y)
@@ -511,16 +510,6 @@ function map:update(dt)
 	end
 
 	self.oneSecondTimer = self.oneSecondTimer + 1
-
-	for _, e in ipairs(self.entities) do
-		e:update(dt)
-	end
-	for _, f in ipairs(self.furniture) do
-		f:update(dt)
-	end
-	for _, i in ipairs(self.items) do
-		i:update(dt)
-	end
 end
 
 return map
