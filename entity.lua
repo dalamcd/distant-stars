@@ -48,13 +48,18 @@ function entity:drawRoute()
 	if #self.route > 0 then
 		local startX = self.route[#self.route]:getWorldCenterX()
 		local startY = self.route[#self.route]:getWorldCenterY()
-		local endX = (self.x - 1/2)*TILE_SIZE + self.walkXOffset
-		local endY = (self.y - 1/2)*TILE_SIZE + self.walkYOffset
+		local endX = (self.x - 1/2)*TILE_SIZE + self.translationXOffset
+		local endY = (self.y - 1/2)*TILE_SIZE + self.translationYOffset
 		drawRouteLine({x=startX, y=startY}, {x=endX, y=endY})
 	end
 end
 
 function entity:update(dt)
+
+	for _, item in ipairs(self.inventory) do
+		item:setPos(self.x, self.y, self.xOffset + self.translationXOffset, self.yOffset + self.translationYOffset)
+	end
+
 	self:handleWalking()
 	self:handleTasks()
 
@@ -89,7 +94,6 @@ function entity:update(dt)
 	if self:isIdle() and (self.idleTime / 60) % 10 == 0 then
 			self:wanderAimlessly()
 	end
-
 	drawable.update(self, dt)
 end
 
@@ -260,22 +264,14 @@ function entity:getWalkTask(destination, parentTask)
 end
 
 function entity:handleWalking()
-	if self.steps > 1 then
-		self.steps = self.steps - 1
-		self.walkXOffset = self.walkXOffset + self.xStep
-		self.walkYOffset = self.walkYOffset + self.yStep
-	elseif self.walking then
-		self.walking = false
-		self.steps = 0
-		self.walkXOffset = 0
-		self.walkYOffset = 0
-		--self.x = self.destX
-		--self.y = self.destY
-		table.remove(self.route)
-	end
-
-	for _, item in ipairs(self.inventory) do
-		item:setPos(self.x, self.y, self.xOffset + self.walkXOffset, self.yOffset + self.walkYOffset)
+	if self.moveFuncParams and self.moveFuncParams.stepCount then
+		local p = self.moveFuncParams
+		if p.stepCount >= p.steps then
+			self.walking = false
+			self.x = p.destX
+			self.y = p.destY
+			table.remove(self.route)
+		end
 	end
 
 	if not self.walking and #self.route > 0 then
@@ -291,14 +287,46 @@ function entity:handleWalking()
 					if not f:isOpening() or f:isClosing() then
 						f:openDoor(true)
 					end
+				else
+					f:holdOpenFor(self.uid)
 				end
 			end
 		end
 		if not blocked then
-			self:moveToTile(t.x, t.y, self.speed, entity.base_tile_walk_distance)
+			self:walkToAdjacentTile(t.x, t.y, self.speed)
 		end
 	end
 
+end
+
+function entity:walkToAdjacentTile(x, y, speed)
+	
+	local dx = x - self.x
+	local dy = y - self.y
+	
+	if math.abs(dx) > 1 or math.abs(dy) > 1 then
+		error("pawn attempted to walk a distance longer than 1 tile")
+	end
+
+	if dy < 0 then
+		self.sprite = self.northFacingQuad
+	elseif dy > 0 then
+		self.sprite = self.southFacingQuad
+	end
+
+	if dx > 0 then
+		self.sprite = self.eastFacingQuad
+	elseif dx < 0 then
+		self.sprite = self.westFacingQuad
+	end
+
+	function moveFunc(eself, x)
+		return 0
+	end
+
+	self.walking = true
+	local steps = entity.base_tile_walk_distance / speed
+	self:translate(x, y, steps, moveFunc)
 end
 
 function entity:moveToTile(x, y, speed, steps)
@@ -333,22 +361,6 @@ end
 function entity:setRoute(route)
 	self.route = route
 	self:handleWalking()
-end
-
-function entity:getWorldX()
-	return drawable.getWorldX(self) + self.walkXOffset
-end
-
-function entity:getWorldY()
-	return drawable.getWorldY(self) + self.walkYOffset
-end
-
-function entity:getWorldCenterY()
-	return drawable.getWorldCenterX(self) + self.walkXOffset
-end
-
-function entity:getWorldCenterX()
-	return drawable.getWorldCenterY(self) + self.walkYOffset
 end
 
 function entity:getType()

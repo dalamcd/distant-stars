@@ -19,6 +19,7 @@ function door:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight,
 	self.openSpeed = 1
 	self.stopAmount = self.spriteWidth*0.85
 	self.holdOpen = false
+	self.holdFor = nil
 end
 
 function door:openDoor(reclose)
@@ -48,6 +49,7 @@ function door:closeDoor(force)
 	
 	if #objects > 1 then
 		self.closeBlocked = true
+		--self:openDoor()
 		return
 	end
 
@@ -58,6 +60,10 @@ function door:closeDoor(force)
 		self.open = false
 		self.openStep = (self.spriteWidth / door.base_open_speed) * self.openSpeed
 	end
+end
+
+function door:holdOpenFor(uid)
+	self.holdFor = uid
 end
 
 function door:draw()
@@ -77,7 +83,18 @@ function door:update(dt)
 	end
 
 	furniture.update(self, dt)
-	if self.opening or self.closing then
+
+
+	if self.holdFor then
+		local m = getGameMap()
+		local found = false
+		for _, o in ipairs(m:getObjectsInTile(m:getTile(self.x, self.y))) do
+			if o.uid == self.holdFor then
+				found = true
+				self.holdFor = nil
+			end
+		end
+	elseif self.opening or self.closing then
 		self:handleState()
 	end
 end
@@ -86,7 +103,15 @@ function door:handleState()
 	if self.opening then
 		self.openAmount = self.openAmount + self.openStep
 	elseif self.closing then
-		self.openAmount = self.openAmount - self.openStep
+		local objects = getGameMap():getObjectsInTile(getGameMap():getTile(self.x, self.y))
+	
+		if #objects > 1 then
+			self.closeBlocked = true
+			--self:openDoor()
+			return
+		else
+			self.openAmount = self.openAmount - self.openStep
+		end
 	end
 
 	if self.openAmount >= self.stopAmount or self.openAmount <= 0 then
