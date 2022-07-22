@@ -11,6 +11,7 @@ local context = require('context')
 local door = require('door')
 local stockpile = require('stockpile')
 local background = require('background')
+local gamestate = require('gamestate')
 
 TILE_SIZE = 32
 
@@ -91,21 +92,47 @@ function love.load()
 	local ctx = context:new(font)
 	setGameContext(ctx)
 
+	function greenFunc(tself)
+		love.graphics.setColor(0.0, 1.0, 0.0, 1.0)
+		love.graphics.rectangle("fill", 325, 275, 50, 50)
+	end
+
+	function redFunc(tself)
+		love.graphics.setColor(1.0, 0.0, 0.0, 1.0)
+		love.graphics.rectangle("fill", 50, 50, 300, 300)
+	end
+
+	
+	function blueFunc(tself)
+		love.graphics.setColor(0.0, 0.0, 1.0, 1.0)
+		love.graphics.rectangle("fill", 300, 300, 300, 300)
+	end
+	
+	local red = gamestate:new("red", nil, nil, redFunc, true, true)
+	local blue = gamestate:new("blue", nil, nil, blueFunc, false, true)
+	local green = gamestate:new("blue", nil, nil, greenFunc, false, true)
+	gamestate:push(green)
+	gamestate:push(blue)
+	gamestate:push(red)
+
 	previousTime = love.timer.getTime()
 end
 
 function love.update(dt)
 
-	mx = love.mouse.getX()
-	my = love.mouse.getY()
-	local rx, ry = getMousePos()
+	gamestate:update(dt)
 
-	d:updateTextField("MousePos", "(" .. mx .. ", " .. my .. ")")
-	d:updateTextField("MouseRel", "(" .. rx .. ", " .. ry .. ")")
-	d:updateTextField("Tile under mouse", tostring(m:getTileAtWorld(rx, ry)))
-	
-	local objStr = ""
-	local objects = m:getObjectsAtWorld(rx, ry)
+	--[[
+		mx = love.mouse.getX()
+		my = love.mouse.getY()
+		local rx, ry = getMousePos()
+		
+		d:updateTextField("MousePos", "(" .. mx .. ", " .. my .. ")")
+		d:updateTextField("MouseRel", "(" .. rx .. ", " .. ry .. ")")
+		d:updateTextField("Tile under mouse", tostring(m:getTileAtWorld(rx, ry)))
+		
+		local objStr = ""
+		local objects = m:getObjectsAtWorld(rx, ry)
 	for idx, obj in ipairs(objects) do
 		if idx ~= #objects then
 			objStr = objStr .. tostring(obj) .. ", "
@@ -114,7 +141,7 @@ function love.update(dt)
 		end
 	end
 	d:updateTextField("Objects under mouse", objStr)
-
+	
 	if love.keyboard.isDown('w') then
 		getGameCamera():moveYOffset(5*getGameCamera().scale)
 	end
@@ -130,11 +157,11 @@ function love.update(dt)
 	if love.keyboard.isDown('q') then
 		getGameContext():clear()
 	end
-
+	
 	local now = love.timer.getTime()
-  	delta = delta + (now - previousTime)
-  	previousTime = now
-
+	delta = delta + (now - previousTime)
+	previousTime = now
+	
 	while delta >= 1/(60 * gameSpeed) do
 		if not paused then
 			getBackground():update(dt)
@@ -142,27 +169,31 @@ function love.update(dt)
 		end
 		delta = delta - 1/(60 * gameSpeed)
 	end
-
+	
 	getGameContext():update()
+	]]
 end
 
 local nr, nb, ng = 1, 1, 1
 
 function love.draw()
 
-	getBackground():draw()
-	m:draw()
-	d:draw()
+	gamestate:draw()
 
-	if getMouseSelection() then
+	--[[
+		getBackground():draw()
+		m:draw()
+		d:draw()
+		
+		if getMouseSelection() then
 		if getMouseSelection():getType() ~= "stockpile" then
 			drawSelectionBox()
 		end
 		drawSelectionDetails()
 	end
-
+	
 	getGameContext():draw()
-
+	
 	
 	if oTmpTiles ~= tmpTiles then
 		oTmpTiles = tmpTiles
@@ -177,25 +208,26 @@ function love.draw()
 		circ("fill", (t.x-1/2)*TILE_SIZE, (t.y-1/2)*TILE_SIZE, 2)
 		love.graphics.setColor(br, bg, bb, ba)
 	end
-
+	
 	love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
-
+	
+	]]
 end
 
 function love.keypressed(key)
 	local t = m:getTileAtWorld(getMousePos())
 	local f = m:getFurnitureAtWorld(getMousePos())[1]
-
+	
 	if key == 'space' then
-	  paused = not paused
+		paused = not paused
 	end
 	
 	if key == '=' then
-	  gameSpeed = clamp(gameSpeed + 1, 1, 3)
+		gameSpeed = clamp(gameSpeed + 1, 1, 3)
 	end
 	
 	if key == '-' then
-	  gameSpeed = clamp(gameSpeed - 1, 1, 3)
+		gameSpeed = clamp(gameSpeed - 1, 1, 3)
 	end
 	
 	if key == 'f11' then
