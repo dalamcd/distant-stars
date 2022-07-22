@@ -183,6 +183,7 @@ function love.draw()
 end
 
 function love.keypressed(key)
+	local t = m:getTileAtWorld(getMousePos())
 	local f = m:getFurnitureAtWorld(getMousePos())[1]
 
 	if key == 'space' then
@@ -209,9 +210,18 @@ function love.keypressed(key)
 		end
 	end
 
-	if key == 'e' then
-		table.remove(tmpTiles)
-		table.insert(tmpTiles, getGameMap():getRandomWalkableTileInRadius(1, 1, 1))
+	if key == 'e' and getMouseSelection() then
+		local e = getMouseSelection()
+		local dist = math.sqrt((t.x - e.x)^2 + (t.y - e.y)^2)
+		function moveFunc(eself, x)
+			local p = eself.moveFuncParams
+			--p.smoothstep = true
+					
+			local y = -math.sin(math.pi*(1-p.percentComplete))*math.abs(p.tileDistance*5)
+			--local y = 0
+			return y
+		end
+		getMouseSelection():translate(t.x, t.y, 30*math.sqrt(dist), moveFunc)
 	end
 end
 

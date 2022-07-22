@@ -42,7 +42,10 @@ function drawable:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHei
 		self.yOffset = TILE_SIZE*self.height - spriteHeight
 		self.origXOffset = self.xOffset
 		self.origYOffset = self.yOffset
+		self.translationXOffset = 0
+		self.translationYOffset = 0
 		self.selected = false
+		self.moveFunc = function () return 0,0 end
 	else
 		error("drawable initialized, but no matching tileset named " .. tileset .. " was found")
 	end
@@ -52,15 +55,42 @@ function drawable:draw(x, y, nx, ny, nw, nh)
 	if nx and ny and nw and nh then
 		local ox, oy, ow, oh = self.sprite:getViewport()
 		self.sprite:setViewport(nx, ny, nw, nh)
-		draw(self.tileset, self.sprite, x + self.xOffset, y + self.yOffset)
+		draw(self.tileset, self.sprite, x + self.xOffset + self.translationXOffset, y + self.yOffset + self.translationYOffset)
 		self.sprite:setViewport(ox, oy, ow, oh)
 	else
-		draw(self.tileset, self.sprite, x + self.xOffset, y + self.yOffset)
+		draw(self.tileset, self.sprite, x + self.xOffset + self.translationXOffset, y + self.yOffset + self.translationYOffset)
 	end
 end
 
 function drawable:update(dt)
-
+	if self.moveFuncParams and self.moveFuncParams.stepCount then
+		local p = self.moveFuncParams
+		if p.stepCount >= p.steps then
+			self.moveFunc = function () return 0 end
+			self.moveFuncParams = {}
+			self.translationXOffset = 0
+			self.translationYOffset = 0
+			self.x = p.destX
+			self.y = p.destY
+		else
+			p.stepCount = p.stepCount + 1
+			p.distanceTraveled = p.stepCount*p.step
+			if p.distanceTraveled > p.max then
+				p.distanceTraveled = p.max
+			end
+			p.percentComplete = p.distanceTraveled/p.max
+			if p.smoothstep then
+				p.percentComplete = smoothstep(p.percentComplete)
+			end
+			local y = self:moveFunc(p.percentComplete)
+			local angle = math.atan(p.dy/p.dx)
+			if p.dx < 0 then
+				angle = -angle
+			end
+			self.translationXOffset = sign(p.dx)*p.distanceTraveled*math.cos(angle) - sign(p.dx)*y*math.sin(angle)
+			self.translationYOffset = p.distanceTraveled*math.sin(angle) + y*math.cos(angle)
+		end
+	end
 end
 
 function drawable:inBounds(worldX, worldY)
@@ -82,19 +112,19 @@ function drawable:inTile(tileX, tileY)
 end
 
 function drawable:getWorldX()
-	return (self.x - 1)*TILE_SIZE + self.xOffset
+	return (self.x - 1)*TILE_SIZE + self.xOffset + self.translationXOffset
 end
 
 function drawable:getWorldY()
-	return (self.y - 1)*TILE_SIZE + self.yOffset
+	return (self.y - 1)*TILE_SIZE + self.yOffset + self.translationYOffset
 end
 
 function drawable:getWorldCenterY()
-	return (self.y - 1)*TILE_SIZE + self.spriteHeight/2 + self.yOffset
+	return (self.y - 1)*TILE_SIZE + self.spriteHeight/2 + self.yOffset + self.translationYOffset
 end
 
 function drawable:getWorldCenterX()
-	return (self.x - 1)*TILE_SIZE + self.spriteWidth/2 + self.xOffset
+	return (self.x - 1)*TILE_SIZE + self.spriteWidth/2 + self.xOffset + self.translationXOffset
 end
 
 function drawable:getPos()
@@ -123,6 +153,35 @@ end
 
 function drawable:getPossibleJobs()
 	return {}
+end
+
+function drawable:translate(x, y, steps, moveFunc)
+	local dx = x - self.x
+	local dy = y - self.y
+	local distanceActual = math.sqrt(dx^2 + dy^2)
+	local max = distanceActual*TILE_SIZE
+	local step = max / steps
+
+	self.moveFuncParams = {}
+	self.moveFuncParams.dx = dx
+	self.moveFuncParams.dy = dy
+	self.moveFuncParams.tileDistance = distanceActual
+	self.moveFuncParams.startX = self.x
+	self.moveFuncParams.destX = x
+	self.moveFuncParams.destY = y
+	self.moveFuncParams.step = step
+	self.moveFuncParams.steps = steps
+	self.moveFuncParams.stepCount = 0
+	self.moveFuncParams.max = max
+	self.moveFuncParams.percentComplete = 0
+	self.moveFuncParams.x = 0
+	self.moveFuncParams.y = 0
+
+	self.moveFunc = moveFunc
+end
+
+function drawable:translateTo()
+
 end
 
 return drawable

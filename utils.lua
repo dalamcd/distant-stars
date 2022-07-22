@@ -20,6 +20,10 @@ function midpointCircle(centerX, centerY, radius)
     return points
 end
 
+function smoothstep(x) 
+    return ((x) * (x) * (3 - 2 * (x)))
+end
+
 local uid = 0
 function getUID()
     uid = uid + 1

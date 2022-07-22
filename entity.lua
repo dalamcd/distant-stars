@@ -89,6 +89,8 @@ function entity:update(dt)
 	if self:isIdle() and (self.idleTime / 60) % 10 == 0 then
 			self:wanderAimlessly()
 	end
+
+	drawable.update(self, dt)
 end
 
 function entity:isIdle()

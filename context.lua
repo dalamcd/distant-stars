@@ -62,7 +62,11 @@ end
 function context:handleClick(x, y)
 	for i, item in ipairs(self.items) do
 		if self:inBounds(x, y, item) then
-			getMouseSelection():setTask(item)
+			if love.keyboard.isDown('lshift') then
+				getMouseSelection():queueTask(item)
+			else
+				getMouseSelection():setTask(item)
+			end
 			self:clear()
 		end
 	end
