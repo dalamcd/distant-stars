@@ -10,5 +10,5 @@ function drawFunc(gself)
 	love.graphics.rectangle("fill", sideAmt+1, topAmt+1, love.graphics.getWidth() - sideAmt*2 - 2, love.graphics.getHeight() - topAmt*2 - 2)
 end
 
-local gs = gamestate:new("inventory", nil, nil, drawFunc, true, true)
+local gs = gamestate:new("inventory", nil, nil, drawFunc, nil, true, true)
 return gs

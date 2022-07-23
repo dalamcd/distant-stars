@@ -12,6 +12,6 @@ function gamestate.static:getFadeinState()
 		love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
 	end
 
-	local gs = gamestate:new("fadeinstate", loadFunc, nil, drawFunc, false, true)
+	local gs = gamestate:new("fadeinstate", loadFunc, nil, drawFunc, nil, false, true)
 	return gs
 end

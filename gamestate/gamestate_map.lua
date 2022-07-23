@@ -83,5 +83,5 @@ function updateFunc(gself, dt)
 	end
 end
 
-local gs = gamestate:new("new map", loadFunc, updateFunc, drawFunc, false, false)
+local gs = gamestate:new("new map", loadFunc, updateFunc, drawFunc, nil, false, false)
 return gs
