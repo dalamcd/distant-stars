@@ -6,6 +6,7 @@ function drawRect(x, y, width, height, r, g, b, opacity, outline)
 	outline = outline or true
 	opacity = opacity or 1
 
+	love.graphics.push("all")
 	if outline then
 		love.graphics.setColor(1, 1, 1, opacity)
 		love.graphics.rectangle("line", x, y, width, height)
@@ -16,4 +17,5 @@ function drawRect(x, y, width, height, r, g, b, opacity, outline)
 		love.graphics.setColor(r, g, b, opacity)
 		love.graphics.rectangle("fill", x, y, width, height)
 	end
+	love.graphics.pop()
 end

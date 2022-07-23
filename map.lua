@@ -44,18 +44,22 @@ function map:draw()
 end
 
 function map:addEntity(e)
+	e.map = self
 	table.insert(self.entities, e)
 end
 
 function map:addItem(i)
+	i.map = self
 	table.insert(self.items, i)
 end
 
 function map:addFurniture(f)
+	f.map = self
 	table.insert(self.furniture, f)
 end
 
 function map:addStockpile(s)
+	s.map = self
 	table.insert(self.stockpiles, s)
 end
 
@@ -487,15 +491,15 @@ function map:load(fname)
 			local index = ((r - 1) * self.width) + c
 			local t
 			if grid[index] == 1 then
-				t = tile:new("floorTile", TILE_SIZE, 0, "metal wall", c, r, index, false)
+				t = tile:new("floorTile", TILE_SIZE, 0, "metal wall", self, c, r, index, false)
 			elseif grid[index] == 2 then
-				t = tile:new("floorTile", 0, 0, "metal floor", c, r, index, true)
+				t = tile:new("floorTile", 0, 0, "metal floor", self, c, r, index, true)
 			elseif grid[index] == 3 then
-				t = tile:new("floorTile", TILE_SIZE*2, 0, "void", c, r, index, false)
+				t = tile:new("floorTile", TILE_SIZE*2, 0, "void", self, c, r, index, false)
 			elseif grid[index] == 4 then
-				t = tile:new("floorTile", TILE_SIZE*0, 0, "void", c, r, index, false)
-				local newDoor = door:new("furniture", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE, "door", c, r)
-				self:addFurniture(newDoor)
+				t = tile:new("floorTile", TILE_SIZE*2, 0, "void", self, c, r, index, false)
+				--local newDoor = door:new("furniture", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE, "door", self, c, r)
+				--self:addFurniture(newDoor)
 			end
 			self.tiles[index] = t
 		end

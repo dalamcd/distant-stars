@@ -32,13 +32,12 @@ end
 
 function gamestate.static:rebuild()
 
-	local g = self._stack[#self._stack]
-
 	-- Clear the update and draw stacks
 	for i=0, #self._updateStack do self._updateStack[i]=nil end
 	for i=0, #self._drawStack do self._drawStack[i]=nil end
-
+	
 	-- Always update and draw the topmost state
+	local g = self._stack[#self._stack]
 	table.insert(self._updateStack, g)
 	table.insert(self._drawStack, g)
 
@@ -77,13 +76,14 @@ end
 
 function gamestate.static:draw()
 	for i=#self._drawStack, 1, -1 do
-		love.graphics.reset()
+		love.graphics.push("all")
 		self._drawStack[i]:draw()
+		love.graphics.pop()
 	end
 end
 
-function gamestate.static:mousereleased(x, y, button)
-	self._input.mousereleased = {x=x, y=y, button=button}
+function gamestate.static:input(name, value)
+	self._input[name] = value
 end
 
 function gamestate:initialize(name, loadFunc, updateFunc, drawFunc, exitFunc, inputFunc, updateBelow, drawBelow)

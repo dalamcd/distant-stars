@@ -13,8 +13,8 @@ local stockpile = require('stockpile')
 local background = require('background')
 local gamestate = require('gamestate/gamestate')
 local fadein = require('gamestate/gamestate_fade')
-local fadeout = require('gamestate/gamestate_fadeout')
 local inventory = require('gamestate/gamestate_inventory')
+local mapstate = require('gamestate/gamestate_map')
 
 TILE_SIZE = 32
 
@@ -55,7 +55,7 @@ function love.load()
 	local font = love.graphics.newFont("fonts/Instruction.otf")
 	addFont(font, "robot")
 	
-	local gs = require('gamestate/gamestate_map')
+	local gs = gamestate:getMapState()
 
 	gamestate:push(gs)
 
@@ -124,10 +124,13 @@ function love.draw()
 		love.graphics.setColor(br, bg, bb, ba)
 	end
 
+	d:draw()
+
 	love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
 end
 
 function love.keypressed(key)
+	gamestate:input("keypressed", {key=key})
 	local t = getGameMap():getTileAtWorld(getMousePos())
 	local f = getGameMap():getFurnitureAtWorld(getMousePos())[1]
 	
@@ -141,7 +144,7 @@ function love.keypressed(key)
 
 	if key == 'o' then
 		local fade = gamestate:getFadeState()
-		local inv = gamestate:getInventoryState()
+		local inv = gamestate:getInventoryState(getGameMap():getFurnitureInTile(getGameMap():getTile(7, 2))[1])
 		gamestate:push(fade)
 		gamestate:push(inv)
 	end
@@ -182,6 +185,7 @@ function love.keypressed(key)
 end
 
 function love.wheelmoved(x, y)
+	gamestate:input("wheelmoved", {x=x, y=y})
 	if y > 0 then
 		for i=1, y do
 			getGameCamera():zoomIn()
@@ -194,7 +198,7 @@ function love.wheelmoved(x, y)
 end
 
 function love.mousereleased(x, y, button)
-	gamestate:mousereleased(x, y, button)
+	gamestate:input("mousereleased", {x=x, y=y, button=button})
 	local m = getGameMap()
 	local t = m:getTileAtWorld(getMousePos())
 	local e = m:getEntitiesAtWorld(getMousePos())[1]
