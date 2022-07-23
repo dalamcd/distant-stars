@@ -5,6 +5,7 @@ gamestate = class('gamestate')
 gamestate.static._stack = {}
 gamestate.static._drawStack = {}
 gamestate.static._updateStack = {}
+gamestate.static._input = {}
 
 function gamestate.static:push(gs)
 	local tmp = self._stack[#self._stack]
@@ -59,8 +60,18 @@ function gamestate.static:rebuild()
 end
 
 function gamestate.static:update(dt)
+
+	-- Only the topmost state processes inputs
+	-- TODO: allow the state to pass input to child states? although this is probably easily doable in the state
+	-- itself by accessing the gamestate.child object (which I should test to see if it even works)
+	self._updateStack[#self._updateStack]:inputFunc(self._input)
+	
 	for i=#self._updateStack, 1, -1 do
 		self._updateStack[i]:update(dt)
+	end
+
+	for k, _ in pairs(self._input) do
+		self._input[k] = nil
 	end
 end
 
@@ -71,13 +82,18 @@ function gamestate.static:draw()
 	end
 end
 
-function gamestate:initialize(name, loadFunc, updateFunc, drawFunc, exitFunc, updateBelow, drawBelow)
+function gamestate.static:mousereleased(x, y, button)
+	self._input.mousereleased = {x=x, y=y, button=button}
+end
+
+function gamestate:initialize(name, loadFunc, updateFunc, drawFunc, exitFunc, inputFunc, updateBelow, drawBelow)
 
 	name = name or "unknown gamestate"
 	loadFunc = loadFunc or function () return end
 	updateFunc = updateFunc or function () return end
 	drawFunc = drawFunc or function () return end
 	exitFunc = exitFunc or function () return end
+	inputFunc = inputFunc or function () return end
 
 	updateBelow = updateBelow or false
 	drawBelow = drawBelow or false
@@ -88,6 +104,7 @@ function gamestate:initialize(name, loadFunc, updateFunc, drawFunc, exitFunc, up
 	self.updateFunc = updateFunc
 	self.drawFunc = drawFunc
 	self.exitFunc = exitFunc
+	self.inputFunc = inputFunc
 	self.updateBelow = updateBelow
 	self.drawBelow = drawBelow
 	self:loadFunc()

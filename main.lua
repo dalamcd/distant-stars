@@ -12,8 +12,9 @@ local door = require('door')
 local stockpile = require('stockpile')
 local background = require('background')
 local gamestate = require('gamestate/gamestate')
-local fadein = require('gamestate/gamestate_fadein')
+local fadein = require('gamestate/gamestate_fade')
 local fadeout = require('gamestate/gamestate_fadeout')
+local inventory = require('gamestate/gamestate_inventory')
 
 TILE_SIZE = 32
 
@@ -139,17 +140,14 @@ function love.keypressed(key)
 	end
 
 	if key == 'o' then
-		local fadein = gamestate:getFadeinState()
-		local inv = require('gamestate/gamestate_inventory')
-		gamestate:push(fadein)
+		local fade = gamestate:getFadeState()
+		local inv = gamestate:getInventoryState()
+		gamestate:push(fade)
 		gamestate:push(inv)
 	end
 
 	if key == 'p' then
 		gamestate:pop()
-		gamestate:pop()
-		local fadeout = gamestate:getFadeoutState()
-		gamestate:push(fadeout)
 	end
 	
 	if key == '-' then
@@ -196,6 +194,7 @@ function love.wheelmoved(x, y)
 end
 
 function love.mousereleased(x, y, button)
+	gamestate:mousereleased(x, y, button)
 	local m = getGameMap()
 	local t = m:getTileAtWorld(getMousePos())
 	local e = m:getEntitiesAtWorld(getMousePos())[1]
