@@ -4,21 +4,31 @@ local task = require('task')
 
 item = class('item', drawable)
 
-function item:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, posX, posY)
+function item:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY)
 	drawable.initialize(self, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, posX, posY, 1, 1)
 
-	name = name or "unknown item"
 	self.name = name
+	self.map = map
 end
 
 function item:draw()
 	drawable.draw(self, (self.x - 1)*TILE_SIZE, (self.y - 1)*TILE_SIZE)
 end
 
-function item:beDropped(entity)
+function item:removedFromInventory(entity)
+	self.owner = nil
+	self.owned = false
+	self.x = entity.x
+	self.y = entity.y
 	self.xOffset = self.origXOffset
 	self.yOffset = self.origYOffset
-	self.carried = false
+end
+
+function item:addedToInventory(entity)
+	self.owner = entity
+	self.owned = true
+	self.x = entity.x
+	self.y = entity.y
 end
 
 function item:getAvailableJobs()
@@ -30,7 +40,7 @@ function item:getAvailableJobs()
 			p.pickup = self:getPickupTask(tself)
 			p.drop = self:getDropTask(tself)
 			p.dest = getGameMap():getTile(2, 8)
-			if not self.carried then
+			if not self.owned then
 				p.entity:pushTask(p.pickup)
 			else
 				p.entity:pushTask(p.drop)
@@ -62,7 +72,7 @@ end
 function item:getPossibleTasks()
 	local tasks = {}
 
-	if self.carried then return {} end
+	if self.owned then return {} end
 
 	local pickupTask = self:getPickupTask()
 	table.insert(tasks, pickupTask)
@@ -93,14 +103,13 @@ function item:getPickupTask(parentTask)
 	function endFunc(tself)
 		local p = tself:getParams()
 		if not tself.abandoned then
-			local m = getGameMap()
-			local s = m:inStockpile(self.x, self.y)
-			self.carried = true
+			local s = self.map:inStockpile(self.x, self.y)
+			self.owned = true
 			if s then
 				s:removeFromStockpile(self)
 			end
 			p.pickedUp = true
-			p.entity:pickUp(self)
+			p.entity:addToInventory(self)
 		end
 	end
 
@@ -121,7 +130,7 @@ function item:getDropTask(parentTask)
 	function runFunc(tself)
 		local p = tself:getParams()
 		if not p.entity.walking and p.entity.x == p.dest.x and p.entity.y == p.dest.y then
-			p.entity:drop(self)
+			p.entity:removeFromInventory(self)
 			tself:complete()
 		elseif not p.routeFound then
 			tself.finished = true
@@ -130,7 +139,7 @@ function item:getDropTask(parentTask)
 	
 	function startFunc(tself)
 		local p = tself:getParams()
-		if not self.carried then
+		if not self.owned then
 			tself:complete()
 			return
 		end
@@ -139,7 +148,7 @@ function item:getDropTask(parentTask)
 			local walkTask = p.entity:getWalkTask(p.dest, tself)
 			p.entity:pushTask(walkTask)			
 		else
-			p.entity:drop(self)
+			p.entity:removeFromInventory(self)
 			tself:complete()
 		end
 	end
@@ -147,8 +156,7 @@ function item:getDropTask(parentTask)
 	function endFunc(tself)
 		local p = tself:getParams()
 		if not tself.abandoned then
-			local m = getGameMap()
-			local s = m:inStockpile(self.x, self.y)
+			local s = self.map:inStockpile(self.x, self.y)
 			p.dropped = true
 			if s then
 				s:addToStockpile(self)

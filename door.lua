@@ -5,10 +5,10 @@ door = class("door", furniture)
 
 door.static.base_open_speed = 50
 
-function door:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, posX, posY, tileWidth, tileHeight)
+function door:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY, tileWidth, tileHeight)
 	tileWidth = tileWidth or 1
 	tileHeight = tileHeight or 1
-	furniture.initialize(self, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, posX, posY, tileWidth, tileHeight)
+	furniture.initialize(self, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY, tileWidth, tileHeight)
 	self.open = false
 	self.opening = false
 	self.closing = false
@@ -156,9 +156,9 @@ end
 
 function door:__tostring()
 	if self.open then
-		return "Door(" .. self.name .. ", " .. self.x .. ", " .. self.y .. ") (open)"
+		return "Door(".. self.name .."["..self.uid.."], " .. self.x .. ", " .. self.y .. ") (open)"
 	else
-		return "Door(" .. self.name .. ", " .. self.x .. ", " .. self.y .. ") (closed)"
+		return "Door(".. self.name .."["..self.uid.."], " .. self.x .. ", " .. self.y .. ") (closed)"
 	end
 end
 

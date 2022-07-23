@@ -4,7 +4,11 @@ local utils = require('utils')
 
 stockpile = class('stockpile')
 
-function stockpile:initialize(tiles, name)
+function stockpile:initialize(map, tiles, name)
+
+	if not map then
+		error("stockpike initialized with no map")
+	end
 
 	if not tiles or #tiles == 0 then
 		error("stockpile initialized with no tiles")
@@ -15,11 +19,12 @@ function stockpile:initialize(tiles, name)
 	self.name = name
 	self.contents = {}
 	self.color = {r=1.0, g=0.0, b=0.0, a=0.3}
+	self.map = map
 
 	self.edges = {}
 
 	for _, tile in ipairs(tiles) do
-		for _, item in ipairs(getGameMap():getItemsInTile(tile)) do
+		for _, item in ipairs(self.map:getItemsInTile(tile)) do
 			table.insert(self.contents, item)
 		end
 	end

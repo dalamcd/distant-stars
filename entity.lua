@@ -7,9 +7,9 @@ entity = class('entity', drawable)
 
 entity.static.base_tile_walk_distance = 30
 
-function entity:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, posX, posY)
+function entity:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY)
 	drawable.initialize(self, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, posX, posY, 1, 1)
-	name = name or "unknown entity"
+	self.map = map
 	self.steps = 0
 	self.route = {}
 	self.walkXOffset = 0
@@ -188,29 +188,41 @@ function entity:setTask(task)
 	end
 end
 
-function entity:pickUp(item)
+function entity:addToInventory(item)
 	if #self.inventory > 0 then
-		self:drop(self.inventory[1])
+		self:removeFromInventory(self.inventory[1])
 	end
 	table.insert(self.inventory, item)
+	item:addedToInventory(self)
 end
 
-function entity:drop(item)
+function entity:removeFromInventory(item)
 	for i, invItem in ipairs(self.inventory) do
-		if item == invItem then
+		if item.uid == invItem.uid then
 			table.remove(self.inventory, i)
-			item:beDropped(self)
-		end
+			item:removedFromInventory(self)
+		end	
 	end
 end
 
 function entity:getPossibleTasks(tile)
 	local tasks = {}
 
-	for _, item in ipairs(self.inventory) do
-		local dropTask = item:getDropTask()
-		dropTask.params.dest = tile
-		table.insert(tasks, dropTask)
+	if self.map:isWalkable(tile.x, tile.y) then
+		for _, item in ipairs(self.inventory) do
+			local dropTask = item:getDropTask()
+			dropTask.params.dest = tile
+			table.insert(tasks, dropTask)
+		end
+	end
+
+	for _, furn in ipairs(self.map:getFurnitureInTile(tile)) do
+		for _, item in ipairs(self.inventory) do
+			if furn:hasAvailableInventorySpace(item) then
+				local depositTask = furn:getAddToInventoryTask(item)
+				table.insert(tasks, depositTask)
+			end
+		end
 	end
 
 	return tasks

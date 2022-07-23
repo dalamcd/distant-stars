@@ -4,12 +4,14 @@ local drawable = require('drawable')
 
 tile = class('tile', drawable)
 
-function tile:initialize(tileset, tilesetX, tilesetY, name, posX, posY, index, walkable)
+function tile:initialize(tileset, tilesetX, tilesetY, name, map, posX, posY, index, walkable)
 	drawable.initialize(self, tileset, tilesetX, tilesetY, TILE_SIZE, TILE_SIZE, posX, posY, 1, 1)	
 	if not index then error("tile initialized without index") end
+	if not map then error("tile initialized without map") end
 
+	self.map = map
 	self.index = index
-	self.walkable = walkable
+	self.walkable = walkable or false
 	self.name = name
 end
 
@@ -28,6 +30,10 @@ end
 
 function tile:isWall()
 	return not self.walkable
+end
+
+function tile:isOccupied()
+	return self.map:isOccupied(self.x, self.y)
 end
 
 function tile:getPossibleTasks(map, entity)
