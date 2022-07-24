@@ -68,11 +68,11 @@ end
 
 function door:draw()
 	local x, y, w, h = self.sprite:getViewport()
-
+	local c = self.map.camera
 	x = x + self.openAmount
 	w = w - self.openAmount
 
-	drawable.draw(self, (self.x - 1)*TILE_SIZE, (self.y - 1)*TILE_SIZE, x, y, w, h)
+	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE), c:getRelativeY((self.y - 1)*TILE_SIZE), c.scale, x, y, w, h)
 end
 
 function door:update(dt)

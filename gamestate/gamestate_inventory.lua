@@ -28,18 +28,17 @@ function gamestate.static:getInventoryState(source, destination)
 	function inputFunc(gself, input)
 		if input.mousereleased then
 			if input.mousereleased.button == 1 then
-				print("yayyy")
+				if input.mousereleased.x > gself.leftMargin and input.mousereleased.x < gself.leftMargin + gself.width and
+					input.mousereleased.y > gself.topMargin and input.mousereleased.y < gself.topMargin + gself.height then
+					return
+				else
+					gamestate:pop()
+				end
 			end
 		end
 	end
 
 	function drawFunc(gself)
-		
-		-- love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
-		-- love.graphics.rectangle("line", gself.leftMargin, gself.topMargin, gself.width, gself.height)
-		-- love.graphics.setColor(0.0, 0.0, 0.0, 1.0)
-		-- love.graphics.rectangle("fill", gself.leftMargin+1, gself.topMargin+1, gself.width - 2, gself.height - 2)
-		-- love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
 		drawRect(gself.leftMargin, gself.topMargin, gself.width, gself.height)
 		love.graphics.print(gself.headerText, gself.headerPos, gself.topMargin + 20)
 		for i, item in ipairs(gself.items) do
@@ -47,6 +46,6 @@ function gamestate.static:getInventoryState(source, destination)
 		end
 	end
 
-	local gs = gamestate:new("inventory", loadFunc, nil, drawFunc, nil, inputFunc, false, true)
+	local gs = gamestate:new("inventory for " .. source.name, loadFunc, nil, drawFunc, nil, inputFunc, false, true)
 	return gs
 end

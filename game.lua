@@ -7,15 +7,6 @@ local mouseSelection = nil
 local fonts = {}
 local bg
 
-function draw(tileset, quad, x, y)
-	love.graphics.draw(tileset,
-					quad, 
-					gameCamera:getRelativeX(x),
-					gameCamera:getRelativeY(y),
-					0,
-					gameCamera.scale)
-end
-
 function rect(mode, x, y, width, height)
 	love.graphics.rectangle(mode,
 							gameCamera:getRelativeX(x),
@@ -101,10 +92,6 @@ end
 
 function setGameCamera(c)
 	gameCamera = c
-end
-
-function getGameCamera()
-	return gameCamera
 end
 
 function setGameContext(ctx)

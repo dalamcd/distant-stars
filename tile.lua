@@ -50,7 +50,8 @@ function tile:getPossibleTasks(map, entity)
 end
 
 function tile:draw()
-	drawable.draw(self, (self.x - 1)*TILE_SIZE, (self.y - 1)*TILE_SIZE)
+	local c = self.map.camera
+	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE), c:getRelativeY((self.y - 1)*TILE_SIZE), c.scale)
 end
 
 function tile:__tostring()

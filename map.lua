@@ -165,7 +165,7 @@ end
 function map:getItemsAtWorld(worldX, worldY)
 	local items = {}
 	for _, i in ipairs(self.items) do
-		if i:inBounds(worldX, worldY) then
+		if not i.owned and i:inBounds(worldX, worldY) then
 			table.insert(items, i)
 		end
 	end
@@ -335,7 +335,7 @@ end
 function map:getItemsInTile(tile)
 	local items = {}
 	for _, item in ipairs(self.items) do
-		if item.x == tile.x and item.y == tile.y then
+		if not item.owned and item.x == tile.x and item.y == tile.y then
 			table.insert(items, item)
 		end
 	end
@@ -355,7 +355,7 @@ end
 function map:getFurnitureInTile(tile)
 	local furniture = {}
 	for _, furn in ipairs(self.furniture) do
-		if furn.x == tile.x and furn.y == tile.y then
+		if furn:inTile(tile.x, tile.y) then
 			table.insert(furniture, furn)
 		end
 	end

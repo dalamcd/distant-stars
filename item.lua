@@ -12,7 +12,8 @@ function item:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight,
 end
 
 function item:draw()
-	drawable.draw(self, (self.x - 1)*TILE_SIZE, (self.y - 1)*TILE_SIZE)
+	local c = self.map.camera
+	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE), c:getRelativeY((self.y - 1)*TILE_SIZE), c.scale)
 end
 
 function item:removedFromInventory(entity)

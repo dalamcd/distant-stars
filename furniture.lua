@@ -1,5 +1,8 @@
 local class = require('middleclass')
 local drawable = require('drawable')
+local gamestate = require('gamestate/gamestate')
+local inventory = require('gamestate/gamestate_inventory')
+local fade = require('gamestate/gamestate_fade')
 
 furniture = class('furniture', drawable)
 
@@ -20,10 +23,6 @@ function furniture:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHe
 		end
 	end
 
-	for _, t in ipairs(interactTiles) do
-		print(name.."["..self.uid.."]", t.x, t.y)
-	end
-
 	self.name = name
 	self.inventory = {}
 	self.output = {}
@@ -31,14 +30,16 @@ function furniture:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHe
 end
 
 function furniture:draw()
-	drawable.draw(self, (self.x - 1)*TILE_SIZE, (self.y - 1)*TILE_SIZE)
-	for _, tile in ipairs(self:getInteractionTiles()) do
-		circ("fill", tile:getWorldCenterX(), tile:getWorldCenterY(), 2)
-	end
+	local c = self.map.camera
+	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE), c:getRelativeY((self.y - 1)*TILE_SIZE), c.scale)
+	-- for _, tile in ipairs(self:getInteractionTiles()) do
+	-- 	circ("fill", tile:getWorldCenterX(), tile:getWorldCenterY(), 2)
+	-- end
 end
 
 function furniture:getPossibleTasks()
-	local tasks = {}
+	local tasks = {self:getViewContentsTask()}
+
 	if #self:getInventory() > 0 then
 		for _, item in ipairs(self:getInventory()) do
 			local t = self:getRemoveFromInventoryTask(item)
@@ -150,6 +151,65 @@ function furniture:getRemoveFromInventoryTask(item, parentTask)
 
 	local retrieveTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, abandonFunc, parentTask)
 	return retrieveTask
+end
+
+function furniture:getViewContentsTask(parentTask)
+	function startFunc(tself)
+		local p = tself:getParams()
+		local inRange = false
+
+		for _, tile in ipairs(self:getInteractionTiles()) do
+			if p.entity.x == tile.x and p.entity.y == tile.y then
+				inRange = true
+				break
+			end
+		end
+	
+		if not inRange then
+			local tile = self:getAvailableInteractionTile()
+			if tile then
+				p.dest = tile
+				local walkTask = p.entity:getWalkTask(tile, tself)
+				p.entity:pushTask(walkTask)	
+			end		
+		else
+			tself:complete()
+		end
+	end
+
+	function runFunc(tself)
+		local p = tself:getParams()
+		if not p.routeFound then
+			tself:abandon()
+			tself:complete()
+			return
+		end
+		
+		if not p.entity.walking and p.entity.x == p.dest.x and p.entity.y == p.dest.y then
+			tself:complete()
+		end
+	end
+
+	function endFunc(tself)
+		local p = tself:getParams()
+		if not tself.abandoned then
+			local fade = gamestate:getFadeState()
+			local gs = gamestate:getInventoryState(self, p.entity)
+			gamestate:push(fade)
+			gamestate:push(gs)
+		end
+	end
+
+	function contextFunc(tself)
+		return "View inventory"
+	end
+
+	function strFunc(tself)
+		return "Going to " .. self.name
+	end
+
+	local viewTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, abandonFunc, parentTask)
+	return viewTask
 end
 
 function furniture:getInventory()

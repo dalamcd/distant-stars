@@ -41,11 +41,6 @@ function love.load()
 	d:addTextField("Tile under mouse", "")
 	d:addTextField("Objects under mouse", "")
 	d:addTextField("Is walkable", "")
-
-	local c = camera:new()
-	setGameCamera(c)
-	c:moveXOffset(love.graphics.getWidth()/3.2)
-	c:moveYOffset(love.graphics.getHeight()/5)
 	
 	drawable:addTileset("entity", "sprites/tilesheets/entities.png")
 	drawable:addTileset("item", "sprites/tilesheets/items.png")
@@ -54,8 +49,50 @@ function love.load()
 
 	local font = love.graphics.newFont("fonts/Instruction.otf")
 	addFont(font, "robot")
+
+
+	local m = map:new(5, 5)
+	m:load('newmap.txt')
+	setGameMap(m)
 	
-	local gs = gamestate:getMapState()
+	local p = entity:new("entity", 0, 0, TILE_SIZE, TILE_SIZE, "Dylan", m, 6, 7)
+	m:addEntity(p)
+
+	p = entity:new("entity", 0, 0, TILE_SIZE, TILE_SIZE, "Barnaby", m, 4, 5)
+	m:addEntity(p)
+
+	p = entity:new("entity", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE + 9, "Diocletian", m, 6, 3)
+	m:addEntity(p)
+	
+	p = entity:new("entity", TILE_SIZE*4, 0, TILE_SIZE*2, TILE_SIZE+10, "cow", m, 8, 5)
+	m:addEntity(p)
+	
+	local i = item:new("item", 0, 0, TILE_SIZE, TILE_SIZE, "yummy chicken", m, 2, 7)
+	m:addItem(i)
+
+	i = item:new("item", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, "yummy pizza", m, 3, 8)
+	m:addItem(i)
+
+	local tmp = {{x=0, y=1}, {x=1, y=1}}
+	local f = furniture:new("furniture", 0, 0, TILE_SIZE*2, TILE_SIZE+14, "dresser", m, 7, 2, 2, 1, tmp)
+	i = item:new("item", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, "yummy pizza", m, 3, 8)
+	m:addItem(i)
+	f:addToInventory(i)
+	m:addFurniture(f)
+	
+	local tmp = m:getTilesInRectangle(2, 5, 3, 3)
+	table.insert(tmp, m:getTile(8, 7))
+
+	local sp = stockpile:new(m, tmp, "new stockpile")
+	m:addStockpile(sp)
+
+	local c = camera:new()
+	setGameCamera(c)
+	c:moveXOffset(love.graphics.getWidth()/3.2)
+	c:moveYOffset(love.graphics.getHeight()/5)
+
+	local gs = gamestate:getMapState(m, c)
+	gs.camera = c
 
 	gamestate:push(gs)
 
@@ -71,18 +108,6 @@ function love.update(dt)
 	d:updateTextField("MousePos", "(" .. mx .. ", " .. my .. ")")
 	d:updateTextField("MouseRel", "(" .. rx .. ", " .. ry .. ")")
 
-	if love.keyboard.isDown('w') then
-		getGameCamera():moveYOffset(5*getGameCamera().scale)
-	end
-	if love.keyboard.isDown('a') then
-		getGameCamera():moveXOffset(5*getGameCamera().scale)
-	end
-	if love.keyboard.isDown('s') then
-		getGameCamera():moveYOffset(-5*getGameCamera().scale)
-	end
-	if love.keyboard.isDown('d') then
-		getGameCamera():moveXOffset(-5*getGameCamera().scale)
-	end
 	if love.keyboard.isDown('q') then
 		getGameContext():clear()
 	end
@@ -152,6 +177,14 @@ function love.keypressed(key)
 	if key == 'p' then
 		gamestate:pop()
 	end
+
+	if key == '1' then
+		local newMap = map:new()
+		local cam = camera:new()
+		newMap:load("map.txt")
+		local gs = gamestate:getMapState(newMap, cam)
+		gamestate:push(gs)
+	end
 	
 	if key == '-' then
 		gameSpeed = clamp(gameSpeed - 1, 1, 3)
@@ -186,15 +219,6 @@ end
 
 function love.wheelmoved(x, y)
 	gamestate:input("wheelmoved", {x=x, y=y})
-	if y > 0 then
-		for i=1, y do
-			getGameCamera():zoomIn()
-		end
-	elseif y < 0 then
-		for i=1, math.abs(y) do
-			getGameCamera():zoomOut()
-		end
-	end
 end
 
 function love.mousereleased(x, y, button)

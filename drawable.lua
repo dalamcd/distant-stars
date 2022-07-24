@@ -47,18 +47,18 @@ function drawable:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHei
 		self.selected = false
 		self.moveFunc = function () return 0,0 end
 	else
-		error("drawable initialized, but no matching tileset named " .. tileset .. " was found")
+		error("drawable initialized, but no matching tileset named " .. tileset .. " found")
 	end
 end
 
-function drawable:draw(x, y, nx, ny, nw, nh)
+function drawable:draw(x, y, s, nx, ny, nw, nh)
 	if nx and ny and nw and nh then
 		local ox, oy, ow, oh = self.sprite:getViewport()
 		self.sprite:setViewport(nx, ny, nw, nh)
-		draw(self.tileset, self.sprite, x + self.xOffset + self.translationXOffset, y + self.yOffset + self.translationYOffset)
+		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset)*s, y + (self.yOffset + self.translationYOffset)*s, 0, s)
 		self.sprite:setViewport(ox, oy, ow, oh)
 	else
-		draw(self.tileset, self.sprite, x + self.xOffset + self.translationXOffset, y + self.yOffset + self.translationYOffset)
+		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset)*s, y + (self.yOffset + self.translationYOffset)*s, 0, s)
 	end
 end
 

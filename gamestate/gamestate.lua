@@ -21,13 +21,17 @@ function gamestate.static:push(gs)
 end
 
 function gamestate.static:pop()
-	local gs = table.remove(self._stack)
-	local tmp = self._stack[#self._stack]
-	if tmp then
-		tmp.top = true
+	local peek = self._stack[#self._stack]
+	if #self._stack > 1 then
+		local gs = table.remove(self._stack)
+		if peek then
+			self._stack[#self._stack].top = true
+		end
+		self:rebuild()
+		return gs
+	else
+		return peek
 	end
-	self:rebuild()
-	return gs
 end
 
 function gamestate.static:rebuild()

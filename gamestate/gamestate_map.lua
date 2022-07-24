@@ -1,67 +1,67 @@
 local gamestate = require('gamestate/gamestate')
 
-function gamestate.static:getMapState()
+local function wheelmoved(gself, x, y)
+	if y > 0 then
+		for i=1, y do
+			gself.map.camera:zoomIn()
+		end
+	elseif y < 0 then
+		for i=1, math.abs(y) do
+			gself.map.camera:zoomOut()
+		end
+	end
+end
+
+local function keysdown(gself)
+	if love.keyboard.isDown('w') then
+		gself.map.camera:moveYOffset(5*gself.map.camera.scale)
+	end
+	if love.keyboard.isDown('a') then
+		gself.map.camera:moveXOffset(5*gself.map.camera.scale)
+	end
+	if love.keyboard.isDown('s') then
+		gself.map.camera:moveYOffset(-5*gself.map.camera.scale)
+	end
+	if love.keyboard.isDown('d') then
+		gself.map.camera:moveXOffset(-5*gself.map.camera.scale)
+	end
+end
+
+function gamestate.static:getMapState(map, camera, passthrough)
+	passthrough = passthrough or false
+
 	function loadFunc(gself)
 
-		local m = map:new()
-		m:load('newmap.txt')
-		setGameMap(m)
-		gself.m = m
-		print("mapwidth", m.width)
-
-		local p = entity:new("entity", 0, 0, TILE_SIZE, TILE_SIZE, "Dylan", m, 6, 7)
-		m:addEntity(p)
-
-		p = entity:new("entity", 0, 0, TILE_SIZE, TILE_SIZE, "Barnaby", m, 4, 5)
-		m:addEntity(p)
-
-		p = entity:new("entity", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE + 9, "Diocletian", m, 6, 3)
-		m:addEntity(p)
-		
-		p = entity:new("entity", TILE_SIZE*4, 0, TILE_SIZE*2, TILE_SIZE+10, "cow", m, 8, 5)
-		m:addEntity(p)
-		
-		local i = item:new("item", 0, 0, TILE_SIZE, TILE_SIZE, "yummy chicken", m, 2, 7)
-		m:addItem(i)
-
-		i = item:new("item", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, "yummy pizza", m, 3, 8)
-		m:addItem(i)
-		
-		--i = item:new("item", TILE_SIZE*2, 0, TILE_SIZE + 15, TILE_SIZE*2, "street light", 2, 10)
-		--m:addItem(i)
-		local tmp = {{x=0, y=1}, {x=1, y=1}}
-		local f = furniture:new("furniture", 0, 0, TILE_SIZE*2, TILE_SIZE+14, "dresser", m, 7, 2, 2, 1, tmp)
-		i = item:new("item", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, "yummy pizza", m, 3, 8)
-		m:addItem(i)
-		f:addToInventory(i)
-		m:addFurniture(f)
-		
-		local tmp = m:getTilesInRectangle(2, 5, 3, 3)
-		table.insert(tmp, m:getTile(8, 7))
-
-		local sp = stockpile:new(m, tmp, "new stockpile")
-		m:addStockpile(sp)
-
+		gself.map = map
+		gself.map.camera = camera
 		local b = background:new(500)
-		setBackground(b)
+		gself.background = b
+		--setBackground(b)
 
 		local ctx = context:new(font)
 		setGameContext(ctx)
 	end
 
 	function drawFunc(gself)
-		getBackground():draw()
-		gself.m:draw()
+		gself.background:draw()
+		gself.map:draw()
 		getGameContext():draw()
+	end
+
+	function inputFunc(gself, input)
+		keysdown(gself)
+		if input.wheelmoved then
+			wheelmoved(gself, input.wheelmoved.x, input.wheelmoved.y)
+		end
 	end
 
 	function updateFunc(gself, dt)
 		local rx, ry = getMousePos()
-		d:updateTextField("Tile under mouse", tostring(gself.m:getTileAtWorld(rx, ry)))
+		d:updateTextField("Tile under mouse", tostring(gself.map:getTileAtWorld(rx, ry)))
 		
 		local rx, ry = getMousePos()
 		local objStr = ""
-		local objects = gself.m:getObjectsAtWorld(rx, ry)
+		local objects = gself.map:getObjectsAtWorld(rx, ry)
 		for idx, obj in ipairs(objects) do
 			if idx ~= #objects then
 				objStr = objStr .. tostring(obj) .. ", "
@@ -74,20 +74,20 @@ function gamestate.static:getMapState()
 		getGameContext():update()
 
 		if not paused then
-			getBackground():update(dt)
+			gself.background:update(dt)
 		
-			for _, e in ipairs(gself.m.entities) do
+			for _, e in ipairs(gself.map.entities) do
 				e:update(dt)
 			end
-			for _, f in ipairs(gself.m.furniture) do
+			for _, f in ipairs(gself.map.furniture) do
 				f:update(dt)
 			end
-			for _, i in ipairs(gself.m.items) do
+			for _, i in ipairs(gself.map.items) do
 				i:update(dt)
 			end
 		end
 	end
 
-	local gs = gamestate:new("new map", loadFunc, updateFunc, drawFunc, nil, nil, false, false)
+	local gs = gamestate:new("new map", loadFunc, updateFunc, drawFunc, nil, inputFunc, passthrough, passthrough)
 	return gs
 end

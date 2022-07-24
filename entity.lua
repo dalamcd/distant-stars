@@ -24,7 +24,9 @@ function entity:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeigh
 end
 
 function entity:draw()
-	drawable.draw(self, (self.x - 1)*TILE_SIZE + self.walkXOffset, (self.y - 1)*TILE_SIZE + self.walkYOffset)
+	local c = self.map.camera
+	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE + self.walkXOffset), c:getRelativeY((self.y - 1)*TILE_SIZE + self.walkYOffset), c.scale)
+--	drawable.draw(self, (self.x - 1)*TILE_SIZE + self.walkXOffset, (self.y - 1)*TILE_SIZE + self.walkYOffset)
 	
 	if #self.inventory > 0 then
 		for _, item in ipairs(self.inventory) do
@@ -64,8 +66,7 @@ function entity:update(dt)
 	self:handleTasks()
 
 	if self:isIdle() and not self.walking and #self.tasks == 0 then
-		local m = getGameMap()
-		local entities = m:getEntitiesInTile(m:getTile(self.x, self.y))
+		local entities = self.map:getEntitiesInTile(self.map:getTile(self.x, self.y))
 		
 		-- Handle multiple entities residing in (i.e, not just passing through) the same tile by dispersing them
 		if #entities > 1 then
