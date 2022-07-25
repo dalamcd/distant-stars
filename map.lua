@@ -5,15 +5,24 @@ local door = require('door')
 
 map = class('map')
 
-function map:initialize()
+function map:initialize(name, xOffset, yOffset)
+
+	name = name or "new map"
 
 	self.tiles = {}
 	self.entities = {}
 	self.items = {}
 	self.furniture = {}
 	self.stockpiles = {}
-
 	self.jobs = {}
+
+	self.name = name
+	self.xOffset = xOffset or 0
+	self.yOffset = yOffset or 0
+	self.mapTranslationXOffset = 0
+	self.mapTranslationYOffset = 0
+	self.velX = 0
+	self.velY = 0
 
 	self.oneSecondTimer = 0
 end
@@ -21,40 +30,62 @@ end
 function map:draw()
 	for _, t in ipairs(self.tiles) do
 		t:draw()
+		t.mapTranslationXOffset = self.mapTranslationXOffset
+		t.mapTranslationYOffset = self.mapTranslationYOffset
 	end
 
 	for _, s in ipairs(self.stockpiles) do
 		s:draw()
+		--s.translationXOffset = s.translationXOffset + self.translationXOffset
+		--s.translationYOffset = s.translationYOffset + self.translationYOffset
 	end
 
 	for _, i in ipairs(self.items) do
-		if not i.carried then
+		if not i.owned then
 			i:draw()
 		end
+		i.mapTranslationXOffset = self.mapTranslationXOffset
+		i.mapTranslationYOffset = self.mapTranslationYOffset
 	end
 
 	for _, f in ipairs(self.furniture) do
 		f:draw()
+		f.mapTranslationXOffset = self.mapTranslationXOffset
+		f.mapTranslationYOffset = self.mapTranslationYOffset
 	end
 
 	for _, e in ipairs(self.entities) do
 		e:draw()
+		e.mapTranslationXOffset = self.mapTranslationXOffset
+		e.mapTranslationYOffset = self.mapTranslationYOffset
 	end
 
 end
 
 function map:addEntity(e)
 	e.map = self
+	e.x = e.x + self.xOffset
+	e.y = e.y + self.yOffset
+	e.mapTranslationXOffset = self.mapTranslationXOffset
+	e.mapTranslationYOffset = self.mapTranslationYOffset
 	table.insert(self.entities, e)
 end
 
 function map:addItem(i)
 	i.map = self
+	i.x = i.x + self.xOffset
+	i.y = i.y + self.yOffset
+	i.mapTranslationXOffset = self.mapTranslationXOffset
+	i.mapTranslationYOffset = self.mapTranslationYOffset
 	table.insert(self.items, i)
 end
 
 function map:addFurniture(f)
 	f.map = self
+	f.x = f.x + self.xOffset
+	f.y = f.y + self.yOffset
+	f.mapTranslationXOffset = self.mapTranslationXOffset
+	f.mapTranslationYOffset = self.mapTranslationYOffset
 	table.insert(self.furniture, f)
 end
 
@@ -100,36 +131,38 @@ end
 function map:isWalkable(x, y)
 	local tile = self:getTile(x,y)
 	
-	local walkable = true
-	
 	if not tile:isWalkable() then
-		walkable = false
+		return false
 	end
 
 	for _, furn in ipairs(self.furniture) do
 		if furn:inTile(x, y) then
-			walkable = furn:isWalkable()
+			if not furn:isWalkable() then
+				return false
+			end
 		end
 	end
 
 	for _, ent in ipairs(self.entities) do
 		if ent.x == x and ent.y == y then
-			walkable = ent:isWalkable()
+			if not ent:isWalkable() then
+				return false
+			end
 		end
 	end
 
-	return walkable
+	return true
 end
 
 function map:pathfind(start, goal)
 
 	function isWalkable(x, y)
-		return self:isWalkable(x,y)
+		return self:isWalkable(x, y)
 	end
 
 	--path = luastar:find(mapsize, mapsize, start, goal, positionIsOpenFunc)
 	local nodes = nil
-	local route = luastar:find(self.width, self.height, start, goal, isWalkable)
+	local route = luastar:find(self.width + self.xOffset, self.height + self.yOffset, start, goal, isWalkable)
 	if route then
 		nodes = {}
 		for i = #route, 2, -1 do
@@ -158,7 +191,6 @@ function map:getEntitiesAtWorld(worldX, y)
 			table.insert(entities, e)
 		end
 	end
-	--if #entities > 0 then print(#entities) end
 	return entities
 end
 
@@ -319,8 +351,14 @@ function map:detectRoom(tile)
 end
 
 function map:getTile(x, y)
-	if x <= 0 or y <= 0 or x > self.width or y > self.height then return nil end
-	return self.tiles[(y - 1)*self.width + x]
+	local nx = x - self.xOffset
+	local ny = y - self.yOffset
+	if nx <= 0 or ny <= 0 or nx > self.width or ny > self.height then return nil end
+	return self.tiles[(ny - 1)*self.width + nx]
+end
+
+function map:getTileAtIndex(idx)
+	return self.tiles[idx]
 end
 
 function map:inStockpile(x, y)
@@ -488,16 +526,18 @@ function map:load(fname)
 
 	for r = 1, self.height do
 		for c = 1, self.width do
+			local x = c + self.xOffset
+			local y = r + self.yOffset
 			local index = ((r - 1) * self.width) + c
 			local t
 			if grid[index] == 1 then
-				t = tile:new("floorTile", TILE_SIZE, 0, "metal wall", self, c, r, index, false)
+				t = tile:new("floorTile", TILE_SIZE, 0, "metal wall", self, x, y, index, false)
 			elseif grid[index] == 2 then
-				t = tile:new("floorTile", 0, 0, "metal floor", self, c, r, index, true)
+				t = tile:new("floorTile", 0, 0, "metal floor", self, x, y, index, true)
 			elseif grid[index] == 3 then
-				t = tile:new("floorTile", TILE_SIZE*2, 0, "void", self, c, r, index, false)
+				t = tile:new("floorTile", TILE_SIZE*2, 0, "void", self, x, y, index, false)
 			elseif grid[index] == 4 then
-				t = tile:new("floorTile", TILE_SIZE*2, 0, "void", self, c, r, index, false)
+				t = tile:new("floorTile", TILE_SIZE*2, 0, "void", self, x, y, index, false)
 				--local newDoor = door:new("furniture", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE, "door", self, c, r)
 				--self:addFurniture(newDoor)
 			end
@@ -507,6 +547,26 @@ function map:load(fname)
 end
 
 function map:update(dt)
+
+	if not paused then
+		for _, e in ipairs(self.entities) do
+			e:update(dt)
+		end
+		for _, f in ipairs(self.furniture) do
+			f:update(dt)
+		end
+		for _, i in ipairs(self.items) do
+			i:update(dt)
+		end
+	end
+
+	if self.velX ~= 0 then
+		self.mapTranslationXOffset = self.mapTranslationXOffset + self.velX
+	end
+
+	if self.velY ~= 0 then
+		self.mapTranslationYOffset = self.mapTranslationYOffset + self.velY
+	end
 
 	if self.oneSecondTimer >= 60 then
 		self.oneSecondTimer = 0

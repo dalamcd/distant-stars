@@ -33,7 +33,7 @@ function love.load()
 
 	--love.window.setMode(1025,768, {vsync=true})
 
-	love.graphics.setDefaultFilter('nearest')
+	love.graphics.setDefaultFilter('nearest', 'nearest')
 	love.math.setRandomSeed(-love.timer.getTime(), love.timer.getTime())
 
 	d:addTextField("MousePos", "(" .. love.mouse.getX() .. ", " .. love.mouse.getY() .. ")")
@@ -50,8 +50,7 @@ function love.load()
 	local font = love.graphics.newFont("fonts/Instruction.otf")
 	addFont(font, "robot")
 
-
-	local m = map:new(5, 5)
+	local m = map:new("main map", 13, 2)
 	m:load('newmap.txt')
 	setGameMap(m)
 	
@@ -83,15 +82,15 @@ function love.load()
 	local tmp = m:getTilesInRectangle(2, 5, 3, 3)
 	table.insert(tmp, m:getTile(8, 7))
 
-	local sp = stockpile:new(m, tmp, "new stockpile")
-	m:addStockpile(sp)
+	--local sp = stockpile:new(m, tmp, "new stockpile")
+	--m:addStockpile(sp)
 
 	local c = camera:new()
 	setGameCamera(c)
-	c:moveXOffset(love.graphics.getWidth()/3.2)
-	c:moveYOffset(love.graphics.getHeight()/5)
+	--c:moveXOffset(love.graphics.getWidth()/3.2)
+	--c:moveYOffset(love.graphics.getHeight()/5)
 
-	local gs = gamestate:getMapState(m, c)
+	local gs = gamestate:getMapState("main map", m, c)
 	gs.camera = c
 
 	gamestate:push(gs)
@@ -169,7 +168,7 @@ function love.keypressed(key)
 
 	if key == 'o' then
 		local fade = gamestate:getFadeState()
-		local inv = gamestate:getInventoryState(getGameMap():getFurnitureInTile(getGameMap():getTile(7, 2))[1])
+		local inv = gamestate:getInventoryState(getGameMap():getFurnitureInTile(getGameMap():getTile(12, 2))[1])
 		gamestate:push(fade)
 		gamestate:push(inv)
 	end
@@ -179,19 +178,21 @@ function love.keypressed(key)
 	end
 
 	if key == '1' then
-		local newMap = map:new()
+		local top = gamestate:peek()
+		local newMap = map:new("testmap", 1, 1)
+		local p = entity:new("entity", 0, 0, TILE_SIZE, TILE_SIZE, "Dylan", newMap, 6, 7)
 		local cam = camera:new()
+		cam.scale = top.map.camera.scale
+		cam.xOffset = top.map.camera.xOffset
+		cam.yOffset = top.map.camera.yOffset
 		newMap:load("map.txt")
-		local gs = gamestate:getMapState(newMap, cam)
+		newMap:addEntity(p)
+		local gs = gamestate:getMapState("testmap", newMap, cam, true)
 		gamestate:push(gs)
 	end
 	
 	if key == '-' then
 		gameSpeed = clamp(gameSpeed - 1, 1, 3)
-	end
-	
-	if key == 'f11' then
-	  --gui.switchFullscreen()
 	end
 
 	if key == 'q' and f and f:getType() == "door" then
@@ -223,28 +224,4 @@ end
 
 function love.mousereleased(x, y, button)
 	gamestate:input("mousereleased", {x=x, y=y, button=button})
-	local m = getGameMap()
-	local t = m:getTileAtWorld(getMousePos())
-	local e = m:getEntitiesAtWorld(getMousePos())[1]
-	local i = m:getItemsAtWorld(getMousePos())[1]
-	local f = m:getFurnitureAtWorld(getMousePos())[1]
-	local s = m:getStockpileAtWorld(getMousePos())
-
-	if button == 1 then
-		if getGameContext().active and getGameContext():inBounds(x, y) then
-			getGameContext():handleClick(x, y)
-		else
-			if s then setMouseSelection(s) end
-			if f then setMouseSelection(f) end
-			if i then setMouseSelection(i) end
-			if e then setMouseSelection(e) end
-		end
-	end
-
-	if button == 2 then
-		if getMouseSelection() and t and getMouseSelection():getType() == "entity" then
-			local tlist = m:getPossibleTasks(t, getMouseSelection())
-			getGameContext():set(x, y, tlist)
-		end
-	end
 end

@@ -35,10 +35,10 @@ end
 function stockpile:detectEdgeTiles()
 
 	for _, tile in ipairs(self.tiles) do
-		local right = getGameMap():getTile(tile.x + 1, tile.y) 
-		local bottom = getGameMap():getTile(tile.x, tile.y + 1) 
-		local left = getGameMap():getTile(tile.x - 1, tile.y) 
-		local top = getGameMap():getTile(tile.x, tile.y - 1)
+		local right = self.map:getTile(tile.x + 1, tile.y) 
+		local bottom = self.map:getTile(tile.x, tile.y + 1) 
+		local left = self.map:getTile(tile.x - 1, tile.y) 
+		local top = self.map:getTile(tile.x, tile.y - 1)
 
 		if right and not self:inTile(right.x, right.y) then
 			table.insert(self.edges, {tile.x, tile.y-1, tile.x, tile.y})

@@ -23,6 +23,6 @@ function gamestate.static:getFadeState(max, step)
 		end
 	end
 
-	local gs = gamestate:new("fadeinstate", loadFunc, nil, drawFunc, nil, nil, false, true)
+	local gs = gamestate:new("fadestate", loadFunc, nil, drawFunc, nil, nil, false, true)
 	return gs
 end

@@ -50,8 +50,8 @@ function entity:drawRoute()
 	if #self.route > 0 then
 		local startX = self.route[#self.route]:getWorldCenterX()
 		local startY = self.route[#self.route]:getWorldCenterY()
-		local endX = (self.x - 1/2)*TILE_SIZE + self.translationXOffset
-		local endY = (self.y - 1/2)*TILE_SIZE + self.translationYOffset
+		local endX = (self.x - 1/2)*TILE_SIZE + self.translationXOffset + self.map.mapTranslationXOffset
+		local endY = (self.y - 1/2)*TILE_SIZE + self.translationYOffset + self.map.mapTranslationYOffset
 		drawRouteLine({x=startX, y=startY}, {x=endX, y=endY})
 	end
 end
@@ -72,18 +72,18 @@ function entity:update(dt)
 		if #entities > 1 then
 			for _, ent in ipairs(entities) do
 				if not ent.walking and ent.uid ~= self.uid then
-					local t = m:getWalkableTileInRadius(self.x, self.y, 1)
+					local t = self.map:getWalkableTileInRadius(self.x, self.y, 1)
 					if not t then
 						-- If there is not a tile we can escape to immediately around us, expand the search radius
 						for i=2, 10 do
-							t = m:getWalkableTileInRadius(self.x, self.y, i)
+							t = self.map:getWalkableTileInRadius(self.x, self.y, i)
 							if t then break end
 						end
 					end
 					
 					if not t then print("entity "..self.name.."("..self.uid..")".."is very thoroughly trapped") break end
 					local walkTask = self:getWalkTask(t)
-					walkTask.params.map = m
+					walkTask.params.map = self.map
 					self:pushTask(walkTask)
 					self.walking = true
 					break
@@ -103,10 +103,10 @@ function entity:isIdle()
 end
 
 function entity:wanderAimlessly()
-	local tile = getGameMap():getRandomWalkableTileInRadius(self.x, self.y, 2)
-	if getGameMap():isOccupied(tile.x, tile.y) then return end
+	local tile = self.map:getRandomWalkableTileInRadius(self.x, self.y, 2)
+	if self.map:isOccupied(tile.x, tile.y) then return end
 	local walkTask = self:getWalkTask(tile)
-	walkTask.params.map = getGameMap()
+	walkTask.params.map = self.map
 
 	function strFunc(tself)
 		return "Wandering aimlessly"
@@ -125,7 +125,7 @@ end
 function entity:getNextJob()
 	if #self.jobs > 0 then
 		self:setTask(self.jobs[#self.jobs])
-		getGameMap():removeJobFromJobList(self.jobs[#self.jobs])
+		self.map:removeJobFromJobList(self.jobs[#self.jobs])
 	end
 end
 
@@ -289,8 +289,8 @@ function entity:handleWalking()
 
 	if not self.walking and #self.route > 0 then
 		local t = self.route[#self.route]
-		local tile = getGameMap():getTile(t.x, t.y)
-		local furniture = getGameMap():getFurnitureInTile(tile)
+		local tile = self.map:getTile(t.x, t.y)
+		local furniture = self.map:getFurnitureInTile(tile)
 		local blocked = false
 
 		for _, f in ipairs(furniture) do

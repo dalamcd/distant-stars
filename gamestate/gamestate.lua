@@ -7,12 +7,20 @@ gamestate.static._drawStack = {}
 gamestate.static._updateStack = {}
 gamestate.static._input = {}
 
+function gamestate.static:peek()
+	local peek = self._stack[#self._stack]
+	if peek then
+		return peek
+	end
+	error("attempted to peek at an empty stack")
+end
+
 function gamestate.static:push(gs)
-	local tmp = self._stack[#self._stack]
-	if tmp then
-		tmp.parent = gs
-		gs.child = tmp
-		tmp.top = false
+	local peek = self._stack[#self._stack]
+	if peek then
+		peek.parent = gs
+		gs.child = peek
+		peek.top = false
 	end
 	gs.top = true
 	table.insert(self._stack, gs)
@@ -47,7 +55,7 @@ function gamestate.static:rebuild()
 
 	for i=#self._stack, 1, -1 do
 		if self._stack[i-1] and self._stack[i].updateBelow then
-			table.insert(self._updateStack, self._stack[i-1])
+			table.insert(self._updateStack, 1, self._stack[i-1])
 		else
 			break
 		end
@@ -55,7 +63,7 @@ function gamestate.static:rebuild()
 
 	for i=#self._stack, 1, -1 do
 		if self._stack[i-1] and self._stack[i].drawBelow then
-			table.insert(self._drawStack, self._stack[i-1])
+			table.insert(self._drawStack, 1, self._stack[i-1])
 		else
 			break
 		end
@@ -68,7 +76,8 @@ function gamestate.static:update(dt)
 	-- TODO: allow the state to pass input to child states? although this is probably easily doable in the state
 	-- itself by accessing the gamestate.child object (which I should test to see if it even works)
 	self._updateStack[#self._updateStack]:inputFunc(self._input)
-	
+
+	--update from the top of the stack to the bottom so the most recent stack is always updated first
 	for i=#self._updateStack, 1, -1 do
 		self._updateStack[i]:update(dt)
 	end
@@ -79,7 +88,8 @@ function gamestate.static:update(dt)
 end
 
 function gamestate.static:draw()
-	for i=#self._drawStack, 1, -1 do
+	--draw from the bottom of the stack to the top so they layer properly
+	for i=1, #self._drawStack do
 		love.graphics.push("all")
 		self._drawStack[i]:draw()
 		love.graphics.pop()
@@ -124,6 +134,16 @@ end
 
 function gamestate:exit()
 	self:exitFunc()
+end
+
+function gamestate:getName()
+	if self.name == "fadestate" then
+		if self.child then
+			return "fade atop of " .. self.child:getName()
+		end
+	end
+
+	return self.name
 end
 
 return gamestate

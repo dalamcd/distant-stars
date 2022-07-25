@@ -15,7 +15,6 @@ function task:initialize(params, contextFunc, strFunc, initFunc, startFunc, runF
 		params = params or {}
 
 		self.uid = getUID()
-		self.desc = desc
 		self.params = params
 		self.parent = parent
 		self.runFunc = runFunc
@@ -82,7 +81,7 @@ function task:isChild()
 end
 
 function task:__tostring()
-	return self.getDesc()
+	return self:getDesc()
 end
 
 return task
