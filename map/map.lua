@@ -31,16 +31,14 @@ end
 
 function map:update(dt)
 
-	if not paused then
-		for _, e in ipairs(self.entities) do
-			e:update(dt)
-		end
-		for _, f in ipairs(self.furniture) do
-			f:update(dt)
-		end
-		for _, i in ipairs(self.items) do
-			i:update(dt)
-		end
+	for _, e in ipairs(self.entities) do
+		e:update(dt)
+	end
+	for _, f in ipairs(self.furniture) do
+		f:update(dt)
+	end
+	for _, i in ipairs(self.items) do
+		i:update(dt)
 	end
 
 	if self.velX ~= 0 then

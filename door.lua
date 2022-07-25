@@ -1,5 +1,6 @@
 local class = require('middleclass')
 local furniture = require('furniture')
+local drawable = require('drawable')
 
 local door = class("door", furniture)
 
@@ -34,8 +35,8 @@ function door:update(dt)
 
 	if self.holdFor then
 		local found = false
-		for _, o in ipairs(self.map:getObjectsInTile(self.map:getTile(self.x, self.y))) do
-			if o.uid == self.holdFor then
+		for _, obj in ipairs(self.map:getObjectsInTile(self.map:getTile(self.x, self.y))) do
+			if obj.uid == self.holdFor then
 				found = true
 				self.holdFor = nil
 			end

@@ -116,7 +116,7 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 	function updateFunc(gself, dt)
 		local rx, ry = getMousePos()
 		d:updateTextField("Tile under mouse", tostring(gself.map:getTileAtWorld(rx, ry)))
-		
+
 		local rx, ry = getMousePos()
 		local objStr = ""
 		local objects = gself.map:getObjectsAtWorld(rx, ry)
@@ -128,12 +128,10 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 			end
 		end
 
-		if not paused then
-			if gself.background then
-				gself.background:update(dt)
-			end
+		if gself.background then
+			gself.background:update(dt)
 		end
-		
+
 		d:updateTextField("Objects under mouse", objStr)
 		getGameContext():update()
 
