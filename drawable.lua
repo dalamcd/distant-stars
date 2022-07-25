@@ -44,6 +44,8 @@ function drawable:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHei
 		self.origYOffset = self.yOffset
 		self.translationXOffset = 0
 		self.translationYOffset = 0
+		self.mapTranslationXOffset = 0
+		self.mapTranslationYOffset = 0
 		self.selected = false
 		self.moveFunc = function () return 0,0 end
 	else
@@ -55,10 +57,11 @@ function drawable:draw(x, y, s, nx, ny, nw, nh)
 	if nx and ny and nw and nh then
 		local ox, oy, ow, oh = self.sprite:getViewport()
 		self.sprite:setViewport(nx, ny, nw, nh)
-		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset)*s, y + (self.yOffset + self.translationYOffset)*s, 0, s)
+		love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
+		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, 0, s)
 		self.sprite:setViewport(ox, oy, ow, oh)
 	else
-		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset)*s, y + (self.yOffset + self.translationYOffset)*s, 0, s)
+		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, 0, s)
 	end
 end
 
@@ -112,19 +115,19 @@ function drawable:inTile(tileX, tileY)
 end
 
 function drawable:getWorldX()
-	return (self.x - 1)*TILE_SIZE + self.xOffset + self.translationXOffset
+	return (self.x - 1)*TILE_SIZE + self.xOffset + self.translationXOffset + self.mapTranslationXOffset
 end
 
 function drawable:getWorldY()
-	return (self.y - 1)*TILE_SIZE + self.yOffset + self.translationYOffset
+	return (self.y - 1)*TILE_SIZE + self.yOffset + self.translationYOffset + self.mapTranslationYOffset
 end
 
 function drawable:getWorldCenterY()
-	return (self.y - 1)*TILE_SIZE + self.spriteHeight/2 + self.yOffset + self.translationYOffset
+	return (self.y - 1)*TILE_SIZE + self.spriteHeight/2 + self.yOffset + self.translationYOffset + self.mapTranslationYOffset
 end
 
 function drawable:getWorldCenterX()
-	return (self.x - 1)*TILE_SIZE + self.spriteWidth/2 + self.xOffset + self.translationXOffset
+	return (self.x - 1)*TILE_SIZE + self.spriteWidth/2 + self.xOffset + self.translationXOffset + self.mapTranslationXOffset
 end
 
 function drawable:getPos()
@@ -178,10 +181,6 @@ function drawable:translate(x, y, steps, moveFunc)
 	self.moveFuncParams.y = 0
 
 	self.moveFunc = moveFunc
-end
-
-function drawable:translateTo()
-
 end
 
 return drawable

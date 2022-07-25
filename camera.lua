@@ -7,7 +7,6 @@ camera = class('camera')
 local scaleFactor = 0.1
 local maxZoom = 3.5
 local minZoom = 0.5
-local panFactor = 3
 
 function camera:initialize()
 	self.xOffset = 0

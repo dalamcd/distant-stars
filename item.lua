@@ -40,7 +40,7 @@ function item:getAvailableJobs()
 			local p = tself:getParams()
 			p.pickup = self:getPickupTask(tself)
 			p.drop = self:getDropTask(tself)
-			p.dest = getGameMap():getTile(2, 8)
+			p.dest = self.map:getTile(2, 8)
 			if not self.owned then
 				p.entity:pushTask(p.pickup)
 			else

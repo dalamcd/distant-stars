@@ -45,7 +45,7 @@ function door:closeDoor(force)
 		return
 	end
 
-	local objects = getGameMap():getObjectsInTile(getGameMap():getTile(self.x, self.y))
+	local objects = self.map:getObjectsInTile(self.map:getTile(self.x, self.y))
 	
 	if #objects > 1 then
 		self.closeBlocked = true
@@ -86,9 +86,8 @@ function door:update(dt)
 
 
 	if self.holdFor then
-		local m = getGameMap()
 		local found = false
-		for _, o in ipairs(m:getObjectsInTile(m:getTile(self.x, self.y))) do
+		for _, o in ipairs(self.map:getObjectsInTile(self.map:getTile(self.x, self.y))) do
 			if o.uid == self.holdFor then
 				found = true
 				self.holdFor = nil
@@ -103,7 +102,7 @@ function door:handleState()
 	if self.opening then
 		self.openAmount = self.openAmount + self.openStep
 	elseif self.closing then
-		local objects = getGameMap():getObjectsInTile(getGameMap():getTile(self.x, self.y))
+		local objects = self.map:getObjectsInTile(self.map:getTile(self.x, self.y))
 	
 		if #objects > 1 then
 			self.closeBlocked = true

@@ -19,7 +19,7 @@ function furniture:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHe
 		interactTiles = self.map:getTilesFromPoints(points)
 	else
 		for _, p in ipairs(interactPoints) do
-			table.insert(interactTiles, self.map:getTile(posX + p.x, posY + p.y))
+			table.insert(interactTiles, self.map:getTile(posX + p.x + map.xOffset, posY + p.y + map.yOffset))
 		end
 	end
 
@@ -243,6 +243,7 @@ end
 function furniture:getAvailableInteractionTile()
 	local foundTile = false
 	for _, t in ipairs(self:getInteractionTiles()) do
+		print("Possible interaction tile: ", t.x, t.y)
 		if t:isWalkable() and not t:isOccupied() then
 			foundTile = t
 			break

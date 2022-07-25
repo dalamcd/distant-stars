@@ -1,5 +1,8 @@
 local gamestate = require('gamestate/gamestate')
 
+-- TODO Maximum velocity for map movement, need to think about what to do about this and other basic constants
+local MAX_VEL = 3
+
 local function wheelmoved(gself, x, y)
 	if y > 0 then
 		for i=1, y do
@@ -8,6 +11,35 @@ local function wheelmoved(gself, x, y)
 	elseif y < 0 then
 		for i=1, math.abs(y) do
 			gself.map.camera:zoomOut()
+		end
+	end
+end
+
+local function keypressed(gself, key)
+end
+
+local function mousereleased(gself, x, y, button)
+	local t = gself.map:getTileAtWorld(getMousePos())
+	local e = gself.map:getEntitiesAtWorld(getMousePos())[1]
+	local i = gself.map:getItemsAtWorld(getMousePos())[1]
+	local f = gself.map:getFurnitureAtWorld(getMousePos())[1]
+	local s = gself.map:getStockpileAtWorld(getMousePos())
+
+	if button == 1 then
+		if getGameContext().active and getGameContext():inBounds(x, y) then
+			getGameContext():handleClick(x, y)
+		else
+			if s then setMouseSelection(s) end
+			if f then setMouseSelection(f) end
+			if i then setMouseSelection(i) end
+			if e then setMouseSelection(e) end
+		end
+	end
+
+	if button == 2 then
+		if getMouseSelection() and t and getMouseSelection():getType() == "entity" then
+			local tlist = gself.map:getPossibleTasks(t, getMouseSelection())
+			getGameContext():set(x, y, tlist)
 		end
 	end
 end
@@ -25,33 +57,59 @@ local function keysdown(gself)
 	if love.keyboard.isDown('d') then
 		gself.map.camera:moveXOffset(-5*gself.map.camera.scale)
 	end
+
+	if love.keyboard.isDown('l') and gself.top then
+		gself.map.velX = clamp(gself.map.velX + 0.1, -MAX_VEL, MAX_VEL)
+	end
+	if love.keyboard.isDown('k') and gself.top then
+		gself.map.velY = clamp(gself.map.velY + 0.1, -MAX_VEL, MAX_VEL)
+	end
+	if love.keyboard.isDown('j') and gself.top then
+		gself.map.velX = clamp(gself.map.velX - 0.1, -MAX_VEL, MAX_VEL)
+	end
+	if love.keyboard.isDown('i') and gself.top then
+		gself.map.velY = clamp(gself.map.velY - 0.1, -MAX_VEL, MAX_VEL)
+	end
 end
 
-function gamestate.static:getMapState(map, camera, passthrough)
+function gamestate.static:getMapState(name, map, camera, passthrough)
 	passthrough = passthrough or false
 
 	function loadFunc(gself)
 
+		gself.name = name
 		gself.map = map
 		gself.map.camera = camera
-		local b = background:new(500)
-		gself.background = b
-		--setBackground(b)
+		if not passthrough then
+			local b = background:new(500)
+			gself.background = b
+		end
 
-		local ctx = context:new(font)
+		local ctx = context:new()
 		setGameContext(ctx)
 	end
 
 	function drawFunc(gself)
-		gself.background:draw()
+		if gself.background then
+			gself.background:draw()
+		end
 		gself.map:draw()
 		getGameContext():draw()
 	end
 
 	function inputFunc(gself, input)
 		keysdown(gself)
+		if input.mousereleased then
+			mousereleased(gself, input.mousereleased.x, input.mousereleased.y, input.mousereleased.button)
+		end
+		if input.keypressed then
+			keypressed(gself, input.keypressed.key)
+		end
 		if input.wheelmoved then
 			wheelmoved(gself, input.wheelmoved.x, input.wheelmoved.y)
+		end
+		if gself.updateBelow and gself.child then
+			gself.child:inputFunc(input)
 		end
 	end
 
@@ -69,25 +127,19 @@ function gamestate.static:getMapState(map, camera, passthrough)
 				objStr = objStr .. tostring(obj)
 			end
 		end
+
+		if not paused then
+			if gself.background then
+				gself.background:update(dt)
+			end
+		end
 		
 		d:updateTextField("Objects under mouse", objStr)
 		getGameContext():update()
 
-		if not paused then
-			gself.background:update(dt)
-		
-			for _, e in ipairs(gself.map.entities) do
-				e:update(dt)
-			end
-			for _, f in ipairs(gself.map.furniture) do
-				f:update(dt)
-			end
-			for _, i in ipairs(gself.map.items) do
-				i:update(dt)
-			end
-		end
+		gself.map:update(dt)
 	end
 
-	local gs = gamestate:new("new map", loadFunc, updateFunc, drawFunc, nil, inputFunc, passthrough, passthrough)
+	local gs = gamestate:new(name, loadFunc, updateFunc, drawFunc, nil, inputFunc, passthrough, passthrough)
 	return gs
 end
