@@ -2,7 +2,7 @@ local class = require('middleclass')
 local game = require('game')
 local gui = require('gui')
 
-context = class('context')
+local context = class('context')
 
 local innerPadding = 5
 local bottomPadding = 3

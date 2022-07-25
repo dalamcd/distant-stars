@@ -2,7 +2,7 @@ local class = require('middleclass')
 local game = require('game')
 local drawable = require('drawable')
 
-tile = class('tile', drawable)
+local tile = class('tile', drawable)
 
 function tile:initialize(tileset, tilesetX, tilesetY, name, map, posX, posY, index, walkable)
 	drawable.initialize(self, tileset, tilesetX, tilesetY, TILE_SIZE, TILE_SIZE, posX, posY, 1, 1)

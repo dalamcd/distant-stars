@@ -3,8 +3,9 @@ local drawable = require('drawable')
 local gamestate = require('gamestate/gamestate')
 local inventory = require('gamestate/gamestate_inventory')
 local fade = require('gamestate/gamestate_fade')
+local task = require('task')
 
-furniture = class('furniture', drawable)
+local furniture = class('furniture', drawable)
 
 -- Interaction points are calculated as offsets from the furniture's base position
 function furniture:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY, tileWidth, tileHeight, interactPoints)
@@ -205,7 +206,7 @@ function furniture:getViewContentsTask(parentTask)
 	end
 
 	function strFunc(tself)
-		return "Going to " .. self.name
+		return "Viewing the inventory of " .. self.name
 	end
 
 	local viewTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, abandonFunc, parentTask)

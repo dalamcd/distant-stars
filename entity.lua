@@ -3,7 +3,7 @@ local game = require('game')
 local drawable = require('drawable')
 local task = require('task')
 
-entity = class('entity', drawable)
+local entity = class('entity', drawable)
 
 entity.static.base_tile_walk_distance = 30
 

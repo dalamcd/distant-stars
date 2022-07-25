@@ -1,7 +1,7 @@
 local class = require('middleclass')
 local furniture = require('furniture')
 
-door = class("door", furniture)
+local door = class("door", furniture)
 
 door.static.base_open_speed = 50
 

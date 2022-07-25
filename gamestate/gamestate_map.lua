@@ -1,5 +1,5 @@
 local gamestate = require('gamestate/gamestate')
-
+local context = require('context')
 -- TODO Maximum velocity for map movement, need to think about what to do about this and other basic constants
 local MAX_VEL = 3
 

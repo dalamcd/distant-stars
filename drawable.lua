@@ -2,7 +2,7 @@ local class = require('middleclass')
 local game = require('game')
 local utils = require('utils')
 
-drawable = class('drawable')
+local drawable = class('drawable')
 
 drawable.static._tilesets = {}
 

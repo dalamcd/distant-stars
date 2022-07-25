@@ -1,7 +1,7 @@
 local class = require('middleclass')
 local utils = require('utils')
 
-task = class('task')
+local task = class('task')
 
 function task:initialize(params, contextFunc, strFunc, initFunc, startFunc, runFunc, endFunc, abandonFunc, parent)
 		

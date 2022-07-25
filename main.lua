@@ -9,12 +9,14 @@ local furniture = require('furniture')
 local task = require('task')
 local context = require('context')
 local door = require('door')
+local drawable = require('drawable')
 local stockpile = require('stockpile')
 local background = require('background')
 local gamestate = require('gamestate/gamestate')
 local fadein = require('gamestate/gamestate_fade')
 local inventory = require('gamestate/gamestate_inventory')
 local mapstate = require('gamestate/gamestate_map')
+local station = require('station')
 
 TILE_SIZE = 32
 
@@ -77,6 +79,9 @@ function love.load()
 	f:addToInventory(i)
 	m:addFurniture(f)
 	
+	f = station:new("furniture", TILE_SIZE*3, 0, TILE_SIZE, TILE_SIZE+13, "station", m, 3, 3, 1, 1, tmp)
+	m:addFurniture(f)
+
 	local tmp = m:getTilesInRectangle(2, 5, 3, 3)
 	table.insert(tmp, m:getTile(8, 7))
 

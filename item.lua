@@ -1,8 +1,9 @@
 local class = require('middleclass')
 local game = require('game')
 local task = require('task')
+local drawable = require('drawable')
 
-item = class('item', drawable)
+local item = class('item', drawable)
 
 function item:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY)
 	drawable.initialize(self, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, posX, posY, 1, 1)

@@ -4,7 +4,7 @@ local tile = require('tile')
 local door = require('door')
 local map_utils = require('map/map_utils')
 
-map = class('map')
+local map = class('map')
 map:include(map_utils)
 
 function map:initialize(name, xOffset, yOffset)
