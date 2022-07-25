@@ -1,4 +1,4 @@
-local map = require('map')
+local map = require('map/map')
 local tile = require('tile')
 local game = require('game')
 local camera = require('camera')
@@ -18,11 +18,9 @@ local mapstate = require('gamestate/gamestate_map')
 
 TILE_SIZE = 32
 
-local pawns = {}
-
 local previousTime
 local delta = 0
-local pause = false
+local paused = false
 local gameSpeed = 1
 
 d = debugtext:new()

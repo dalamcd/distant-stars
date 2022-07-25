@@ -22,6 +22,38 @@ function door:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight,
 	self.holdFor = nil
 end
 
+function door:update(dt)
+
+	if self.closeBlocked then
+		self.closeBlocked = false
+		self:closeDoor()
+	end
+
+	furniture.update(self, dt)
+
+
+	if self.holdFor then
+		local found = false
+		for _, o in ipairs(self.map:getObjectsInTile(self.map:getTile(self.x, self.y))) do
+			if o.uid == self.holdFor then
+				found = true
+				self.holdFor = nil
+			end
+		end
+	elseif self.opening or self.closing then
+		self:handleState()
+	end
+end
+
+function door:draw()
+	local x, y, w, h = self.sprite:getViewport()
+	local c = self.map.camera
+	x = x + self.openAmount
+	w = w - self.openAmount
+
+	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE), c:getRelativeY((self.y - 1)*TILE_SIZE), c.scale, x, y, w, h)
+end
+
 function door:openDoor(reclose)
 
 	if reclose == nil then
@@ -64,38 +96,6 @@ end
 
 function door:holdOpenFor(uid)
 	self.holdFor = uid
-end
-
-function door:draw()
-	local x, y, w, h = self.sprite:getViewport()
-	local c = self.map.camera
-	x = x + self.openAmount
-	w = w - self.openAmount
-
-	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE), c:getRelativeY((self.y - 1)*TILE_SIZE), c.scale, x, y, w, h)
-end
-
-function door:update(dt)
-
-	if self.closeBlocked then
-		self.closeBlocked = false
-		self:closeDoor()
-	end
-
-	furniture.update(self, dt)
-
-
-	if self.holdFor then
-		local found = false
-		for _, o in ipairs(self.map:getObjectsInTile(self.map:getTile(self.x, self.y))) do
-			if o.uid == self.holdFor then
-				found = true
-				self.holdFor = nil
-			end
-		end
-	elseif self.opening or self.closing then
-		self:handleState()
-	end
 end
 
 function door:handleState()

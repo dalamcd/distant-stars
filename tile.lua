@@ -15,6 +15,11 @@ function tile:initialize(tileset, tilesetX, tilesetY, name, map, posX, posY, ind
 	self.name = name
 end
 
+function tile:draw()
+	local c = self.map.camera
+	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE), c:getRelativeY((self.y - 1)*TILE_SIZE), c.scale)
+end
+
 function tile:inBounds(x, y)
 	if( x - self:getWorldX() <= TILE_SIZE and x - self:getWorldX() >= 0) then
 		if( y - self:getWorldY() <= TILE_SIZE and y - self:getWorldY() >= 0) then
@@ -46,11 +51,6 @@ function tile:getPossibleTasks(map, entity)
 	end
 	
 	return tasks
-end
-
-function tile:draw()
-	local c = self.map.camera
-	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE), c:getRelativeY((self.y - 1)*TILE_SIZE), c.scale)
 end
 
 function tile:__tostring()

@@ -32,6 +32,25 @@ function stockpile:initialize(map, tiles, name)
 	self:detectEdgeTiles()
 end
 
+function stockpile:update(dt)
+
+end
+
+function stockpile:draw()
+	for _, tile in ipairs(self.tiles) do
+		local r, g, b, a = love.graphics.getColor()
+		love.graphics.setColor(1.0, 0.0, 0.0, 0.3)
+		rect("fill", (tile.x - 1)*TILE_SIZE, (tile.y - 1)*TILE_SIZE, TILE_SIZE, TILE_SIZE)
+		if self.selected then
+			love.graphics.setColor(0.0, 1.0, 0.0, 1.0)
+			for _, edge in ipairs(self.edges) do
+				line(edge[1]*TILE_SIZE, edge[2]*TILE_SIZE, edge[3]*TILE_SIZE, edge[4]*TILE_SIZE)
+			end
+		end
+		love.graphics.setColor(r, g, b, a)
+	end
+end
+
 function stockpile:detectEdgeTiles()
 
 	for _, tile in ipairs(self.tiles) do
@@ -55,10 +74,6 @@ function stockpile:detectEdgeTiles()
 	end
 end
 
-function stockpile:update(dt)
-
-end
-
 function stockpile:removeFromStockpile(itemToRemove)
 	for i, item in ipairs(self.contents) do
 		if item.uid == itemToRemove.uid then
@@ -77,21 +92,6 @@ function stockpile:inStockpile(item)
 			return true
 		end
 	end 
-end
-
-function stockpile:draw()
-	for _, tile in ipairs(self.tiles) do
-		local r, g, b, a = love.graphics.getColor()
-		love.graphics.setColor(1.0, 0.0, 0.0, 0.3)
-		rect("fill", (tile.x - 1)*TILE_SIZE, (tile.y - 1)*TILE_SIZE, TILE_SIZE, TILE_SIZE)
-		if self.selected then
-			love.graphics.setColor(0.0, 1.0, 0.0, 1.0)
-			for _, edge in ipairs(self.edges) do
-				line(edge[1]*TILE_SIZE, edge[2]*TILE_SIZE, edge[3]*TILE_SIZE, edge[4]*TILE_SIZE)
-			end
-		end
-		love.graphics.setColor(r, g, b, a)
-	end
 end
 
 function stockpile:inBounds(worldX, worldY)

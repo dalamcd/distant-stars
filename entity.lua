@@ -23,39 +23,6 @@ function entity:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeigh
 	self.idleTime = 0
 end
 
-function entity:draw()
-	local c = self.map.camera
-	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE + self.walkXOffset), c:getRelativeY((self.y - 1)*TILE_SIZE + self.walkYOffset), c.scale)
---	drawable.draw(self, (self.x - 1)*TILE_SIZE + self.walkXOffset, (self.y - 1)*TILE_SIZE + self.walkYOffset)
-	
-	if #self.inventory > 0 then
-		for _, item in ipairs(self.inventory) do
-			item:draw()
-		end
-	end
-	self:drawRoute()
-end
-
-function entity:drawRoute()
-	if #self.route > 1 then
-		for i=1, #self.route - 1 do
-			local startX = self.route[i]:getWorldCenterX()
-			local startY = self.route[i]:getWorldCenterY()
-			local endX = self.route[i+1]:getWorldCenterX()
-			local endY = self.route[i+1]:getWorldCenterY()
-			drawRouteLine({x=startX, y=startY}, {x=endX, y=endY})
-		end
-	end
-
-	if #self.route > 0 then
-		local startX = self.route[#self.route]:getWorldCenterX()
-		local startY = self.route[#self.route]:getWorldCenterY()
-		local endX = (self.x - 1/2)*TILE_SIZE + self.translationXOffset + self.map.mapTranslationXOffset
-		local endY = (self.y - 1/2)*TILE_SIZE + self.translationYOffset + self.map.mapTranslationYOffset
-		drawRouteLine({x=startX, y=startY}, {x=endX, y=endY})
-	end
-end
-
 function entity:update(dt)
 
 	for _, item in ipairs(self.inventory) do
@@ -96,6 +63,39 @@ function entity:update(dt)
 			self:wanderAimlessly()
 	end
 	drawable.update(self, dt)
+end
+
+function entity:draw()
+	local c = self.map.camera
+	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE + self.walkXOffset), c:getRelativeY((self.y - 1)*TILE_SIZE + self.walkYOffset), c.scale)
+--	drawable.draw(self, (self.x - 1)*TILE_SIZE + self.walkXOffset, (self.y - 1)*TILE_SIZE + self.walkYOffset)
+	
+	if #self.inventory > 0 then
+		for _, item in ipairs(self.inventory) do
+			item:draw()
+		end
+	end
+	self:drawRoute()
+end
+
+function entity:drawRoute()
+	if #self.route > 1 then
+		for i=1, #self.route - 1 do
+			local startX = self.route[i]:getWorldCenterX()
+			local startY = self.route[i]:getWorldCenterY()
+			local endX = self.route[i+1]:getWorldCenterX()
+			local endY = self.route[i+1]:getWorldCenterY()
+			drawRouteLine({x=startX, y=startY}, {x=endX, y=endY})
+		end
+	end
+
+	if #self.route > 0 then
+		local startX = self.route[#self.route]:getWorldCenterX()
+		local startY = self.route[#self.route]:getWorldCenterY()
+		local endX = (self.x - 1/2)*TILE_SIZE + self.translationXOffset + self.map.mapTranslationXOffset
+		local endY = (self.y - 1/2)*TILE_SIZE + self.translationYOffset + self.map.mapTranslationYOffset
+		drawRouteLine({x=startX, y=startY}, {x=endX, y=endY})
+	end
 end
 
 function entity:isIdle()

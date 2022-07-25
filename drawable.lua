@@ -53,18 +53,6 @@ function drawable:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHei
 	end
 end
 
-function drawable:draw(x, y, s, nx, ny, nw, nh)
-	if nx and ny and nw and nh then
-		local ox, oy, ow, oh = self.sprite:getViewport()
-		self.sprite:setViewport(nx, ny, nw, nh)
-		love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
-		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, 0, s)
-		self.sprite:setViewport(ox, oy, ow, oh)
-	else
-		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, 0, s)
-	end
-end
-
 function drawable:update(dt)
 	if self.moveFuncParams and self.moveFuncParams.stepCount then
 		local p = self.moveFuncParams
@@ -93,6 +81,18 @@ function drawable:update(dt)
 			self.translationXOffset = sign(p.dx)*p.distanceTraveled*math.cos(angle) - sign(p.dx)*y*math.sin(angle)
 			self.translationYOffset = p.distanceTraveled*math.sin(angle) + y*math.cos(angle)
 		end
+	end
+end
+
+function drawable:draw(x, y, s, nx, ny, nw, nh)
+	if nx and ny and nw and nh then
+		local ox, oy, ow, oh = self.sprite:getViewport()
+		self.sprite:setViewport(nx, ny, nw, nh)
+		love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
+		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, 0, s)
+		self.sprite:setViewport(ox, oy, ow, oh)
+	else
+		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, 0, s)
 	end
 end
 

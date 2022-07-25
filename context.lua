@@ -15,6 +15,55 @@ function context:initialize(font)
 	self.opacity = 1
 end
 
+function context:update()
+	if self.active then
+		local mx, my = love.mouse.getPosition()
+		if self:inBounds(mx, my) then
+			self.opacity = 1
+		else
+			local falloff = 20
+			local left = self.x - mx - falloff
+			local top = self.y - my - falloff
+			local right = self.x + self.txtWidth + falloff - mx
+			local bottom = self.y + self.txtHeight + falloff - my
+			local dx, dy = 0, 0
+			
+			if left > 0 then dx = left end
+			if right < 0 then dx = right end
+			if top > 0 then dy = top end
+			if bottom < 0 then dy = bottom end
+
+			local dist = math.sqrt(dx^2 + dy^2)
+			if dist < falloff then
+				self.opacity = 1
+			end
+			if dist > 50 then
+				self:clear()
+			else
+				self.opacity = 1/math.sqrt(dist)
+			end
+		end
+
+		for _, item in ipairs(self.items) do
+			if self:inBounds(mx, my, item) then
+				item.highlight = true
+			else
+				item.highlight = false
+			end
+		end
+	end
+end
+
+function context:draw()
+
+	if self.active then
+		drawRect(self.x, self.y, self.txtWidth + innerPadding*2, self.txtHeight + bottomPadding, nil, nil, nil, self.opacity)
+		for i, item in ipairs(self.items) do
+			self:drawMenuItem(item, i)
+		end
+	end
+end
+
 function context:set(x, y, items)
 
 	if not items or #items == 0 then 
@@ -72,45 +121,6 @@ function context:handleClick(x, y)
 	end
 end
 
-function context:update()
-	if self.active then
-		local mx, my = love.mouse.getPosition()
-		if self:inBounds(mx, my) then
-			self.opacity = 1
-		else
-			local falloff = 20
-			local left = self.x - mx - falloff
-			local top = self.y - my - falloff
-			local right = self.x + self.txtWidth + falloff - mx
-			local bottom = self.y + self.txtHeight + falloff - my
-			local dx, dy = 0, 0
-			
-			if left > 0 then dx = left end
-			if right < 0 then dx = right end
-			if top > 0 then dy = top end
-			if bottom < 0 then dy = bottom end
-
-			local dist = math.sqrt(dx^2 + dy^2)
-			if dist < falloff then
-				self.opacity = 1
-			end
-			if dist > 50 then
-				self:clear()
-			else
-				self.opacity = 1/math.sqrt(dist)
-			end
-		end
-
-		for _, item in ipairs(self.items) do
-			if self:inBounds(mx, my, item) then
-				item.highlight = true
-			else
-				item.highlight = false
-			end
-		end
-	end
-end
-
 function context:inBounds(x, y, item)
 	item = item or nil
 	if not item then
@@ -127,16 +137,6 @@ function context:inBounds(x, y, item)
 		end
 	end
 	return false
-end
-
-function context:draw()
-
-	if self.active then
-		drawRect(self.x, self.y, self.txtWidth + innerPadding*2, self.txtHeight + bottomPadding, nil, nil, nil, self.opacity)
-		for i, item in ipairs(self.items) do
-			self:drawMenuItem(item, i)
-		end
-	end
 end
 
 function context:drawMenuItem(item, index)
