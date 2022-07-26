@@ -6,12 +6,19 @@ local stationstate = require('gamestate/gamestate_station')
 
 local station = class('station', furniture)
 
-function station:initialize(name, map, posX, posY)
+function station:initialize(name, map, posX, posY, loadFunc, updateFunc, drawFunc, exitFunc, inputFunc)
 	furniture.initialize(self, name, map, posX, posY)
+	loadFunc = loadFunc or function () return end
+	updateFunc = updateFunc or function () return end
+	drawFunc = drawFunc or function () return end
+	exitFunc = exitFunc or function () return end
+	inputFunc = inputFunc or function () return end
 
-	self.updateFunc = function() return end
-	self.drawFunc = function() return end
-
+	self.loadFunc = loadFunc
+	self.updateFunc = updateFunc
+	self.drawFunc = drawFunc
+	self.exitFunc = exitFunc
+	self.inputFunc = inputFunc
 end
 
 function station:update(dt)

@@ -74,12 +74,13 @@ function love.load()
 	m:addItem(chicken)
 	m:addItem(pizza)
 	m:addItem(pizza2)
-
+	
 	local dresser = furniture:new("dresser", m, 7, 2)
-	local station = station:new("station", m, 3, 3)
+	local def = require('station_default')
+	local console = station:new("station", m, 3, 3, def.loadFunc, def.updateFunc, def.drawFunc, nil, def.inputFunc)
 	dresser:addToInventory(pizza)
 	m:addFurniture(dresser)
-	m:addFurniture(station)
+	m:addFurniture(console)
 
 	--local sp = stockpile:new(m, tmp, "new stockpile")
 	--m:addStockpile(sp)

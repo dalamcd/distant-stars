@@ -75,7 +75,7 @@ end
 function gamestate.static:getMapState(name, map, camera, passthrough)
 	passthrough = passthrough or false
 
-	function loadFunc(gself)
+	local function loadFunc(gself)
 
 		gself.name = name
 		gself.map = map
@@ -89,7 +89,7 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 		setGameContext(ctx)
 	end
 
-	function drawFunc(gself)
+	local function drawFunc(gself)
 		if gself.background then
 			gself.background:draw()
 		end
@@ -97,7 +97,7 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 		getGameContext():draw()
 	end
 
-	function inputFunc(gself, input)
+	local function inputFunc(gself, input)
 		keysdown(gself)
 		if input.mousereleased then
 			mousereleased(gself, input.mousereleased.x, input.mousereleased.y, input.mousereleased.button)
@@ -113,7 +113,7 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 		end
 	end
 
-	function updateFunc(gself, dt)
+	local function updateFunc(gself, dt)
 		local rx, ry = getMousePos(gself.map.camera)
 		d:updateTextField("Tile under mouse", tostring(gself.map:getTileAtWorld(rx, ry)))
 
