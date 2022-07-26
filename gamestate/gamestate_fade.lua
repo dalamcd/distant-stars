@@ -4,11 +4,11 @@ function gamestate.static:getFadeState(max, step)
 	max = max or 0.85
 	step = step or 0.2
 		
-	function loadFunc(gself)
+	local function loadFunc(gself)
 		gself.fade = 0
 	end
 
-	function drawFunc(gself)
+	local function drawFunc(gself)
 		if gself.top then
 			gself.fade = clamp(gself.fade - step, 0, max)
 			love.graphics.setColor(0.0, 0.0, 0.0, gself.fade)
@@ -23,6 +23,6 @@ function gamestate.static:getFadeState(max, step)
 		end
 	end
 
-	local gs = gamestate:new("fadestate", loadFunc, nil, drawFunc, nil, nil, false, true)
+	local gs = gamestate:new("fadestate", loadFunc, nil, drawFunc, nil, nil, true, true)
 	return gs
 end

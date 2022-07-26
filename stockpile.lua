@@ -2,7 +2,7 @@ local class = require('middleclass')
 local game = require('game')
 local utils = require('utils')
 
-stockpile = class('stockpile')
+local stockpile = class('stockpile')
 
 function stockpile:initialize(map, tiles, name)
 

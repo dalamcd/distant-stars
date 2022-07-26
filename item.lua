@@ -1,11 +1,39 @@
 local class = require('middleclass')
 local game = require('game')
 local task = require('task')
+local drawable = require('drawable')
 
-item = class('item', drawable)
+local item = class('item', drawable)
 
-function item:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY)
-	drawable.initialize(self, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, posX, posY, 1, 1)
+item.static._loaded_items = {}
+
+function item.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight)
+	local internalItem = self._loaded_items[name]
+
+	if internalItem then
+		return internalItem
+	else
+		self._loaded_items[name] = {
+			tileset = tileset,
+			tilesetX = tilesetX,
+			tilesetY = tilesetY,
+			spriteWidth = spriteWidth,
+			spriteHeight = spriteHeight
+		}
+	end
+end
+
+function item.static:retrieve(name)
+	return self._loaded_items[name] or false
+end
+
+function item:initialize(name, map, posX, posY)
+	local i = item:retrieve(name)
+	if i then
+		drawable.initialize(self, i.tileset, i.tilesetX, i.tilesetY, i.spriteWidth, i.spriteHeight, posX, posY, 1, 1)
+	else
+		error("attempted to initialize " .. self.name .. " but no item with that name was found")
+	end
 
 	self.name = name
 	self.map = map
@@ -36,7 +64,7 @@ function item:getAvailableJobs()
 	local tasks = {}
 	
 	if self.x ~= 2 or self.y ~= 8 then
-		function startFunc(tself)
+		local function startFunc(tself)
 			local p = tself:getParams()
 			p.pickup = self:getPickupTask(tself)
 			p.drop = self:getDropTask(tself)
@@ -48,7 +76,7 @@ function item:getAvailableJobs()
 			end
 		end
 
-		function runFunc(tself)
+		local function runFunc(tself)
 			local p = tself:getParams()
 			if not p.pickedUp and not p.dropped then
 				p.entity:pushTask(p.pickup)
@@ -59,7 +87,7 @@ function item:getAvailableJobs()
 			end
 		end
 
-		function strFunc(tself)
+		local function strFunc(tself)
 			return "Hauling " .. self.name .. " to tile (1, 1)"
 		end
 
@@ -82,7 +110,7 @@ function item:getPossibleTasks()
 end
 
 function item:getPickupTask(parentTask)
-	function startFunc(tself)
+	local function startFunc(tself)
 		local p = tself:getParams()
 		if p.entity.x ~= self.x or p.entity.y ~= self.y then
 			local walkTask = p.entity:getWalkTask(p.map:getTile(self.x, self.y), tself)
@@ -92,7 +120,7 @@ function item:getPickupTask(parentTask)
 		end
 	end
 
-	function runFunc(tself)
+	local function runFunc(tself)
 		local p = tself:getParams()
 		if not p.entity.walking and p.entity.x == self.x and p.entity.y == self.y then
 			tself:complete()
@@ -101,7 +129,7 @@ function item:getPickupTask(parentTask)
 		end
 	end
 
-	function endFunc(tself)
+	local function endFunc(tself)
 		local p = tself:getParams()
 		if not tself.abandoned then
 			local s = self.map:inStockpile(self.x, self.y)
@@ -114,21 +142,21 @@ function item:getPickupTask(parentTask)
 		end
 	end
 
-	function strFunc(tself)
+	local function strFunc(tself)
 		return "Moving to (" .. self.x .. ", " .. self.y .. ") to pick up " .. self.name
 	end
 
-	function contextFunc(tself)
+	local function contextFunc(tself)
 		return "Pick up " .. self.name
 	end
 
-	local pickupTask = task:new(params, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
+	local pickupTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
 	return pickupTask
 end
 
 -- requires params.dest (destination tile)
 function item:getDropTask(parentTask)
-	function runFunc(tself)
+	local function runFunc(tself)
 		local p = tself:getParams()
 		if not p.entity.walking and p.entity.x == p.dest.x and p.entity.y == p.dest.y then
 			p.entity:removeFromInventory(self)
@@ -138,7 +166,7 @@ function item:getDropTask(parentTask)
 		end
 	end
 	
-	function startFunc(tself)
+	local function startFunc(tself)
 		local p = tself:getParams()
 		if not self.owned then
 			tself:complete()
@@ -154,7 +182,7 @@ function item:getDropTask(parentTask)
 		end
 	end
 
-	function endFunc(tself)
+	local function endFunc(tself)
 		local p = tself:getParams()
 		if not tself.abandoned then
 			local s = self.map:inStockpile(self.x, self.y)
@@ -165,11 +193,11 @@ function item:getDropTask(parentTask)
 		end
 	end
 
-	function contextFunc(tself)
+	local function contextFunc(tself)
 		return "Drop " .. self.name
 	end
 
-	function strFunc(tself)
+	local function strFunc(tself)
 		return "Dropping " .. self.name
 	end
 

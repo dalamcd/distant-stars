@@ -3,12 +3,40 @@ local game = require('game')
 local drawable = require('drawable')
 local task = require('task')
 
-entity = class('entity', drawable)
+local entity = class('entity', drawable)
 
 entity.static.base_tile_walk_distance = 30
 
-function entity:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY)
-	drawable.initialize(self, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, posX, posY, 1, 1)
+entity.static._loaded_entities = {}
+
+function entity.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight)
+	local internalItem = self._loaded_entities[name]
+
+	if internalItem then
+		return internalItem
+	else
+		self._loaded_entities[name] = {
+			tileset = tileset,
+			tilesetX = tilesetX,
+			tilesetY = tilesetY,
+			spriteWidth = spriteWidth,
+			spriteHeight = spriteHeight,
+		}
+	end
+end
+
+function entity.static:retrieve(name)
+	return self._loaded_entities[name] or false
+end
+
+function entity:initialize(name, displayName, map, posX, posY)
+	local i = entity:retrieve(name)
+	if i then
+		drawable.initialize(self, i.tileset, i.tilesetX, i.tilesetY, i.spriteWidth, i.spriteHeight, posX, posY, 1, 1)
+	else
+		error("attempted to initialize " .. name .. " but no entity with that name was found")
+	end
+
 	self.map = map
 	self.steps = 0
 	self.route = {}
@@ -21,6 +49,8 @@ function entity:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeigh
 	self.name = name
 	self.speed = 1
 	self.idleTime = 0
+	self.dname = displayName
+
 end
 
 function entity:update(dt)
@@ -48,7 +78,7 @@ function entity:update(dt)
 						end
 					end
 					
-					if not t then print("entity "..self.name.."("..self.uid..")".."is very thoroughly trapped") break end
+					if not t then print("entity "..self.dname.."("..self.uid..")".."is very thoroughly trapped") break end
 					local walkTask = self:getWalkTask(t)
 					walkTask.params.map = self.map
 					self:pushTask(walkTask)
@@ -85,7 +115,7 @@ function entity:drawRoute()
 			local startY = self.route[i]:getWorldCenterY()
 			local endX = self.route[i+1]:getWorldCenterX()
 			local endY = self.route[i+1]:getWorldCenterY()
-			drawRouteLine({x=startX, y=startY}, {x=endX, y=endY})
+			drawRouteLine({x=startX, y=startY}, {x=endX, y=endY}, self.map.camera)
 		end
 	end
 
@@ -94,7 +124,7 @@ function entity:drawRoute()
 		local startY = self.route[#self.route]:getWorldCenterY()
 		local endX = (self.x - 1/2)*TILE_SIZE + self.translationXOffset + self.map.mapTranslationXOffset
 		local endY = (self.y - 1/2)*TILE_SIZE + self.translationYOffset + self.map.mapTranslationYOffset
-		drawRouteLine({x=startX, y=startY}, {x=endX, y=endY})
+		drawRouteLine({x=startX, y=startY}, {x=endX, y=endY}, self.map.camera)
 	end
 end
 
@@ -381,7 +411,7 @@ function entity:getType()
 end
 
 function entity:__tostring()
-	return "Entity(".. self.name .."["..self.uid.."], "..self.x..", "..self.y..")"
+	return "Entity(".. self.dname .."["..self.uid.."], "..self.x..", "..self.y..")"
 end
 
 return entity

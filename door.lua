@@ -1,14 +1,13 @@
 local class = require('middleclass')
 local furniture = require('furniture')
+local drawable = require('drawable')
 
-door = class("door", furniture)
+local door = class("door", furniture)
 
 door.static.base_open_speed = 50
 
-function door:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY, tileWidth, tileHeight)
-	tileWidth = tileWidth or 1
-	tileHeight = tileHeight or 1
-	furniture.initialize(self, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY, tileWidth, tileHeight)
+function door:initialize(name, map, posX, posY)
+	furniture.initialize(self, name, map, posX, posY)
 	self.open = false
 	self.opening = false
 	self.closing = false
@@ -34,8 +33,8 @@ function door:update(dt)
 
 	if self.holdFor then
 		local found = false
-		for _, o in ipairs(self.map:getObjectsInTile(self.map:getTile(self.x, self.y))) do
-			if o.uid == self.holdFor then
+		for _, obj in ipairs(self.map:getObjectsInTile(self.map:getTile(self.x, self.y))) do
+			if obj.uid == self.holdFor then
 				found = true
 				self.holdFor = nil
 			end

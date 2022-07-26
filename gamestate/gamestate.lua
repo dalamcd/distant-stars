@@ -1,6 +1,6 @@
 local class = require('middleclass')
 
-gamestate = class('gamestate')
+local gamestate = class('gamestate')
 
 gamestate.static._stack = {}
 gamestate.static._drawStack = {}

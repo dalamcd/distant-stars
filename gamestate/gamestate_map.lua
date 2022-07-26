@@ -1,5 +1,5 @@
 local gamestate = require('gamestate/gamestate')
-
+local context = require('context')
 -- TODO Maximum velocity for map movement, need to think about what to do about this and other basic constants
 local MAX_VEL = 3
 
@@ -19,11 +19,11 @@ local function keypressed(gself, key)
 end
 
 local function mousereleased(gself, x, y, button)
-	local t = gself.map:getTileAtWorld(getMousePos())
-	local e = gself.map:getEntitiesAtWorld(getMousePos())[1]
-	local i = gself.map:getItemsAtWorld(getMousePos())[1]
-	local f = gself.map:getFurnitureAtWorld(getMousePos())[1]
-	local s = gself.map:getStockpileAtWorld(getMousePos())
+	local t = gself.map:getTileAtWorld(getMousePos(gself.map.camera))
+	local e = gself.map:getEntitiesAtWorld(getMousePos(gself.map.camera))[1]
+	local i = gself.map:getItemsAtWorld(getMousePos(gself.map.camera))[1]
+	local f = gself.map:getFurnitureAtWorld(getMousePos(gself.map.camera))[1]
+	local s = gself.map:getStockpileAtWorld(getMousePos(gself.map.camera))
 
 	if button == 1 then
 		if getGameContext().active and getGameContext():inBounds(x, y) then
@@ -75,7 +75,7 @@ end
 function gamestate.static:getMapState(name, map, camera, passthrough)
 	passthrough = passthrough or false
 
-	function loadFunc(gself)
+	local function loadFunc(gself)
 
 		gself.name = name
 		gself.map = map
@@ -89,7 +89,7 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 		setGameContext(ctx)
 	end
 
-	function drawFunc(gself)
+	local function drawFunc(gself)
 		if gself.background then
 			gself.background:draw()
 		end
@@ -97,7 +97,7 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 		getGameContext():draw()
 	end
 
-	function inputFunc(gself, input)
+	local function inputFunc(gself, input)
 		keysdown(gself)
 		if input.mousereleased then
 			mousereleased(gself, input.mousereleased.x, input.mousereleased.y, input.mousereleased.button)
@@ -113,11 +113,10 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 		end
 	end
 
-	function updateFunc(gself, dt)
-		local rx, ry = getMousePos()
+	local function updateFunc(gself, dt)
+		local rx, ry = getMousePos(gself.map.camera)
 		d:updateTextField("Tile under mouse", tostring(gself.map:getTileAtWorld(rx, ry)))
-		
-		local rx, ry = getMousePos()
+
 		local objStr = ""
 		local objects = gself.map:getObjectsAtWorld(rx, ry)
 		for idx, obj in ipairs(objects) do
@@ -128,12 +127,10 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 			end
 		end
 
-		if not paused then
-			if gself.background then
-				gself.background:update(dt)
-			end
+		if gself.background then
+			gself.background:update(dt)
 		end
-		
+
 		d:updateTextField("Objects under mouse", objStr)
 		getGameContext():update()
 

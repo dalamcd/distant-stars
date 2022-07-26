@@ -44,4 +44,7 @@ luac.out
 .VSCodeCounter
 
 # Paint.net tilesheet projects
-*.pdn 
+*.pdn
+
+# Love stuff
+*.love

@@ -2,7 +2,7 @@ local class = require('middleclass')
 local game = require('game')
 local utils = require('utils')
 
-drawable = class('drawable')
+local drawable = class('drawable')
 
 drawable.static._tilesets = {}
 
@@ -57,7 +57,7 @@ function drawable:update(dt)
 	if self.moveFuncParams and self.moveFuncParams.stepCount then
 		local p = self.moveFuncParams
 		if p.stepCount >= p.steps then
-			self.moveFunc = function () return 0 end
+			self.moveFunc = function (_, _) return 0 end -- dummy parameters to quiet an erroneous Intellisense warning
 			self.moveFuncParams = {}
 			self.translationXOffset = 0
 			self.translationYOffset = 0
@@ -87,12 +87,12 @@ end
 function drawable:draw(x, y, s, nx, ny, nw, nh)
 	if nx and ny and nw and nh then
 		local ox, oy, ow, oh = self.sprite:getViewport()
-		self.sprite:setViewport(nx, ny, nw, nh)
+		self.sprite:setViewport(nx, ny, nw, nh, self.tileset:getWidth(), self.tileset:getHeight())
 		love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
 		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, 0, s)
-		self.sprite:setViewport(ox, oy, ow, oh)
+		self.sprite:setViewport(ox, oy, ow, oh, self.tileset:getWidth(), self.tileset:getHeight())
 	else
-		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, 0, s)
+		love.graphics.draw(self.tileset, self.sprite, math.floor(x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s), math.floor(y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s), 0, s)
 	end
 end
 

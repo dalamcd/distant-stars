@@ -19,3 +19,10 @@ function drawRect(x, y, width, height, r, g, b, opacity, outline)
 	end
 	love.graphics.pop()
 end
+
+function drawButton(x, y, width, height, text)
+	drawRect(x, y, width, height)
+	local buttonX = x + (width - love.graphics.getFont():getWidth(text))/2
+	local buttonY = y + (height - love.graphics.getFont():getHeight())/2
+	love.graphics.print(text, buttonX, buttonY)
+end

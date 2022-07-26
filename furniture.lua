@@ -3,22 +3,54 @@ local drawable = require('drawable')
 local gamestate = require('gamestate/gamestate')
 local inventory = require('gamestate/gamestate_inventory')
 local fade = require('gamestate/gamestate_fade')
+local task = require('task')
 
-furniture = class('furniture', drawable)
+local furniture = class('furniture', drawable)
+
+furniture.static._loaded_furniture = {}
+
+function furniture.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, tileWidth, tileHeight, interactPoints)
+	local internalItem = self._loaded_furniture[name]
+
+	if internalItem then
+		return internalItem
+	else
+		self._loaded_furniture[name] = {
+			tileset = tileset,
+			tilesetX = tilesetX,
+			tilesetY = tilesetY,
+			spriteWidth = spriteWidth,
+			spriteHeight = spriteHeight,
+			tileWidth = tileWidth,
+			tileHeight = tileHeight,
+			interactPoints = interactPoints
+		}
+	end
+end
+
+function furniture.static:retrieve(name)
+	return self._loaded_furniture[name] or false
+end
 
 -- Interaction points are calculated as offsets from the furniture's base position
-function furniture:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY, tileWidth, tileHeight, interactPoints)
-	drawable.initialize(self, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, posX, posY, tileWidth, tileHeight)
-	
+function furniture:initialize(name, map, posX, posY)
+	local i = furniture:retrieve(name)
+	if i then
+		drawable.initialize(self, i.tileset, i.tilesetX, i.tilesetY, i.spriteWidth, i.spriteHeight, posX, posY, i.tileWidth, i.tileHeight)
+	else
+		error("attempted to initialize " .. self.name .. " but no furniture with that name was found")
+	end
+
 	self.map = map
 
 	local interactTiles = {}
 
-	if not interactPoints then
+	if not i.interactPoints then
+		print(name)
 		local points = {{x=posX+1, y=posY}, {x=posX-1, y=posY}, {x=posX, y=posY+1}, {x=posX, y=posY-1}}
-		interactTiles = self.map:getTilesFromPoints(points)
+		interactTiles = self.map:getTilesFromPoints(points, true)
 	else
-		for _, p in ipairs(interactPoints) do
+		for _, p in ipairs(i.interactPoints) do
 			table.insert(interactTiles, self.map:getTile(posX + p.x + map.xOffset, posY + p.y + map.yOffset))
 		end
 	end
@@ -33,7 +65,7 @@ function furniture:draw()
 	local c = self.map.camera
 	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE), c:getRelativeY((self.y - 1)*TILE_SIZE), c.scale)
 	-- for _, tile in ipairs(self:getInteractionTiles()) do
-	-- 	circ("fill", tile:getWorldCenterX(), tile:getWorldCenterY(), 2)
+	-- 	circ("fill", tile:getWorldCenterX(), tile:getWorldCenterY(), 2, self.map.camera)
 	-- end
 end
 
@@ -205,7 +237,7 @@ function furniture:getViewContentsTask(parentTask)
 	end
 
 	function strFunc(tself)
-		return "Going to " .. self.name
+		return "Viewing the inventory of " .. self.name
 	end
 
 	local viewTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, abandonFunc, parentTask)

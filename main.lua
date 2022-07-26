@@ -9,12 +9,14 @@ local furniture = require('furniture')
 local task = require('task')
 local context = require('context')
 local door = require('door')
+local drawable = require('drawable')
 local stockpile = require('stockpile')
 local background = require('background')
 local gamestate = require('gamestate/gamestate')
 local fadein = require('gamestate/gamestate_fade')
 local inventory = require('gamestate/gamestate_inventory')
 local mapstate = require('gamestate/gamestate_map')
+local station = require('station')
 
 TILE_SIZE = 32
 
@@ -33,7 +35,7 @@ function love.load()
 
 	love.graphics.setDefaultFilter('nearest', 'nearest')
 	love.math.setRandomSeed(-love.timer.getTime(), love.timer.getTime())
-
+	
 	d:addTextField("MousePos", "(" .. love.mouse.getX() .. ", " .. love.mouse.getY() .. ")")
 	d:addTextField("MouseRel", "")
 	d:addTextField("Tile under mouse", "")
@@ -44,50 +46,46 @@ function love.load()
 	drawable:addTileset("item", "sprites/tilesheets/items.png")
 	drawable:addTileset("furniture", "sprites/tilesheets/furniture.png")
 	drawable:addTileset("floorTile", "sprites/tilesheets/tiles.png")
-
-	local font = love.graphics.newFont("fonts/Instruction.otf")
-	addFont(font, "robot")
+	
+	local dresserTiles = {{x=0, y=1}, {x=1, y=1}}
+	furniture:load("dresser", "furniture", 0, 0, TILE_SIZE*2, TILE_SIZE+14, 2, 1, dresserTiles)
+	furniture:load("station", "furniture", TILE_SIZE*3, 0, TILE_SIZE, TILE_SIZE+13, 1, 1)
+	entity:load("pawn", "entity", 0, 0, TILE_SIZE, TILE_SIZE)
+	entity:load("cow", "entity", TILE_SIZE*4, 0, TILE_SIZE*2, TILE_SIZE+10)
+	entity:load("tallpawn", "entity", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE+9)
+	item:load("yummy chicken", "item", 0, 0, TILE_SIZE, TILE_SIZE)
+	item:load("yummy pizza", "item", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE)
 
 	local m = map:new("main map", 13, 2)
 	m:load('newmap.txt')
-	setGameMap(m)
-	
-	local p = entity:new("entity", 0, 0, TILE_SIZE, TILE_SIZE, "Dylan", m, 6, 7)
-	m:addEntity(p)
 
-	p = entity:new("entity", 0, 0, TILE_SIZE, TILE_SIZE, "Barnaby", m, 4, 5)
-	m:addEntity(p)
+	local dylan = entity:new("pawn", "Dylan", m, 6, 7)
+	local barnaby = entity:new("pawn", "Barnaby", m, 4, 5)
+	local dio = entity:new("tallpawn", "Diocletian", m, 6, 3)
+	local cow = entity:new("cow", "cow", m, 8, 5)
+	m:addEntity(dylan)
+	m:addEntity(barnaby)
+	m:addEntity(dio)
+	m:addEntity(cow)
 
-	p = entity:new("entity", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE + 9, "Diocletian", m, 6, 3)
-	m:addEntity(p)
+	local chicken = item:new("yummy chicken", m, 2, 7)
+	local pizza = item:new("yummy pizza", m, 3, 8)
+	local pizza2 = item:new("yummy pizza", m, 3, 8)
+	m:addItem(chicken)
+	m:addItem(pizza)
+	m:addItem(pizza2)
 	
-	p = entity:new("entity", TILE_SIZE*4, 0, TILE_SIZE*2, TILE_SIZE+10, "cow", m, 8, 5)
-	m:addEntity(p)
-	
-	local i = item:new("item", 0, 0, TILE_SIZE, TILE_SIZE, "yummy chicken", m, 2, 7)
-	m:addItem(i)
-
-	i = item:new("item", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, "yummy pizza", m, 3, 8)
-	m:addItem(i)
-
-	local tmp = {{x=0, y=1}, {x=1, y=1}}
-	local f = furniture:new("furniture", 0, 0, TILE_SIZE*2, TILE_SIZE+14, "dresser", m, 7, 2, 2, 1, tmp)
-	i = item:new("item", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, "yummy pizza", m, 3, 8)
-	m:addItem(i)
-	f:addToInventory(i)
-	m:addFurniture(f)
-	
-	local tmp = m:getTilesInRectangle(2, 5, 3, 3)
-	table.insert(tmp, m:getTile(8, 7))
+	local dresser = furniture:new("dresser", m, 7, 2)
+	local def = require('station_default')
+	local console = station:new("station", m, 3, 3, def.loadFunc, def.updateFunc, def.drawFunc, nil, def.inputFunc)
+	dresser:addToInventory(pizza)
+	m:addFurniture(dresser)
+	m:addFurniture(console)
 
 	--local sp = stockpile:new(m, tmp, "new stockpile")
 	--m:addStockpile(sp)
 
 	local c = camera:new()
-	setGameCamera(c)
-	--c:moveXOffset(love.graphics.getWidth()/3.2)
-	--c:moveYOffset(love.graphics.getHeight()/5)
-
 	local gs = gamestate:getMapState("main map", m, c)
 	gs.camera = c
 
@@ -100,10 +98,8 @@ function love.update(dt)
 
 	local mx = love.mouse.getX()
 	local my = love.mouse.getY()
-	local rx, ry = getMousePos()
 	
 	d:updateTextField("MousePos", "(" .. mx .. ", " .. my .. ")")
-	d:updateTextField("MouseRel", "(" .. rx .. ", " .. ry .. ")")
 
 	if love.keyboard.isDown('q') then
 		getGameContext():clear()
@@ -153,8 +149,6 @@ end
 
 function love.keypressed(key)
 	gamestate:input("keypressed", {key=key})
-	local t = getGameMap():getTileAtWorld(getMousePos())
-	local f = getGameMap():getFurnitureAtWorld(getMousePos())[1]
 	
 	if key == 'space' then
 		paused = not paused
@@ -164,13 +158,6 @@ function love.keypressed(key)
 		gameSpeed = clamp(gameSpeed + 1, 1, 3)
 	end
 
-	if key == 'o' then
-		local fade = gamestate:getFadeState()
-		local inv = gamestate:getInventoryState(getGameMap():getFurnitureInTile(getGameMap():getTile(12, 2))[1])
-		gamestate:push(fade)
-		gamestate:push(inv)
-	end
-
 	if key == 'p' then
 		gamestate:pop()
 	end
@@ -178,7 +165,7 @@ function love.keypressed(key)
 	if key == '1' then
 		local top = gamestate:peek()
 		local newMap = map:new("testmap", 1, 1)
-		local p = entity:new("entity", 0, 0, TILE_SIZE, TILE_SIZE, "Dylan", newMap, 6, 7)
+		local p = entity:new("tallpawn", "Dylan", newMap, 6, 7)
 		local cam = camera:new()
 		cam.scale = top.map.camera.scale
 		cam.xOffset = top.map.camera.xOffset
@@ -193,27 +180,21 @@ function love.keypressed(key)
 		gameSpeed = clamp(gameSpeed - 1, 1, 3)
 	end
 
-	if key == 'q' and f and f:getType() == "door" then
-		if f:isOpen() then
-			f:closeDoor()
-		else
-			f:openDoor()
+	--[[
+		if key == 'e' and getMouseSelection() then
+			local e = getMouseSelection()
+			local dist = math.sqrt((t.x - e.x)^2 + (t.y - e.y)^2)
+			local function moveFunc(eself, x)
+				local p = eself.moveFuncParams
+				--p.smoothstep = true
+				
+				local y = -math.sin(math.pi*(1-p.percentComplete))*math.abs(p.tileDistance*5)
+				--local y = 0
+				return y
+			end
+			getMouseSelection():translate(t.x, t.y, 30*math.sqrt(dist), moveFunc)
 		end
-	end
-
-	if key == 'e' and getMouseSelection() then
-		local e = getMouseSelection()
-		local dist = math.sqrt((t.x - e.x)^2 + (t.y - e.y)^2)
-		function moveFunc(eself, x)
-			local p = eself.moveFuncParams
-			--p.smoothstep = true
-					
-			local y = -math.sin(math.pi*(1-p.percentComplete))*math.abs(p.tileDistance*5)
-			--local y = 0
-			return y
-		end
-		getMouseSelection():translate(t.x, t.y, 30*math.sqrt(dist), moveFunc)
-	end
+	]]
 end
 
 function love.wheelmoved(x, y)

@@ -2,7 +2,7 @@ local class = require('middleclass')
 local game = require('game')
 local utils = require('utils')
 
-camera = class('camera')
+local camera = class('camera')
 
 local scaleFactor = 0.1
 local maxZoom = 3.5
