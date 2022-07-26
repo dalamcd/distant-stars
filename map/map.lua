@@ -2,6 +2,7 @@ local class = require('middleclass')
 local luastar = require('lua-star')
 local tile = require('tile')
 local door = require('door')
+local hull = require('hull')
 local map_utils = require('map/map_utils')
 
 local map = class('map')
@@ -59,9 +60,9 @@ end
 
 function map:draw()
 	for _, t in ipairs(self.tiles) do
-		t:draw()
 		t.mapTranslationXOffset = self.mapTranslationXOffset
 		t.mapTranslationYOffset = self.mapTranslationYOffset
+		t:draw()
 	end
 
 	for _, s in ipairs(self.stockpiles) do
@@ -71,23 +72,23 @@ function map:draw()
 	end
 
 	for _, i in ipairs(self.items) do
+		i.mapTranslationXOffset = self.mapTranslationXOffset
+		i.mapTranslationYOffset = self.mapTranslationYOffset
 		if not i.owned then
 			i:draw()
 		end
-		i.mapTranslationXOffset = self.mapTranslationXOffset
-		i.mapTranslationYOffset = self.mapTranslationYOffset
 	end
 
 	for _, f in ipairs(self.furniture) do
-		f:draw()
 		f.mapTranslationXOffset = self.mapTranslationXOffset
 		f.mapTranslationYOffset = self.mapTranslationYOffset
+		f:draw()
 	end
 
 	for _, e in ipairs(self.entities) do
-		e:draw()
 		e.mapTranslationXOffset = self.mapTranslationXOffset
 		e.mapTranslationYOffset = self.mapTranslationYOffset
+		e:draw()
 	end
 
 end
@@ -243,6 +244,10 @@ function map:load(fname)
 			if c == "*" then
 				table.insert(grid, 3)
 			end
+        -- Insert hull tile
+			if c == "@" then
+				table.insert(grid, 5)
+			end
 		-- Insert door
 			if c == "D" then
 				table.insert(grid, 4)
@@ -259,15 +264,19 @@ function map:load(fname)
 			local index = ((r - 1) * self.width) + c
 			local t
 			if grid[index] == 1 then
-				t = tile:new("floorTile", TILE_SIZE, 0, "metal wall", self, x, y, index, false)
+				t = tile:new("metal wall", self, x, y, index, false)
 			elseif grid[index] == 2 then
-				t = tile:new("floorTile", 0, 0, "metal floor", self, x, y, index, true)
+				t = tile:new("metal floor", self, x, y, index, true)
 			elseif grid[index] == 3 then
-				t = tile:new("floorTile", TILE_SIZE*2, 0, "void", self, x, y, index, false)
+				t = tile:new("void", self, x, y, index, false)
 			elseif grid[index] == 4 then
-				t = tile:new("floorTile", TILE_SIZE*2, 0, "void", self, x, y, index, false)
-				--local newDoor = door:new("furniture", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE, "door", self, c, r)
-				--self:addFurniture(newDoor)
+				t = tile:new("metal floor", self, x, y, index, true)
+				local newDoor = door:new("door", self, c, r)
+				self:addFurniture(newDoor)
+			elseif grid[index] == 5 then
+				t = tile:new("metal floor", self, x, y, index, true)
+				local hull = hull:new("hull", self, c, r)
+				self:addFurniture(hull)
 			end
 			self.tiles[index] = t
 		end

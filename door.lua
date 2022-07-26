@@ -97,6 +97,10 @@ function door:holdOpenFor(uid)
 	self.holdFor = uid
 end
 
+function door:getPossibleTasks()
+	return {}
+end
+
 function door:handleState()
 	if self.opening then
 		self.openAmount = self.openAmount + self.openStep

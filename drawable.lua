@@ -74,12 +74,13 @@ function drawable:update(dt)
 				p.percentComplete = smoothstep(p.percentComplete)
 			end
 			local y = self:moveFunc(p.percentComplete)
+			local x = 1
 			local angle = math.atan(p.dy/p.dx)
 			if p.dx < 0 then
 				angle = -angle
 			end
-			self.translationXOffset = sign(p.dx)*p.distanceTraveled*math.cos(angle) - sign(p.dx)*y*math.sin(angle)
-			self.translationYOffset = p.distanceTraveled*math.sin(angle) + y*math.cos(angle)
+			self.translationXOffset = sign(p.dx)*x*p.distanceTraveled*math.cos(angle) - sign(p.dx)*y*math.sin(angle)
+			self.translationYOffset = p.distanceTraveled*x*math.sin(angle) + y*math.cos(angle)
 		end
 	end
 end
