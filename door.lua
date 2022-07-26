@@ -6,10 +6,8 @@ local door = class("door", furniture)
 
 door.static.base_open_speed = 50
 
-function door:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY, tileWidth, tileHeight)
-	tileWidth = tileWidth or 1
-	tileHeight = tileHeight or 1
-	furniture.initialize(self, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY, tileWidth, tileHeight)
+function door:initialize(name, map, posX, posY)
+	furniture.initialize(self, name, map, posX, posY)
 	self.open = false
 	self.opening = false
 	self.closing = false

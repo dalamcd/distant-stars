@@ -8,7 +8,7 @@ function gamestate.static:getStationState(station, entity)
 			error("station state loaded with no station or no entity")
 		end
 
-		local str = entity.name .. " is working on " .. station.name
+		local str = entity.dname .. " is working on " .. station.name
 
 		gself.topMargin = love.graphics.getHeight()*0.15
 		gself.leftMargin = love.graphics.getWidth()*0.15
@@ -17,7 +17,6 @@ function gamestate.static:getStationState(station, entity)
 		gself.headerText = str
 		gself.headerPos = gself.leftMargin + (gself.width - love.graphics.getFont():getWidth(str))/2 - 1
 		gself.textHeight = love.graphics.getFont():getHeight()
-		--gself.items = source:getInventory()
 	end
 
 	local function inputFunc(gself, input)

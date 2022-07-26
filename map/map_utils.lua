@@ -253,7 +253,7 @@ local map_utils = {
 	getTilesFromPoints = function(self, points)
 		local tiles = {}
 		for _, point in ipairs(points) do
-			local t = self:getTile(point.x, point.y)
+			local t = self:getTile(point.x + self.xOffset, point.y + self.yOffset)
 			if t then
 				table.insert(tiles, t)
 			end

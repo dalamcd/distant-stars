@@ -19,11 +19,11 @@ local function keypressed(gself, key)
 end
 
 local function mousereleased(gself, x, y, button)
-	local t = gself.map:getTileAtWorld(getMousePos())
-	local e = gself.map:getEntitiesAtWorld(getMousePos())[1]
-	local i = gself.map:getItemsAtWorld(getMousePos())[1]
-	local f = gself.map:getFurnitureAtWorld(getMousePos())[1]
-	local s = gself.map:getStockpileAtWorld(getMousePos())
+	local t = gself.map:getTileAtWorld(getMousePos(gself.map.camera))
+	local e = gself.map:getEntitiesAtWorld(getMousePos(gself.map.camera))[1]
+	local i = gself.map:getItemsAtWorld(getMousePos(gself.map.camera))[1]
+	local f = gself.map:getFurnitureAtWorld(getMousePos(gself.map.camera))[1]
+	local s = gself.map:getStockpileAtWorld(getMousePos(gself.map.camera))
 
 	if button == 1 then
 		if getGameContext().active and getGameContext():inBounds(x, y) then
@@ -114,10 +114,9 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 	end
 
 	function updateFunc(gself, dt)
-		local rx, ry = getMousePos()
+		local rx, ry = getMousePos(gself.map.camera)
 		d:updateTextField("Tile under mouse", tostring(gself.map:getTileAtWorld(rx, ry)))
 
-		local rx, ry = getMousePos()
 		local objStr = ""
 		local objects = gself.map:getObjectsAtWorld(rx, ry)
 		for idx, obj in ipairs(objects) do

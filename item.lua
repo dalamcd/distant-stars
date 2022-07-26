@@ -5,8 +5,35 @@ local drawable = require('drawable')
 
 local item = class('item', drawable)
 
-function item:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY)
-	drawable.initialize(self, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, posX, posY, 1, 1)
+item.static._loaded_items = {}
+
+function item.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight)
+	local internalItem = self._loaded_items[name]
+
+	if internalItem then
+		return internalItem
+	else
+		self._loaded_items[name] = {
+			tileset = tileset,
+			tilesetX = tilesetX,
+			tilesetY = tilesetY,
+			spriteWidth = spriteWidth,
+			spriteHeight = spriteHeight
+		}
+	end
+end
+
+function item.static:retrieve(name)
+	return self._loaded_items[name] or false
+end
+
+function item:initialize(name, map, posX, posY)
+	local i = item:retrieve(name)
+	if i then
+		drawable.initialize(self, i.tileset, i.tilesetX, i.tilesetY, i.spriteWidth, i.spriteHeight, posX, posY, 1, 1)
+	else
+		error("attempted to initialize " .. self.name .. " but no item with that name was found")
+	end
 
 	self.name = name
 	self.map = map

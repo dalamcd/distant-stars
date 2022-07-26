@@ -6,8 +6,8 @@ local stationstate = require('gamestate/gamestate_station')
 
 local station = class('station', furniture)
 
-function station:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY, tileWidth, tileHeight, interactPoints)
-	furniture.initialize(self, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, name, map, posX, posY, tileWidth, tileHeight, interactPoints)
+function station:initialize(name, map, posX, posY)
+	furniture.initialize(self, name, map, posX, posY)
 
 	self.updateFunc = function() return end
 	self.drawFunc = function() return end

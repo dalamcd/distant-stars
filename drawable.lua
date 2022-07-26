@@ -92,7 +92,7 @@ function drawable:draw(x, y, s, nx, ny, nw, nh)
 		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, 0, s)
 		self.sprite:setViewport(ox, oy, ow, oh, self.tileset:getWidth(), self.tileset:getHeight())
 	else
-		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, 0, s)
+		love.graphics.draw(self.tileset, self.sprite, math.floor(x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s), math.floor(y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s), 0, s)
 	end
 end
 

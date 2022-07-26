@@ -7,21 +7,21 @@ local mouseSelection = nil
 local fonts = {}
 local bg
 
-function rect(mode, x, y, width, height)
+function rect(mode, x, y, width, height, camera)
 	love.graphics.rectangle(mode,
-							gameCamera:getRelativeX(x),
-							gameCamera:getRelativeY(y),
-							gameCamera.scale*width,
-							gameCamera.scale*height)
+							camera:getRelativeX(x),
+							camera:getRelativeY(y),
+							camera.scale*width,
+							camera.scale*height)
 end
 
-function line(x1, y1, x2, y2)
-	love.graphics.line(gameCamera:getRelativeX(x1), gameCamera:getRelativeY(y1),
-						gameCamera:getRelativeX(x2), gameCamera:getRelativeY(y2))
+function line(x1, y1, x2, y2, camera)
+	love.graphics.line(camera:getRelativeX(x1), camera:getRelativeY(y1),
+						camera:getRelativeX(x2), camera:getRelativeY(y2))
 end
 
-function circ(mode, x, y, r)
-	love.graphics.circle(mode, gameCamera:getRelativeX(x), gameCamera:getRelativeY(y), gameCamera.scale*r)
+function circ(mode, x, y, r, camera)
+	love.graphics.circle(mode, camera:getRelativeX(x), camera:getRelativeY(y), camera.scale*r)
 end
 
 function drawSelectionDetails()
@@ -33,12 +33,12 @@ function drawSelectionDetails()
 
 	love.graphics.rectangle("line", love.graphics.getWidth() - width - padding, 
 									love.graphics.getHeight() - height - padding, 
-									width, 
+									width,
 									height)
 	love.graphics.setColor(0, 0, 0, 1)
 	love.graphics.rectangle("fill", love.graphics.getWidth() - width - padding + 1, 
 									love.graphics.getHeight() - height - padding + 1, 
-									width - 1, 
+									width - 1,
 									height -1)
 	love.graphics.reset()
 
@@ -74,44 +74,24 @@ function drawSelectionDetails()
 	end
 end
 
-function drawRouteLine(startPoint, endPoint)
-	love.graphics.setLineWidth(2*gameCamera.scale)
+function drawRouteLine(startPoint, endPoint, camera)
+	love.graphics.setLineWidth(2*camera.scale)
 	love.graphics.setColor(1, 1, 1, 1)
-	love.graphics.line(gameCamera:getRelativeX(startPoint.x),
-					gameCamera:getRelativeY(startPoint.y),
-					gameCamera:getRelativeX(endPoint.x),
-					gameCamera:getRelativeY(endPoint.y))
+	love.graphics.line(camera:getRelativeX(startPoint.x),
+					camera:getRelativeY(startPoint.y),
+					camera:getRelativeX(endPoint.x),
+					camera:getRelativeY(endPoint.y))
 
 	love.graphics.reset()
 end
 
 function drawSelectionBox()
 	rect("line", mouseSelection:getWorldX(), mouseSelection:getWorldY(),
-				mouseSelection.spriteWidth, mouseSelection.spriteHeight)
-end
-
-function setGameCamera(c)
-	gameCamera = c
+				mouseSelection.spriteWidth, mouseSelection.spriteHeight, mouseSelection.map.camera)
 end
 
 function setGameContext(ctx)
 	gameContext = ctx
-end
-
-function getGameMap()
-	return gameMap
-end
-
-function setGameMap(map)
-	gameMap = map
-end
-
-function setBackground(background)
-	bg = background
-end
-
-function getBackground()
-	return bg
 end
 
 function getGameContext()
@@ -150,8 +130,8 @@ function getFont(name)
 	return love.graphics.getFont()
 end
 
-function getMousePos()
-	local mx = (love.mouse.getX() - gameCamera.xOffset) / gameCamera.scale
-	local my = (love.mouse.getY() - gameCamera.yOffset) / gameCamera.scale
+function getMousePos(camera)
+	local mx = (love.mouse.getX() - camera.xOffset) / camera.scale
+	local my = (love.mouse.getY() - camera.yOffset) / camera.scale
 	return mx, my
 end
