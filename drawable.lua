@@ -136,7 +136,16 @@ function drawable:getPos()
 end
 
 function drawable:getType()
-	return "drawable"
+	return "[[drawable]]"
+end
+
+function drawable:isType(str)
+	local found = string.find(self:getType(), "[["..str.."]]", nil, true) 
+	if found then
+		return true
+	else
+		return false
+	end
 end
 
 function drawable:isWalkable()

@@ -22,12 +22,8 @@ local map_utils = {
 		local wall = false
 		local t = self:getTile(x, y)
 
-		if t:isWall() then
-			wall = true
-		end
-
 		for _, furn in ipairs(self:getFurnitureInTile(t)) do
-			if furn:getType() == "door" then
+			if furn:isType("door") or furn:isType("wall") or furn:isType("hull") then
 				wall = true
 			end
 		end

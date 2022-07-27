@@ -17,7 +17,6 @@ function room.static:detectRoom(map, tile)
 				break
 			end
 		end
-		if v.x == 15 and v.y == 4 then print(alreadyFound) end
 		if not alreadyFound and not map:isWall(v.x, v.y) and not map:isHull(v.x, v.y) then
 			table.insert(discovered, v)
 			local neighbor = map:getTile(v.x+1, v.y)
@@ -45,6 +44,24 @@ end
 function room:inRoom(tile)
 	for _, t in ipairs(self.tiles) do
 		if tile.uid == t.uid then
+			return true
+		end
+	end
+	return false
+end
+
+function room:inBounds(worldX, worldY)
+	for _, tile in ipairs(self.tiles) do
+		if tile:inBounds(worldX, worldY) then
+			return true
+		end
+	end
+	return false
+end
+
+function room:inTile(x, y)
+	for _, tile in ipairs(self.tiles) do
+		if tile.x == x and tile.y == y then
 			return true
 		end
 	end
@@ -100,6 +117,14 @@ function room:detectContiguous(tile)
 		return true
 	end
 	return false
+end
+
+function room:getType()
+	return "[[room]]"
+end
+
+function room:isType(str)
+	return string.match(self:getType(), str)
 end
 
 return room

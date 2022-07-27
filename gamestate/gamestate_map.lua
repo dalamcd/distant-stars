@@ -37,9 +37,15 @@ local function mousereleased(gself, x, y, button)
 	end
 
 	if button == 2 then
-		if getMouseSelection() and t and getMouseSelection():getType() == "entity" then
+		if getMouseSelection() and t and getMouseSelection():isType("entity") then
 			local tlist = gself.map:getPossibleTasks(t, getMouseSelection())
 			getGameContext():set(x, y, tlist)
+		end
+	end
+
+	if button == 4 then
+		for i, r in ipairs(gself.map.rooms) do
+			print(i, #r.tiles)
 		end
 	end
 end

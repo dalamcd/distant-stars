@@ -61,7 +61,7 @@ function tile:isWalkable()
 end
 
 function tile:isWall()
-	return not self.walkable
+	return self.map:isWall(self.x, self.y)
 end
 
 function tile:isOccupied()

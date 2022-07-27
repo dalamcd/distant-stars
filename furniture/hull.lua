@@ -1,5 +1,5 @@
 local class = require('middleclass')
-local furniture = require('furniture')
+local furniture = require('furniture/furniture')
 
 local hull = class('hull', furniture)
 
@@ -14,7 +14,7 @@ function hull:damage(amt)
 end
 
 function hull:getType()
-	return "hull"
+	return furniture.getType(self) .. "[[hull]]"
 end
 
 return hull

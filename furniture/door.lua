@@ -1,5 +1,5 @@
 local class = require('middleclass')
-local furniture = require('furniture')
+local furniture = require('furniture/furniture')
 local drawable = require('drawable')
 
 local door = class("door", furniture)
@@ -153,7 +153,7 @@ function door:isWall()
 end
 
 function door:getType()
-	return "door"
+	return furniture.getType(self) .. "[[door]]"
 end
 
 function door:__tostring()

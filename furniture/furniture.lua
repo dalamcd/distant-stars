@@ -284,7 +284,7 @@ function furniture:getAvailableInteractionTile()
 end
 
 function furniture:getType()
-	return "furniture"
+	return drawable.getType(self) .. "[[furniture]]"
 end
 
 function furniture:isWalkable()

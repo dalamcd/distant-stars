@@ -1,9 +1,11 @@
 local class = require('middleclass')
 local luastar = require('lua-star')
 local tile = require('tile')
-local door = require('door')
-local hull = require('hull')
+local door = require('furniture/door')
+local hull = require('furniture/hull')
 local room = require('room')
+local furniture = require('furniture/furniture')
+local wall = require('furniture/wall')
 local map_utils = require('map/map_utils')
 
 local map = class('map')
@@ -280,7 +282,9 @@ function map:load(fname)
 			local index = ((r - 1) * self.width) + c
 			local t
 			if grid[index] == 1 then
-				t = tile:new("metal wall", self, x, y, index, false)
+				t = tile:new("metal floor", self, x, y, index, true)
+				local f = wall:new("wall", self, c, r)
+				self:addFurniture(f)
 			elseif grid[index] == 2 then
 				t = tile:new("metal floor", self, x, y, index, true)
 			elseif grid[index] == 3 then

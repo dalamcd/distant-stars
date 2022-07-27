@@ -1,5 +1,5 @@
 local class = require('middleclass')
-local furniture = require('furniture')
+local furniture = require('furniture/furniture')
 local task = require('task')
 local gamestate = require('gamestate/gamestate')
 local stationstate = require('gamestate/gamestate_station')
@@ -91,6 +91,10 @@ function station:getViewStationTask(parentTask)
 
 	local viewTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, abandonFunc, parentTask)
 	return viewTask
+end
+
+function station:getType()
+	return furniture.getType(self) .. "[[station]]"
 end
 
 return station
