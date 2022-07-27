@@ -1,8 +1,9 @@
 local class = require('middleclass')
 local game = require('game')
 local utils = require('utils')
+local room = require('room')
 
-local stockpile = class('stockpile')
+local stockpile = class('stockpile', room)
 
 function stockpile:initialize(map, tiles, name)
 
@@ -51,29 +52,6 @@ function stockpile:draw()
 	end
 end
 
-function stockpile:detectEdgeTiles()
-
-	for _, tile in ipairs(self.tiles) do
-		local right = self.map:getTile(tile.x + 1, tile.y) 
-		local bottom = self.map:getTile(tile.x, tile.y + 1) 
-		local left = self.map:getTile(tile.x - 1, tile.y) 
-		local top = self.map:getTile(tile.x, tile.y - 1)
-
-		if right and not self:inTile(right.x, right.y) then
-			table.insert(self.edges, {tile.x, tile.y-1, tile.x, tile.y})
-		end
-		if bottom and not self:inTile(bottom.x, bottom.y) then
-			table.insert(self.edges, {tile.x-1, tile.y, tile.x, tile.y})
-		end
-		if left and not self:inTile(left.x, left.y) then
-			table.insert(self.edges, {tile.x-1, tile.y-1, tile.x-1, tile.y})
-		end
-		if top and not self:inTile(top.x, top.y) then
-			table.insert(self.edges, {tile.x-1, tile.y-1, tile.x, tile.y-1})
-		end
-	end
-end
-
 function stockpile:removeFromStockpile(itemToRemove)
 	for i, item in ipairs(self.contents) do
 		if item.uid == itemToRemove.uid then
@@ -86,34 +64,8 @@ function stockpile:addToStockpile(item)
 	table.insert(self.contents, item)
 end
 
-function stockpile:inStockpile(item)
-	for _, i in ipairs(self.contents) do
-		if i.uid == item.uid then
-			return true
-		end
-	end 
-end
-
-function stockpile:inBounds(worldX, worldY)
-	for _, tile in ipairs(self.tiles) do
-		if tile:inBounds(worldX, worldY) then
-			return true
-		end
-	end
-	return false
-end
-
-function stockpile:inTile(x, y)
-	for _, tile in ipairs(self.tiles) do
-		if tile.x == x and tile.y == y then
-			return true
-		end
-	end
-	return false
-end
-
 function stockpile:getType()
-	return "stockpile"
+	return room.getType(self) .. "[[stockpile]]"
 end
 
 function stockpile:select()

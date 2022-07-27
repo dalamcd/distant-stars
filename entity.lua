@@ -324,7 +324,7 @@ function entity:handleWalking()
 		local blocked = false
 
 		for _, f in ipairs(furniture) do
-			if f:getType() == "door" then
+			if f:isType("door") then
 				if not f:isOpen() then
 					blocked = true
 					if not f:isOpening() or f:isClosing() then
@@ -407,7 +407,7 @@ function entity:setRoute(route)
 end
 
 function entity:getType()
-	return "entity"
+	return drawable.getType(self) .. "[[entity]]"
 end
 
 function entity:__tostring()

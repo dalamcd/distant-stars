@@ -213,7 +213,7 @@ function item:setPos(x, y, xOffset, yOffset)
 end
 
 function item:getType()
-	return "item"
+	return drawable.getType(self) .. "[[item]]"
 end
 
 function item:getPluralName()

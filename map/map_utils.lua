@@ -22,12 +22,8 @@ local map_utils = {
 		local wall = false
 		local t = self:getTile(x, y)
 
-		if t:isWall() then
-			wall = true
-		end
-
 		for _, furn in ipairs(self:getFurnitureInTile(t)) do
-			if furn:getType() == "door" then
+			if furn:isType("door") or furn:isType("wall") or furn:isType("hull") then
 				wall = true
 			end
 		end
@@ -58,6 +54,15 @@ local map_utils = {
 		end
 
 		return true
+	end,
+
+	isHull = function(self, x, y)
+		for _, f in ipairs(self.furniture) do
+			if f.x == x and f.y == y and f:getType() == "hull" then
+				return true
+			end
+		end
+		return false
 	end,
 
 	inStockpile = function(self, x, y)

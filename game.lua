@@ -46,7 +46,7 @@ function drawSelectionDetails()
 						love.graphics.getWidth() - width - textPadding,
 						love.graphics.getHeight() - height - textPadding)
 	
-	if mouseSelection:getType() == "entity" then
+	if mouseSelection:isType("entity") then
 		local tlist = mouseSelection:getTasks()
 		local itemNum = 1
 		local idleSeconds = math.floor(mouseSelection.idleTime/60)

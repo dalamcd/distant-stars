@@ -4,8 +4,35 @@ local drawable = require('drawable')
 
 local tile = class('tile', drawable)
 
-function tile:initialize(tileset, tilesetX, tilesetY, name, map, posX, posY, index, walkable)
-	drawable.initialize(self, tileset, tilesetX, tilesetY, TILE_SIZE, TILE_SIZE, posX, posY, 1, 1)
+tile.static._loaded_tiles = {}
+
+function tile.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight)
+	local internalItem = self._loaded_tiles[name]
+
+	if internalItem then
+		return internalItem
+	else
+		self._loaded_tiles[name] = {
+			tileset = tileset,
+			tilesetX = tilesetX,
+			tilesetY = tilesetY,
+			spriteWidth = spriteWidth,
+			spriteHeight = spriteHeight
+		}
+	end
+end
+
+function tile.static:retrieve(name)
+	return self._loaded_tiles[name] or false
+end
+
+function tile:initialize(name, map, posX, posY, index, walkable)
+	local i = tile:retrieve(name)
+	if i then
+		drawable.initialize(self, i.tileset, i.tilesetX, i.tilesetY, i.spriteWidth, i.spriteHeight, posX, posY, 1, 1)
+	else
+		error("attempted to initialize " .. self.name .. " but no tile with that name was found")
+	end
 	if not index then error("tile initialized without index") end
 	if not map then error("tile initialized without map") end
 
@@ -34,11 +61,27 @@ function tile:isWalkable()
 end
 
 function tile:isWall()
-	return not self.walkable
+	return self.map:isWall(self.x, self.y)
 end
 
 function tile:isOccupied()
 	return self.map:isOccupied(self.x, self.y)
+end
+
+function tile:isHull()
+	return self.map:isHull(self.x, self.y)
+end
+
+function tile:getNeighbors()
+	local points = {
+		{x=self.x+1, y=self.y},
+		{x=self.x-1, y=self.y},
+		{x=self.x, y=self.y+1},
+		{x=self.x, y=self.y-1}
+	}
+	local tiles = self.map:getTilesFromPoints(points)
+
+	return tiles
 end
 
 function tile:getPossibleTasks(map, entity)

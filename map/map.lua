@@ -1,7 +1,11 @@
 local class = require('middleclass')
 local luastar = require('lua-star')
 local tile = require('tile')
-local door = require('door')
+local door = require('furniture/door')
+local hull = require('furniture/hull')
+local room = require('room')
+local furniture = require('furniture/furniture')
+local wall = require('furniture/wall')
 local map_utils = require('map/map_utils')
 
 local map = class('map')
@@ -17,6 +21,7 @@ function map:initialize(name, xOffset, yOffset)
 	self.furniture = {}
 	self.stockpiles = {}
 	self.jobs = {}
+	self.rooms = {}
 
 	self.name = name
 	self.xOffset = xOffset or 0
@@ -59,9 +64,9 @@ end
 
 function map:draw()
 	for _, t in ipairs(self.tiles) do
-		t:draw()
 		t.mapTranslationXOffset = self.mapTranslationXOffset
 		t.mapTranslationYOffset = self.mapTranslationYOffset
+		t:draw()
 	end
 
 	for _, s in ipairs(self.stockpiles) do
@@ -71,25 +76,39 @@ function map:draw()
 	end
 
 	for _, i in ipairs(self.items) do
+		i.mapTranslationXOffset = self.mapTranslationXOffset
+		i.mapTranslationYOffset = self.mapTranslationYOffset
 		if not i.owned then
 			i:draw()
 		end
-		i.mapTranslationXOffset = self.mapTranslationXOffset
-		i.mapTranslationYOffset = self.mapTranslationYOffset
 	end
 
 	for _, f in ipairs(self.furniture) do
-		f:draw()
 		f.mapTranslationXOffset = self.mapTranslationXOffset
 		f.mapTranslationYOffset = self.mapTranslationYOffset
+		f:draw()
 	end
 
 	for _, e in ipairs(self.entities) do
-		e:draw()
 		e.mapTranslationXOffset = self.mapTranslationXOffset
 		e.mapTranslationYOffset = self.mapTranslationYOffset
+		e:draw()
 	end
 
+	for _, r in ipairs(self.rooms) do
+		for _, t in ipairs(r.tiles) do
+			circ("fill", t:getWorldCenterX(), t:getWorldCenterY(), 2, self.camera)
+		end
+		love.graphics.setColor(0.0, 1.0, 0.32, 1.0)
+		for _, edge in ipairs(r.edges) do
+			line((edge[1]*TILE_SIZE)+self.mapTranslationXOffset, edge[2]*TILE_SIZE+self.mapTranslationYOffset,
+			edge[3]*TILE_SIZE+self.mapTranslationXOffset, edge[4]*TILE_SIZE+self.mapTranslationYOffset, self.camera)
+		end
+		for _, wall in ipairs(r.walls) do
+			circ("fill", wall:getWorldCenterX(), wall:getWorldCenterY(), 2, self.camera)
+		end
+		love.graphics.reset()
+	end
 end
 
 function map:addEntity(e)
@@ -243,6 +262,10 @@ function map:load(fname)
 			if c == "*" then
 				table.insert(grid, 3)
 			end
+        -- Insert hull tile
+			if c == "@" then
+				table.insert(grid, 5)
+			end
 		-- Insert door
 			if c == "D" then
 				table.insert(grid, 4)
@@ -259,17 +282,43 @@ function map:load(fname)
 			local index = ((r - 1) * self.width) + c
 			local t
 			if grid[index] == 1 then
-				t = tile:new("floorTile", TILE_SIZE, 0, "metal wall", self, x, y, index, false)
+				t = tile:new("metal floor", self, x, y, index, true)
+				local f = wall:new("wall", self, c, r)
+				self:addFurniture(f)
 			elseif grid[index] == 2 then
-				t = tile:new("floorTile", 0, 0, "metal floor", self, x, y, index, true)
+				t = tile:new("metal floor", self, x, y, index, true)
 			elseif grid[index] == 3 then
-				t = tile:new("floorTile", TILE_SIZE*2, 0, "void", self, x, y, index, false)
+				t = tile:new("void", self, x, y, index, false)
 			elseif grid[index] == 4 then
-				t = tile:new("floorTile", TILE_SIZE*2, 0, "void", self, x, y, index, false)
-				--local newDoor = door:new("furniture", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE, "door", self, c, r)
-				--self:addFurniture(newDoor)
+				t = tile:new("metal floor", self, x, y, index, true)
+				local newDoor = door:new("door", self, c, r)
+				self:addFurniture(newDoor)
+			elseif grid[index] == 5 then
+				t = tile:new("metal floor", self, x, y, index, true)
+				local hull = hull:new("hull", self, c, r)
+				self:addFurniture(hull)
 			end
 			self.tiles[index] = t
+		end
+	end
+
+	-- Finding all rooms in a loaded map
+	for _, mapTile in ipairs(self.tiles) do
+		local roomList = self.rooms
+		local inRoom = false
+		for _, r in ipairs(roomList) do
+			if r:inRoom(mapTile) then
+				inRoom = true
+				break
+			end
+		end
+
+		if not inRoom then
+			local roomTiles = room:detectRoom(self, mapTile)
+			if #roomTiles > 0 then
+				local newRoom = room:new(self, roomTiles)
+				table.insert(self.rooms, newRoom)
+			end
 		end
 	end
 end
