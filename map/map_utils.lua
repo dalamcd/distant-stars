@@ -60,6 +60,15 @@ local map_utils = {
 		return true
 	end,
 
+	isHull = function(self, x, y)
+		for _, f in ipairs(self.furniture) do
+			if f.x == x and f.y == y and f:getType() == "hull" then
+				return true
+			end
+		end
+		return false
+	end,
+
 	inStockpile = function(self, x, y)
 		for _, s in ipairs(self.stockpiles) do
 			if s:inTile(x, y) then

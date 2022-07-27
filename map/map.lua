@@ -3,6 +3,7 @@ local luastar = require('lua-star')
 local tile = require('tile')
 local door = require('door')
 local hull = require('hull')
+local room = require('room')
 local map_utils = require('map/map_utils')
 
 local map = class('map')
@@ -18,6 +19,7 @@ function map:initialize(name, xOffset, yOffset)
 	self.furniture = {}
 	self.stockpiles = {}
 	self.jobs = {}
+	self.rooms = {}
 
 	self.name = name
 	self.xOffset = xOffset or 0
@@ -91,6 +93,20 @@ function map:draw()
 		e:draw()
 	end
 
+	for _, r in ipairs(self.rooms) do
+		for _, t in ipairs(r.tiles) do
+			circ("fill", t:getWorldCenterX(), t:getWorldCenterY(), 2, self.camera)
+		end
+		love.graphics.setColor(0.0, 1.0, 0.32, 1.0)
+		for _, edge in ipairs(r.edges) do
+			line((edge[1]*TILE_SIZE)+self.mapTranslationXOffset, edge[2]*TILE_SIZE+self.mapTranslationYOffset,
+			edge[3]*TILE_SIZE+self.mapTranslationXOffset, edge[4]*TILE_SIZE+self.mapTranslationYOffset, self.camera)
+		end
+		for _, wall in ipairs(r.walls) do
+			circ("fill", wall:getWorldCenterX(), wall:getWorldCenterY(), 2, self.camera)
+		end
+		love.graphics.reset()
+	end
 end
 
 function map:addEntity(e)
@@ -279,6 +295,26 @@ function map:load(fname)
 				self:addFurniture(hull)
 			end
 			self.tiles[index] = t
+		end
+	end
+
+	-- Finding all rooms in a loaded map
+	for _, mapTile in ipairs(self.tiles) do
+		local roomList = self.rooms
+		local inRoom = false
+		for _, r in ipairs(roomList) do
+			if r:inRoom(mapTile) then
+				inRoom = true
+				break
+			end
+		end
+
+		if not inRoom then
+			local roomTiles = room:detectRoom(self, mapTile)
+			if #roomTiles > 0 then
+				local newRoom = room:new(self, roomTiles)
+				table.insert(self.rooms, newRoom)
+			end
 		end
 	end
 end

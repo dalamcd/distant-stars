@@ -13,4 +13,8 @@ function hull:damage(amt)
 	self.health = self.health - amt
 end
 
+function hull:getType()
+	return "hull"
+end
+
 return hull

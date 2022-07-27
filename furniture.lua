@@ -46,7 +46,6 @@ function furniture:initialize(name, map, posX, posY)
 	local interactTiles = {}
 
 	if not i.interactPoints then
-		print(name)
 		local points = {{x=posX+1, y=posY}, {x=posX-1, y=posY}, {x=posX, y=posY+1}, {x=posX, y=posY-1}}
 		interactTiles = self.map:getTilesFromPoints(points, true)
 	else
@@ -82,7 +81,7 @@ function furniture:getPossibleTasks()
 end
 
 function furniture:getAddToInventoryTask(item, parentTask)
-	function startFunc(tself)
+	local function startFunc(tself)
 		local p = tself:getParams()
 		local inRange = false
 
@@ -106,7 +105,7 @@ function furniture:getAddToInventoryTask(item, parentTask)
 		end
 	end
 
-	function runFunc(tself)
+	local function runFunc(tself)
 		local p = tself:getParams()
 		if not p.entity.walking and p.entity.x == p.dest.x and p.entity.y == p.dest.y then
 			tself:complete()
@@ -115,17 +114,17 @@ function furniture:getAddToInventoryTask(item, parentTask)
 		end
 	end
 
-	function endFunc(tself)
+	local function endFunc(tself)
 		local p = tself:getParams()
 		p.entity:removeFromInventory(item)
 		self:addToInventory(item)
 	end
 
-	function contextFunc(tself)
+	local function contextFunc(tself)
 		return "Put " .. item.name .. " in " .. self.name
 	end
 
-	function strFunc(tself)
+	local function strFunc(tself)
 		return "Putting " .. item.name .. " in " .. self.name
 	end
 
@@ -134,7 +133,7 @@ function furniture:getAddToInventoryTask(item, parentTask)
 end
 
 function furniture:getRemoveFromInventoryTask(item, parentTask)
-	function startFunc(tself)
+	local function startFunc(tself)
 		local p = tself:getParams()
 		local inRange = false
 
@@ -158,7 +157,7 @@ function furniture:getRemoveFromInventoryTask(item, parentTask)
 		end
 	end
 
-	function runFunc(tself)
+	local function runFunc(tself)
 		local p = tself:getParams()
 		if not p.entity.walking and p.entity.x == p.dest.x and p.entity.y == p.dest.y then
 			tself:complete()
@@ -167,17 +166,17 @@ function furniture:getRemoveFromInventoryTask(item, parentTask)
 		end
 	end
 
-	function endFunc(tself)
+	local function endFunc(tself)
 		local p = tself:getParams()
 		self:removeFromInventory(item)
 		p.entity:addToInventory(item)
 	end
 
-	function contextFunc(tself)
+	local function contextFunc(tself)
 		return "Take " .. item.name .. " from " .. self.name
 	end
 
-	function strFunc(tself)
+	local function strFunc(tself)
 		return "Taking " .. item.name .. " from " .. self.name
 	end
 
@@ -186,7 +185,7 @@ function furniture:getRemoveFromInventoryTask(item, parentTask)
 end
 
 function furniture:getViewContentsTask(parentTask)
-	function startFunc(tself)
+	local function startFunc(tself)
 		local p = tself:getParams()
 		local inRange = false
 
@@ -209,7 +208,7 @@ function furniture:getViewContentsTask(parentTask)
 		end
 	end
 
-	function runFunc(tself)
+	local function runFunc(tself)
 		local p = tself:getParams()
 		if not p.routeFound then
 			tself:abandon()
@@ -222,7 +221,7 @@ function furniture:getViewContentsTask(parentTask)
 		end
 	end
 
-	function endFunc(tself)
+	local function endFunc(tself)
 		local p = tself:getParams()
 		if not tself.abandoned then
 			local fade = gamestate:getFadeState()
@@ -232,11 +231,11 @@ function furniture:getViewContentsTask(parentTask)
 		end
 	end
 
-	function contextFunc(tself)
+	local function contextFunc(tself)
 		return "View inventory"
 	end
 
-	function strFunc(tself)
+	local function strFunc(tself)
 		return "Viewing the inventory of " .. self.name
 	end
 
@@ -275,7 +274,6 @@ end
 function furniture:getAvailableInteractionTile()
 	local foundTile = false
 	for _, t in ipairs(self:getInteractionTiles()) do
-		print("Possible interaction tile: ", t.x, t.y)
 		if t:isWalkable() and not t:isOccupied() then
 			foundTile = t
 			break
