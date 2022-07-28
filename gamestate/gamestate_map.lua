@@ -37,7 +37,7 @@ local function mousereleased(gself, x, y, button)
 	end
 
 	if button == 2 then
-		if getMouseSelection() and t and getMouseSelection():isType("entity") then
+		if getMouseSelection() and t and getMouseSelection():isType("entity") and getMouseSelection().map.uid == t.map.uid then
 			local tlist = gself.map:getPossibleTasks(t, getMouseSelection())
 			getGameContext():set(x, y, tlist)
 		end
@@ -87,8 +87,8 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 		gself.map = map
 		gself.map.camera = camera
 		if not passthrough then
-			local b = background:new(500)
-			gself.background = b
+			--local b = background:new(500)
+			--gself.background = b
 		end
 
 		local ctx = context:new()

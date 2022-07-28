@@ -224,9 +224,9 @@ function furniture:getViewContentsTask(parentTask)
 	local function endFunc(tself)
 		local p = tself:getParams()
 		if not tself.abandoned then
-			local fade = gamestate:getFadeState()
+			local f = gamestate:getFadeState()
 			local gs = gamestate:getInventoryState(self, p.entity)
-			gamestate:push(fade)
+			gamestate:push(f)
 			gamestate:push(gs)
 		end
 	end

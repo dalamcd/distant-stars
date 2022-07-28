@@ -3,7 +3,7 @@ local gui = require("gui")
 
 function gamestate.static:getInventoryState(source, destination)
 
-	function loadFunc(gself)
+	local function loadFunc(gself)
 
 		if not source then
 			error("inventory state loaded with no source")
@@ -25,7 +25,7 @@ function gamestate.static:getInventoryState(source, destination)
 		gself.items = source:getInventory()
 	end
 
-	function inputFunc(gself, input)
+	local function inputFunc(gself, input)
 		if input.mousereleased then
 			if input.mousereleased.button == 1 then
 				if input.mousereleased.x > gself.leftMargin and input.mousereleased.x < gself.leftMargin + gself.width and
@@ -38,7 +38,7 @@ function gamestate.static:getInventoryState(source, destination)
 		end
 	end
 
-	function drawFunc(gself)
+	local function drawFunc(gself)
 		drawRect(gself.leftMargin, gself.topMargin, gself.width, gself.height)
 		love.graphics.print(gself.headerText, gself.headerPos, gself.topMargin + 20)
 		for i, item in ipairs(gself.items) do

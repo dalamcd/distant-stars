@@ -1,5 +1,6 @@
 local class = require('middleclass')
 local luastar = require('lua-star')
+local utils = require('utils')
 local tile = require('tile')
 local door = require('furniture/door')
 local hull = require('furniture/hull')
@@ -24,6 +25,7 @@ function map:initialize(name, xOffset, yOffset)
 	self.rooms = {}
 
 	self.name = name
+	self.uid = getUID()
 	self.xOffset = xOffset or 0
 	self.yOffset = yOffset or 0
 	self.mapTranslationXOffset = 0

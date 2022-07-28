@@ -24,15 +24,14 @@ function gamestate.static:push(gs)
 	end
 	gs.top = true
 	table.insert(self._stack, gs)
-
 	self:rebuild()
 end
 
 function gamestate.static:pop()
 	local peek = self._stack[#self._stack]
-	if #self._stack > 1 then
+	if #self._stack > 0 then
 		local gs = table.remove(self._stack)
-		if peek then
+		if self._stack[#self._stack] then
 			self._stack[#self._stack].top = true
 		end
 		self:rebuild()
@@ -44,10 +43,11 @@ end
 
 function gamestate.static:rebuild()
 
+	self.rebuilt = true
 	-- Clear the update and draw stacks
-	for i=0, #self._updateStack do self._updateStack[i]=nil end
-	for i=0, #self._drawStack do self._drawStack[i]=nil end
-	
+	for i=1, #self._updateStack do self._updateStack[i]=nil end
+	for i=1, #self._drawStack do self._drawStack[i]=nil end
+
 	-- Always update and draw the topmost state
 	local g = self._stack[#self._stack]
 	table.insert(self._updateStack, g)
@@ -79,7 +79,13 @@ function gamestate.static:update(dt)
 
 	--update from the top of the stack to the bottom so the most recent stack is always updated first
 	for i=#self._updateStack, 1, -1 do
-		self._updateStack[i]:update(dt)
+		if not self.rebuilt then
+			self._updateStack[i]:update(dt)
+		else
+			self.rebuilt = false
+			self:update(dt)
+			return
+		end
 	end
 
 	for k, _ in pairs(self._input) do

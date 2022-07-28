@@ -11,11 +11,12 @@ local context = require('context')
 local door = require('furniture/door')
 local drawable = require('drawable')
 local stockpile = require('stockpile')
-local background = require('background')
+--local background = require('background')
 local gamestate = require('gamestate/gamestate')
 local fadein = require('gamestate/gamestate_fade')
 local inventory = require('gamestate/gamestate_inventory')
 local mapstate = require('gamestate/gamestate_map')
+local background = require('gamestate/gamestate_background')
 local station = require('furniture/station')
 
 TILE_SIZE = 32
@@ -92,9 +93,11 @@ function love.load()
 	--m:addStockpile(sp)
 
 	local c = camera:new()
-	local gs = gamestate:getMapState("main map", m, c)
+	local bg = background:new(300)
+	local gs = gamestate:getMapState("main map", m, c, true)
 	gs.camera = c
 
+	gamestate:push(bg)
 	gamestate:push(gs)
 
 	previousTime = love.timer.getTime()
@@ -179,7 +182,7 @@ function love.keypressed(key)
 	end
 
 	if key == '1' then
-		local top = gamestate:peek()
+		local top = gamestate:pop()
 		local newMap = map:new("testmap", 1, 1)
 		local p = entity:new("tallpawn", "Dylan", newMap, 6, 7)
 		local cam = camera:new()
@@ -190,6 +193,7 @@ function love.keypressed(key)
 		newMap:addEntity(p)
 		local gs = gamestate:getMapState("testmap", newMap, cam, true)
 		gamestate:push(gs)
+		gamestate:push(top)
 	end
 
 	if key == '-' then
