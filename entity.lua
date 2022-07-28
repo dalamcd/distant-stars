@@ -265,11 +265,11 @@ end
 
 function entity:getWalkTask(destination, parentTask)
 
-	function strFunc(tself)
+	local function strFunc(tself)
 		return "Going to tile " .. destination.x .. ", " .. destination.y
 	end
 
-	function startFunc(tself)
+	local function startFunc(tself)
 		local p = tself:getParams()
 		local route = p.map:pathfind({x=self.x, y=self.y}, destination)
 		if route then
@@ -282,13 +282,13 @@ function entity:getWalkTask(destination, parentTask)
 		end
 	end
 
-	function runFunc(tself)
+	local function runFunc(tself)
 		if #self.route == 0 then
 			tself:complete()
 		end
 	end
 
-	function abandonFunc(tself)
+	local function abandonFunc(tself)
 		if self.walking then
 			-- Clear the route of everything but the next closest tile
 			local count = #self.route
@@ -298,7 +298,7 @@ function entity:getWalkTask(destination, parentTask)
 		end
 	end
 
-	function contextFunc(tself)
+	local function contextFunc(tself)
 		return "Walk here"
 	end
 

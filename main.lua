@@ -183,7 +183,7 @@ function love.keypressed(key)
 
 	if key == '1' then
 		local top = gamestate:pop()
-		local newMap = map:new("testmap", 1, 1)
+		local newMap = map:new("testmap", -10, -10)
 		local p = entity:new("tallpawn", "Dylan", newMap, 6, 7)
 		local cam = camera:new()
 		cam.scale = top.map.camera.scale

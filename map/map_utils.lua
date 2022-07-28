@@ -32,8 +32,8 @@ local map_utils = {
 
 	isWalkable = function(self, x, y)
 		local tile = self:getTile(x,y)
-		
-		if not tile:isWalkable() then
+
+		if tile and not tile:isWalkable() then
 			return false
 		end
 

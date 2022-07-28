@@ -134,8 +134,8 @@ local function getAdjacent(width, height, node, positionIsOpenFunc, includeDiago
     end
 
     for _, point in ipairs(positions) do
-        local px = clamp(node.x + point.x, 1, width)
-        local py = clamp(node.y + point.y, 1, height)
+        local px = node.x + point.x
+        local py = node.y + point.y
         local value = positionIsOpenFunc( px, py )
         if value then
             table.insert( result, { x = px, y = py, diagonal = point.diagonal  } )
