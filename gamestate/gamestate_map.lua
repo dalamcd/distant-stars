@@ -26,7 +26,10 @@ local function mousereleased(gself, x, y, button)
 	local s = gself.map:getStockpileAtWorld(getMousePos(gself.map.camera))
 
 	if button == 1 then
-		if getGameContext().active and getGameContext():inBounds(x, y) then
+		local msg = gself.map.alert:inBounds(x, y)
+		if msg then
+			gself.map.alert:removeAlert(msg)
+		elseif getGameContext().active and getGameContext():inBounds(x, y) then
 			getGameContext():handleClick(x, y)
 		else
 			if s then setMouseSelection(s) end

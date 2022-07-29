@@ -25,6 +25,7 @@ function gamestate.static:push(gs)
 	gs.top = true
 	table.insert(self._stack, gs)
 	self:rebuild()
+	gs:loadFunc()
 end
 
 function gamestate.static:pop()

@@ -8,7 +8,7 @@ local room = require('room')
 local furniture = require('furniture/furniture')
 local wall = require('furniture/wall')
 local map_utils = require('map/map_utils')
-
+local alert = require('alert')
 local map = class('map')
 map:include(map_utils)
 
@@ -23,6 +23,7 @@ function map:initialize(name, xOffset, yOffset)
 	self.stockpiles = {}
 	self.jobs = {}
 	self.rooms = {}
+	self.alert = alert:new(self)
 
 	self.name = name
 	self.uid = getUID()
@@ -47,6 +48,8 @@ function map:update(dt)
 	for _, i in ipairs(self.items) do
 		i:update(dt)
 	end
+
+	self.alert:update()
 
 	if self.velX ~= 0 then
 		self.mapTranslationXOffset = self.mapTranslationXOffset + self.velX
@@ -106,11 +109,13 @@ function map:draw()
 			line((edge[1]*TILE_SIZE)+self.mapTranslationXOffset, edge[2]*TILE_SIZE+self.mapTranslationYOffset,
 			edge[3]*TILE_SIZE+self.mapTranslationXOffset, edge[4]*TILE_SIZE+self.mapTranslationYOffset, self.camera)
 		end
-		for _, wall in ipairs(r.walls) do
-			circ("fill", wall:getWorldCenterX(), wall:getWorldCenterY(), 2, self.camera)
-		end
+		-- for _, wall in ipairs(r.walls) do
+		-- 	circ("fill", wall:getWorldCenterX(), wall:getWorldCenterY(), 2, self.camera)
+		-- end
 		love.graphics.reset()
 	end
+
+	self.alert:draw()
 end
 
 function map:addEntity(e)
@@ -143,6 +148,14 @@ end
 function map:addStockpile(s)
 	s.map = self
 	table.insert(self.stockpiles, s)
+end
+
+function map:addAlert(str)
+	self.alert:addAlert(str)
+end
+
+function map:getAlerts()
+	return self.alert.messages
 end
 
 function map:pathfind(start, goal)

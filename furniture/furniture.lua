@@ -128,7 +128,7 @@ function furniture:getAddToInventoryTask(item, parentTask)
 		return "Putting " .. item.name .. " in " .. self.name
 	end
 
-	local depositTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, abandonFunc, parentTask)
+	local depositTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
 	return depositTask
 end
 
@@ -180,7 +180,7 @@ function furniture:getRemoveFromInventoryTask(item, parentTask)
 		return "Taking " .. item.name .. " from " .. self.name
 	end
 
-	local retrieveTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, abandonFunc, parentTask)
+	local retrieveTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
 	return retrieveTask
 end
 
@@ -239,7 +239,7 @@ function furniture:getViewContentsTask(parentTask)
 		return "Viewing the inventory of " .. self.name
 	end
 
-	local viewTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, abandonFunc, parentTask)
+	local viewTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
 	return viewTask
 end
 

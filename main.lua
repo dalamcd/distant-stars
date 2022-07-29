@@ -182,7 +182,7 @@ function love.keypressed(key)
 	end
 
 	if key == '1' then
-		local top = gamestate:pop()
+		local top = gamestate:peek()
 		local newMap = map:new("testmap", -10, -10)
 		local p = entity:new("tallpawn", "Dylan", newMap, 6, 7)
 		local cam = camera:new()
@@ -193,7 +193,12 @@ function love.keypressed(key)
 		newMap:addEntity(p)
 		local gs = gamestate:getMapState("testmap", newMap, cam, true)
 		gamestate:push(gs)
-		gamestate:push(top)
+		--gamestate:push(top)
+	end
+
+	if key == '3' then
+		local gs = gamestate:peek()
+		gs.map:addAlert("HULL BREACH")
 	end
 
 	if key == '-' then

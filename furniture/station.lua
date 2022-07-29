@@ -89,7 +89,7 @@ function station:getViewStationTask(parentTask)
 		return "Working on " .. self.name
 	end
 
-	local viewTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, abandonFunc, parentTask)
+	local viewTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
 	return viewTask
 end
 
