@@ -110,10 +110,6 @@ function love.update(dt)
 
 	d:updateTextField("MousePos", "(" .. mx .. ", " .. my .. ")")
 
-	if love.keyboard.isDown('q') then
-		getGameContext():clear()
-	end
-
 	local now = love.timer.getTime()
 	delta = delta + (now - previousTime)
 	previousTime = now
@@ -130,12 +126,12 @@ function love.draw()
 
 	gamestate:draw()
 
-	if getMouseSelection() then
-		if not getMouseSelection():isType("stockpile") then
-			drawSelectionBox()
-		end
-		drawSelectionDetails()
-	end
+	-- if getMouseSelection() then
+	-- 	if not getMouseSelection():isType("stockpile") then
+	-- 		drawSelectionBox()
+	-- 	end
+	-- 	drawSelectionDetails()
+	-- end
 
 	if oTmpTiles ~= tmpTiles then
 		oTmpTiles = tmpTiles

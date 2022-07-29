@@ -9,8 +9,9 @@ local bottomPadding = 3
 local textTopPadding = 5
 local textInnerPadding = 3
 
-function context:initialize(font)
+function context:initialize(map, font)
 	font = font or love.graphics.getFont()
+	self.map = map
 	self.font = font
 	self.color = {r=0.0, g=0.0, b=0.0, a=1.0}
 end
@@ -77,7 +78,7 @@ function context:set(x, y, items)
 
 	local longest = 0
 	local txt = ""
-	for i, item in ipairs(self.items) do
+	for _, item in ipairs(self.items) do
 		item.highlight = false
 		item.left = 0
 		item.top = 0
@@ -112,9 +113,9 @@ function context:handleClick(x, y)
 	for i, item in ipairs(self.items) do
 		if self:inBounds(x, y, item) then
 			if love.keyboard.isDown('lshift') then
-				getMouseSelection():queueTask(item)
+				self.map:getMouseSelection():queueTask(item)
 			else
-				getMouseSelection():setTask(item)
+				self.map:getMouseSelection():setTask(item)
 			end
 			self:clear()
 		end

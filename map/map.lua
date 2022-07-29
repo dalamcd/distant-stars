@@ -33,6 +33,7 @@ function map:initialize(name, xOffset, yOffset)
 	self.mapTranslationYOffset = 0
 	self.velX = 0
 	self.velY = 0
+	self.mouseSelection = nil
 
 	self.oneSecondTimer = 0
 end
@@ -47,6 +48,9 @@ function map:update(dt)
 	end
 	for _, i in ipairs(self.items) do
 		i:update(dt)
+	end
+	for _, r in ipairs(self.rooms) do
+		r:update(dt)
 	end
 
 	self.alert:update()
@@ -101,6 +105,10 @@ function map:draw()
 	end
 
 	for _, r in ipairs(self.rooms) do
+		r:draw()
+	end
+
+	for _, r in ipairs(self.rooms) do
 		for _, t in ipairs(r.tiles) do
 			circ("fill", t:getWorldCenterX(), t:getWorldCenterY(), 2, self.camera)
 		end
@@ -115,7 +123,85 @@ function map:draw()
 		love.graphics.reset()
 	end
 
+	if self.mouseSelection then
+		self:drawSelectionDetails()
+		self:drawSelectionBox()
+	end
+
 	self.alert:draw()
+end
+
+function map:drawSelectionBox()
+	rect("line", self.mouseSelection:getWorldX(), self.mouseSelection:getWorldY(),
+				self.mouseSelection.spriteWidth, self.mouseSelection.spriteHeight, self.mouseSelection.map.camera)
+end
+
+function map:drawSelectionDetails()
+
+	local width = 300
+	local height = 100
+	local padding = 10
+	local textPadding = 5
+	love.graphics.rectangle("line", love.graphics.getWidth() - width - padding, 
+									love.graphics.getHeight() - height - padding, 
+									width,
+									height)
+	love.graphics.setColor(0, 0, 0, 1)
+	love.graphics.rectangle("fill", love.graphics.getWidth() - width - padding + 1, 
+									love.graphics.getHeight() - height - padding + 1, 
+									width - 1,
+									height -1)
+	love.graphics.reset()
+
+	love.graphics.print(self.mouseSelection.name .."["..self.mouseSelection.uid.."]",
+						love.graphics.getWidth() - width - textPadding,
+						love.graphics.getHeight() - height - textPadding)
+
+	if self.mouseSelection:isType("entity") then
+		local tlist = self.mouseSelection:getTasks()
+		local itemNum = 1
+		local idleSeconds = math.floor(self.mouseSelection.idleTime/60)
+		if idleSeconds > 0 then
+			love.graphics.print("Idle for " .. idleSeconds .. " seconds",
+								love.graphics.getWidth() - width - textPadding,
+								love.graphics.getHeight() - height + textPadding*itemNum*3)
+			itemNum = itemNum + 1
+		end
+
+		for i=#tlist, 1, -1 do
+			if not tlist[i]:isChild() then
+				love.graphics.print(tlist[i]:getDesc(),
+									love.graphics.getWidth() - width - textPadding,
+									love.graphics.getHeight() - height + textPadding*itemNum*3)
+				itemNum = itemNum + 1
+			end
+		end
+	elseif self.mouseSelection:getType() == "stockpile" then
+		for i, item in ipairs(self.mouseSelection.contents) do
+			love.graphics.print(item.name,
+								love.graphics.getWidth() - width - textPadding,
+								love.graphics.getHeight() - height + textPadding*i*3)
+		end
+	end
+end
+
+function map:setMouseSelection(object)
+	if self.mouseSelection then
+		self.mouseSelection:deselect()
+	end
+	object:select()
+	self.mouseSelection = object
+end
+
+function map:clearMouseSelection()
+	if self.mouseSelection then
+		self.mouseSelection:deselect()
+	end
+	self.mouseSelection = nil
+end
+
+function map:getMouseSelection()
+	return self.mouseSelection
 end
 
 function map:addEntity(e)
