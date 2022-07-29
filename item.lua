@@ -201,7 +201,7 @@ function item:getDropTask(parentTask)
 		return "Dropping " .. self.name
 	end
 
-	local dropTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, abandonFunc, parentTask)
+	local dropTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
 	return dropTask
 end
 

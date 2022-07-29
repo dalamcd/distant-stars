@@ -110,10 +110,6 @@ function love.update(dt)
 
 	d:updateTextField("MousePos", "(" .. mx .. ", " .. my .. ")")
 
-	if love.keyboard.isDown('q') then
-		getGameContext():clear()
-	end
-
 	local now = love.timer.getTime()
 	delta = delta + (now - previousTime)
 	previousTime = now
@@ -130,12 +126,12 @@ function love.draw()
 
 	gamestate:draw()
 
-	if getMouseSelection() then
-		if not getMouseSelection():isType("stockpile") then
-			drawSelectionBox()
-		end
-		drawSelectionDetails()
-	end
+	-- if getMouseSelection() then
+	-- 	if not getMouseSelection():isType("stockpile") then
+	-- 		drawSelectionBox()
+	-- 	end
+	-- 	drawSelectionDetails()
+	-- end
 
 	if oTmpTiles ~= tmpTiles then
 		oTmpTiles = tmpTiles
@@ -182,7 +178,7 @@ function love.keypressed(key)
 	end
 
 	if key == '1' then
-		local top = gamestate:pop()
+		local top = gamestate:peek()
 		local newMap = map:new("testmap", -10, -10)
 		local p = entity:new("tallpawn", "Dylan", newMap, 6, 7)
 		local cam = camera:new()
@@ -193,7 +189,12 @@ function love.keypressed(key)
 		newMap:addEntity(p)
 		local gs = gamestate:getMapState("testmap", newMap, cam, true)
 		gamestate:push(gs)
-		gamestate:push(top)
+		--gamestate:push(top)
+	end
+
+	if key == '3' then
+		local gs = gamestate:peek()
+		gs.map:addAlert("HULL BREACH")
 	end
 
 	if key == '-' then

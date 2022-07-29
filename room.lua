@@ -38,7 +38,30 @@ function room:initialize(map, tiles)
 
 	self.edges = {}
 	self.walls = {}
+	self.atmo = 100
 	self:detectEdgeTiles()
+end
+
+function room:update()
+	-- TODO implement a reasonable model for o2 loss (based on entities in room?)
+	self.atmo = self.atmo - 0.1
+end
+
+function room:draw()
+	-- Draw a color on a gradient from blue to red based on the atmo
+	-- Interpolation function is (amount-min)/(max-min)*startColor + (1-(amount-min)/(max-min))*endColor
+
+	-- This variable stands in for (amount-min)/(max-min) where min is 0
+	local interpolate = self.atmo/100
+	-- The 0 terms are pointless but left in for clarity
+	local gr = interpolate*0 + (1-interpolate)*255
+	local gg = interpolate*0 + (1-interpolate)*0
+	local gb = interpolate*255 + (1-interpolate)*0
+	local r, g, b, a = love.math.colorFromBytes(gr, gg, gb, 255/3)
+	local color = {r=r, g=g, b=b, a=a}
+	-- for _, t in ipairs(self.tiles) do
+	-- 	drawRect(self.map.camera:getRelativeX((t.x - 1)*TILE_SIZE), self.map.camera:getRelativeY((t.y - 1)*TILE_SIZE), TILE_SIZE, TILE_SIZE, color)
+	-- end
 end
 
 function room:inRoom(tile)

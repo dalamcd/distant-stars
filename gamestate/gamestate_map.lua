@@ -26,20 +26,28 @@ local function mousereleased(gself, x, y, button)
 	local s = gself.map:getStockpileAtWorld(getMousePos(gself.map.camera))
 
 	if button == 1 then
-		if getGameContext().active and getGameContext():inBounds(x, y) then
-			getGameContext():handleClick(x, y)
+		local msg = gself.map.alert:inBounds(x, y)
+		if msg then
+			gself.map.alert:removeAlert(msg)
+		elseif gself.context.active and gself.context:inBounds(x, y) then
+			gself.context:handleClick(x, y)
 		else
-			if s then setMouseSelection(s) end
-			if f then setMouseSelection(f) end
-			if i then setMouseSelection(i) end
-			if e then setMouseSelection(e) end
+			if s then gself.map.mouseSelection = s end
+			if f then gself.map.mouseSelection = f end
+			if i then gself.map.mouseSelection = i end
+			if e then gself.map.mouseSelection = e end
+			-- if s then setMouseSelection(s) end
+			-- if f then setMouseSelection(f) end
+			-- if i then setMouseSelection(i) end
+			-- if e then setMouseSelection(e) end
 		end
 	end
 
 	if button == 2 then
-		if getMouseSelection() and t and getMouseSelection():isType("entity") and getMouseSelection().map.uid == t.map.uid then
-			local tlist = gself.map:getPossibleTasks(t, getMouseSelection())
-			getGameContext():set(x, y, tlist)
+		local selection = gself.map:getMouseSelection()
+		if selection and t and selection:isType("entity") and selection.map.uid == t.map.uid then
+			local tlist = gself.map:getPossibleTasks(t, selection)
+			gself.context:set(x, y, tlist)
 		end
 	end
 
@@ -86,6 +94,8 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 		gself.name = name
 		gself.map = map
 		gself.map.camera = camera
+		gself.context = context:new(gself.map)
+
 		if not passthrough then
 			--local b = background:new(500)
 			--gself.background = b
@@ -100,7 +110,7 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 			gself.background:draw()
 		end
 		gself.map:draw()
-		getGameContext():draw()
+		gself.context:draw()
 	end
 
 	local function inputFunc(gself, input)
@@ -138,7 +148,7 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 		end
 
 		d:updateTextField("Objects under mouse", objStr)
-		getGameContext():update()
+		gself.context:update()
 
 		gself.map:update(dt)
 	end

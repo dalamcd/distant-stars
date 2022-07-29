@@ -9,17 +9,18 @@ local bottomPadding = 3
 local textTopPadding = 5
 local textInnerPadding = 3
 
-function context:initialize(font)
+function context:initialize(map, font)
 	font = font or love.graphics.getFont()
+	self.map = map
 	self.font = font
-	self.opacity = 1
+	self.color = {r=0.0, g=0.0, b=0.0, a=1.0}
 end
 
 function context:update()
 	if self.active then
 		local mx, my = love.mouse.getPosition()
 		if self:inBounds(mx, my) then
-			self.opacity = 1
+			self.color.a = 1
 		else
 			local falloff = 20
 			local left = self.x - mx - falloff
@@ -35,12 +36,12 @@ function context:update()
 
 			local dist = math.sqrt(dx^2 + dy^2)
 			if dist < falloff then
-				self.opacity = 1
+				self.color.a = 1
 			end
 			if dist > 50 then
 				self:clear()
 			else
-				self.opacity = 1/math.sqrt(dist)
+				self.color.a = 1/math.sqrt(dist)
 			end
 		end
 
@@ -57,7 +58,7 @@ end
 function context:draw()
 
 	if self.active then
-		drawRect(self.x, self.y, self.txtWidth + innerPadding*2, self.txtHeight + bottomPadding, nil, nil, nil, self.opacity)
+		drawRect(self.x, self.y, self.txtWidth + innerPadding*2, self.txtHeight + bottomPadding, self.color)
 		for i, item in ipairs(self.items) do
 			self:drawMenuItem(item, i)
 		end
@@ -77,7 +78,7 @@ function context:set(x, y, items)
 
 	local longest = 0
 	local txt = ""
-	for i, item in ipairs(self.items) do
+	for _, item in ipairs(self.items) do
 		item.highlight = false
 		item.left = 0
 		item.top = 0
@@ -112,9 +113,9 @@ function context:handleClick(x, y)
 	for i, item in ipairs(self.items) do
 		if self:inBounds(x, y, item) then
 			if love.keyboard.isDown('lshift') then
-				getMouseSelection():queueTask(item)
+				self.map:getMouseSelection():queueTask(item)
 			else
-				getMouseSelection():setTask(item)
+				self.map:getMouseSelection():setTask(item)
 			end
 			self:clear()
 		end
@@ -147,13 +148,15 @@ function context:drawMenuItem(item, index)
 	item.bottom = self.fontHeight + textTopPadding
 
 	if item.highlight then
-		drawRect(item.left, item.top, item.right, item.bottom, 0.15, 0.15, 0.15, self.opacity)
+		self.color = {r=0.15, g=0.15, b=0.15, a=self.color.a}
+		drawRect(item.left, item.top, item.right, item.bottom, self.color)
 	else
-		drawRect(item.left, item.top, item.right, item.bottom, nil, nil, nil, self.opacity)
+		self.color = {r=0, g=0, b=0, a=self.color.a}
+		drawRect(item.left, item.top, item.right, item.bottom, self.color)
 	end
 
 	love.graphics.setFont(self.font)
-	love.graphics.setColor(1, 1, 1, self.opacity)
+	love.graphics.setColor(1, 1, 1, self.color.a)
 	love.graphics.print(item:getContext(), item.left + textInnerPadding, item.top)
 	love.graphics.reset()
 
