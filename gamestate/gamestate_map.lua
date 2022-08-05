@@ -28,7 +28,7 @@ local function keypressed(gself, key)
 
 	if key == 'e' then
 		if t then
-			local g = ghost:new(furniture, "dresser", gself.map, t.x, t.y)
+			local g = ghost:new(hull, "hull", gself.map, t.x, t.y)
 			gself.ghost = g
 		end
 	elseif key == 'r' then

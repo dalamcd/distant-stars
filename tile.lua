@@ -72,6 +72,10 @@ function tile:isHull()
 	return self.map:isHull(self.x, self.y)
 end
 
+function tile:isBuildable()
+	return self.map:isBuildable(self.x, self.y)
+end
+
 function tile:getNeighbors()
 	local points = {
 		{x=self.x+1, y=self.y},

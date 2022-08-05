@@ -1,5 +1,6 @@
 local class = require('middleclass')
 local furniture = require('furniture.furniture')
+local utils = require('utils')
 
 local ghost = class('ghost', furniture)
 
@@ -31,8 +32,15 @@ function ghost:draw()
 		self.y = self.y - adjY
 	end
 	local r, g, b, a = love.graphics.getColor()
-	love.graphics.setColor(0.1, 0.1, 0.1, 0.4)
+	if self:detectBuildable() then
+		love.graphics.setColor(0.1, 0.6, 0.1, 0.4)
+	else
+		love.graphics.setColor(0.6, 0.1, 0.1, 0.4)
+	end
 	furniture.draw(self)
+	for _, t in ipairs(self:getTiles()) do
+		circ("fill", (t.x-1/2)*TILE_SIZE, (t.y-1/2)*TILE_SIZE, 5, self.map.camera)
+	end
 	love.graphics.setColor(r, g, b, a)
 	self.x = ox
 	self.y = oy
@@ -83,14 +91,54 @@ function ghost:rotate(reverse)
 end
 
 function ghost:place()
-	local obj = self.objClass:new(self.name, self.map, self.x - self.map.xOffset, self.y - self.map.yOffset)
-	self.map:addFurniture(obj)
+
+	local ox = self.x
+	local oy = self.y
+	local adjX, adjY = self:detectCenter()
+	if self.rotation == 0 or self.rotation == 1 then
+		self.x = self.x - adjX
+		self.y = self.y - adjY
+	elseif self.rotation == 3 then
+		self.x = self.x - adjX
+		self.y = self.y - adjY
+	else
+		self.x = self.x + adjX
+		self.y = self.y - adjY
+	end
+
+	if self:detectBuildable() then
+		local obj = self.objClass:new(self.name, self.map, self.x - self.map.xOffset, self.y - self.map.yOffset)
+		local adjX, adjY = self:detectCenter()
+		obj.tileWidth = self.tileWidth
+		obj.tileHeight = self.tileHeight
+		obj.width = self.width
+		obj.height = self.height
+		obj.spriteWidth = self.spriteWidth
+		obj.spriteHeight = self.spriteHeight
+		obj.sprite = self.sprite
+		obj:recalculateOffsets()
+		self.map:addFurniture(obj)
+	else
+		self.x = ox
+		self.y = oy
+	end
 end
 
 function ghost:detectCenter()
 	local xAdjust = math.ceil(self.width/2) - 1
 	local yAdjust = math.ceil(self.height/2) - 1
 	return xAdjust, yAdjust
+end
+
+function ghost:detectBuildable()
+	local buildable = true
+	for k, t in ipairs(self:getTiles()) do
+		if t and not t:isBuildable() then
+			buildable = false
+			break
+		end
+	end
+	return buildable
 end
 
 function ghost:getPossibleTasks()

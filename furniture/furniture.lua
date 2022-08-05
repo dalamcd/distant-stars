@@ -288,6 +288,10 @@ function furniture:getAvailableInteractionTile()
 	return foundTile
 end
 
+function furniture:getTiles()
+	return self.map:getTilesInRectangle(self.x, self.y, self.width, self.height, true)
+end
+
 function furniture:getType()
 	return drawable.getType(self) .. "[[furniture]]"
 end

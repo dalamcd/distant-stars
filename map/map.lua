@@ -226,7 +226,6 @@ function map:addFurniture(f)
 	f.map = self
 	f.x = f.x + self.xOffset
 	f.y = f.y + self.yOffset
-	print(f)
 	f.mapTranslationXOffset = self.mapTranslationXOffset
 	f.mapTranslationYOffset = self.mapTranslationYOffset
 	table.insert(self.furniture, f)

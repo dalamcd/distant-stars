@@ -68,7 +68,7 @@ function entity:update(dt)
 		-- Handle multiple entities residing in (i.e, not just passing through) the same tile by dispersing them
 		if #entities > 1 then
 			for _, ent in ipairs(entities) do
-				if not ent.walking and ent.uid ~= self.uid then
+				if not ent.walking and not ent.dispersing and ent.uid ~= self.uid then
 					local t = self.map:getWalkableTileInRadius(self.x, self.y, 1)
 					if not t then
 						-- If there is not a tile we can escape to immediately around us, expand the search radius
@@ -79,10 +79,21 @@ function entity:update(dt)
 					end
 
 					if not t then print("entity "..self.dname.."("..self.uid..")".." is very thoroughly trapped") break end
+					
+					local function strFunc(tself)
+						return "Moving away from occupied tile"
+					end
+
+					local function endFunc(tself)
+						self.dispersing = false
+					end
+
 					local walkTask = self:getWalkTask(t)
 					walkTask.params.map = self.map
-					self:pushTask(walkTask)
-					self.walking = true
+					walkTask.strFunc = strFunc
+					walkTask.endFunc = endFunc
+					self:setTask(walkTask)
+					self.dispersing = true
 					break
 				end
 			end

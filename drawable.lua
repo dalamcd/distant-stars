@@ -109,6 +109,11 @@ function drawable:draw(x, y, s, nx, ny, nw, nh)
 	end
 end
 
+function drawable:recalculateOffsets()
+	self.xOffset = TILE_SIZE*self.width - self.spriteWidth
+	self.yOffset = TILE_SIZE*self.height - self.spriteHeight
+end
+
 function drawable:inBounds(worldX, worldY)
 	if(worldX - self:getWorldX() <= self.spriteWidth and worldX - self:getWorldX() >= 0) then
 		if(worldY - self:getWorldY() <= self.spriteHeight and worldY - self:getWorldY() >= 0) then

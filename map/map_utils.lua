@@ -74,6 +74,19 @@ local map_utils = {
 		return nil
 	end,
 
+	isBuildable = function(self, x, y)
+		if not self:isWalkable(x, y) then
+			return false
+		elseif self:isHull(x, y) then
+			return false
+		elseif self:isWall(x, y) then
+			return false
+		elseif #self:getFurnitureInTile(self:getTile(x, y)) > 0 then
+			return false
+		end
+		return true
+	end,
+
 	getTile = function(self, x, y)
 		local nx = x - self.xOffset
 		local ny = y - self.yOffset
@@ -258,7 +271,7 @@ local map_utils = {
 	getTilesFromPoints = function(self, points)
 		local tiles = {}
 		for _, point in ipairs(points) do
-			local t = self:getTile(point.x + self.xOffset, point.y + self.yOffset)
+			local t = self:getTile(point.x, point.y)
 			if t then
 				table.insert(tiles, t)
 			end
@@ -268,6 +281,8 @@ local map_utils = {
 
 	getTilesInRectangle = function(self, x, y, width, height)
 		local points = {}
+		--x = x - self.xOffset
+		--y = y - self.yOffset
 		for r=0, width-1 do
 			for c=0, height-1 do
 				table.insert(points, {x=x+r, y=y+c})
