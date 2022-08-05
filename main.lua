@@ -1,23 +1,23 @@
-local map = require('map/map')
+local map = require('map.map')
 local tile = require('tile')
 local game = require('game')
 local camera = require('camera')
 local debugtext = require('debugtext')
 local entity = require('entity')
 local item = require('item')
-local furniture = require('furniture/furniture')
+local furniture = require('furniture.furniture')
 local task = require('task')
 local context = require('context')
-local door = require('furniture/door')
+local door = require('furniture.door')
 local drawable = require('drawable')
 local stockpile = require('stockpile')
 --local background = require('background')
-local gamestate = require('gamestate/gamestate')
-local fadein = require('gamestate/gamestate_fade')
-local inventory = require('gamestate/gamestate_inventory')
-local mapstate = require('gamestate/gamestate_map')
-local background = require('gamestate/gamestate_background')
-local station = require('furniture/station')
+local gamestate = require('gamestate.gamestate')
+local fadein = require('gamestate.gamestate_fade')
+local inventory = require('gamestate.gamestate_inventory')
+local mapstate = require('gamestate.gamestate_map')
+local background = require('gamestate.gamestate_background')
+local station = require('furniture.station')
 
 TILE_SIZE = 32
 
@@ -53,8 +53,9 @@ function love.load()
 	tile:load("metal wall", "floorTile", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE)
 	tile:load("void", "floorTile", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE)
 	furniture:load("dresser", "furniture", 0, 0, TILE_SIZE*2, TILE_SIZE+14, 2, 1, dresserTiles)
-	furniture:load("station", "furniture", TILE_SIZE*3, 0, TILE_SIZE, TILE_SIZE+13, 1, 1)
-	furniture:load("door", "furniture", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE, 1, 1)
+	furniture:load("station", "furniture", TILE_SIZE*7, 0, TILE_SIZE, TILE_SIZE+13, 1, 1)
+	furniture:load("bigthing", "furniture", TILE_SIZE*9, 0, TILE_SIZE*2, TILE_SIZE*4, 2, 4)
+	furniture:load("door", "furniture", TILE_SIZE*5, 0, TILE_SIZE, TILE_SIZE, 1, 1)
 	furniture:load("hull", "floorTile", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE, 1, 1)
 	furniture:load("wall", "floorTile", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, 1, 1)
 	entity:load("pawn", "entity", 0, 0, TILE_SIZE, TILE_SIZE)
@@ -167,15 +168,15 @@ function love.keypressed(key)
 		gamestate:pop()
 	end
 
-	if key == 'q' then
-		local gs = gamestate:peek()
-		local furniture = gs.map:getFurnitureAtWorld(getMousePos(gs.map.camera))
-		for _, f in ipairs(furniture) do
-			if f:isType("door") then
-				f:openDoor()
-			end
-		end
-	end
+	-- if key == 'q' then
+	-- 	local gs = gamestate:peek()
+	-- 	local furniture = gs.map:getFurnitureAtWorld(getMousePos(gs.map.camera))
+	-- 	for _, f in ipairs(furniture) do
+	-- 		if f:isType("door") then
+	-- 			f:openDoor()
+	-- 		end
+	-- 	end
+	-- end
 
 	if key == '1' then
 		local top = gamestate:peek()

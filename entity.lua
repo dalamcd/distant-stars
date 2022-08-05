@@ -64,7 +64,7 @@ function entity:update(dt)
 
 	if self:isIdle() and not self.walking and #self.tasks == 0 then
 		local entities = self.map:getEntitiesInTile(self.map:getTile(self.x, self.y))
-		
+
 		-- Handle multiple entities residing in (i.e, not just passing through) the same tile by dispersing them
 		if #entities > 1 then
 			for _, ent in ipairs(entities) do
@@ -77,8 +77,8 @@ function entity:update(dt)
 							if t then break end
 						end
 					end
-					
-					if not t then print("entity "..self.dname.."("..self.uid..")".."is very thoroughly trapped") break end
+
+					if not t then print("entity "..self.dname.."("..self.uid..")".." is very thoroughly trapped") break end
 					local walkTask = self:getWalkTask(t)
 					walkTask.params.map = self.map
 					self:pushTask(walkTask)
@@ -99,7 +99,7 @@ function entity:draw()
 	local c = self.map.camera
 	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE + self.walkXOffset), c:getRelativeY((self.y - 1)*TILE_SIZE + self.walkYOffset), c.scale)
 --	drawable.draw(self, (self.x - 1)*TILE_SIZE + self.walkXOffset, (self.y - 1)*TILE_SIZE + self.walkYOffset)
-	
+
 	if #self.inventory > 0 then
 		for _, item in ipairs(self.inventory) do
 			item:draw()
@@ -138,7 +138,7 @@ function entity:wanderAimlessly()
 	local walkTask = self:getWalkTask(tile)
 	walkTask.params.map = self.map
 
-	function strFunc(tself)
+	local function strFunc(tself)
 		return "Wandering aimlessly"
 	end
 
@@ -339,14 +339,13 @@ function entity:handleWalking()
 			self:walkToAdjacentTile(t.x, t.y, self.speed)
 		end
 	end
-
 end
 
 function entity:walkToAdjacentTile(x, y, speed)
-	
+
 	local dx = x - self.x
 	local dy = y - self.y
-	
+
 	if math.abs(dx) > 1 or math.abs(dy) > 1 then
 		error("pawn attempted to walk a distance longer than 1 tile")
 	end

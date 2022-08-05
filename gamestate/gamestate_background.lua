@@ -1,5 +1,5 @@
 local class = require('middleclass')
-local gamestate = require('gamestate/gamestate')
+local gamestate = require('gamestate.gamestate')
 
 local background = class('background', gamestate)
 

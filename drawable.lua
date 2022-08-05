@@ -14,17 +14,29 @@ function drawable.static:getTileset(name)
 	return self._tilesets[name] or nil
 end
 
-function drawable:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, posX, posY, tileWidth, tileHeight)
+function drawable:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, posX, posY, tileWidth, tileHeight, invertDimensions)
 
 	local ts = drawable:getTileset(tileset)
 
 	if ts then
 		local distanceRight = math.ceil(spriteWidth / TILE_SIZE) * TILE_SIZE
 		local distanceDown = math.ceil(spriteHeight / TILE_SIZE) * TILE_SIZE
-		local southFacingQuad = love.graphics.newQuad(tilesetX, tilesetY, spriteWidth, spriteHeight, ts:getWidth(), ts:getHeight())
-		local northFacingQuad = love.graphics.newQuad(tilesetX + distanceRight, tilesetY, spriteWidth, spriteHeight, ts:getWidth(), ts:getHeight())
-		local westFacingQuad = love.graphics.newQuad(tilesetX, tilesetY + distanceDown, spriteWidth, spriteHeight, ts:getWidth(), ts:getHeight())
-		local eastFacingQuad = love.graphics.newQuad(tilesetX + distanceRight, tilesetY + distanceDown, spriteWidth, spriteHeight, ts:getWidth(), ts:getHeight())
+		local southFacingQuad
+		local northFacingQuad
+		local westFacingQuad
+		local eastFacingQuad
+		if invertDimensions then
+			southFacingQuad = love.graphics.newQuad(tilesetX, tilesetY, spriteWidth, spriteHeight, ts:getWidth(), ts:getHeight())
+			northFacingQuad = love.graphics.newQuad(tilesetX + distanceRight, tilesetY, spriteWidth, spriteHeight, ts:getWidth(), ts:getHeight())
+			westFacingQuad = love.graphics.newQuad(tilesetX, tilesetY + distanceDown, spriteHeight, spriteWidth, ts:getWidth(), ts:getHeight())
+			eastFacingQuad = love.graphics.newQuad(tilesetX + distanceDown, tilesetY + distanceDown, spriteHeight, spriteWidth, ts:getWidth(), ts:getHeight())
+		else
+			southFacingQuad = love.graphics.newQuad(tilesetX, tilesetY, spriteWidth, spriteHeight, ts:getWidth(), ts:getHeight())
+			northFacingQuad = love.graphics.newQuad(tilesetX + distanceRight, tilesetY, spriteWidth, spriteHeight, ts:getWidth(), ts:getHeight())
+			westFacingQuad = love.graphics.newQuad(tilesetX, tilesetY + distanceDown, spriteWidth, spriteHeight, ts:getWidth(), ts:getHeight())
+			eastFacingQuad = love.graphics.newQuad(tilesetX + distanceRight, tilesetY + distanceDown, spriteWidth, spriteHeight, ts:getWidth(), ts:getHeight())
+		end
+		
 		self.uid = getUID()
 		self.tileset = ts
 		self.sprite = southFacingQuad
@@ -38,7 +50,7 @@ function drawable:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHei
 		self.y = posY
 		self.width = tileWidth
 		self.height = tileHeight
-		self.xOffset = (TILE_SIZE*self.width - spriteWidth)/2
+		self.xOffset = TILE_SIZE*self.width - spriteWidth
 		self.yOffset = TILE_SIZE*self.height - spriteHeight
 		self.origXOffset = self.xOffset
 		self.origYOffset = self.yOffset

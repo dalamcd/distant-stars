@@ -1,5 +1,9 @@
-local gamestate = require('gamestate/gamestate')
+local gamestate = require('gamestate.gamestate')
 local context = require('context')
+local furniture = require('furniture.furniture')
+local ghost = require('furniture.ghost')
+local hull = require('furniture.hull')
+
 -- TODO Maximum velocity for map movement, need to think about what to do about this and other basic constants
 local MAX_VEL = 3
 
@@ -16,6 +20,28 @@ local function wheelmoved(gself, x, y)
 end
 
 local function keypressed(gself, key)
+	local t = gself.map:getTileAtWorld(getMousePos(gself.map.camera))
+	local e = gself.map:getEntitiesAtWorld(getMousePos(gself.map.camera))[1]
+	local i = gself.map:getItemsAtWorld(getMousePos(gself.map.camera))[1]
+	local f = gself.map:getFurnitureAtWorld(getMousePos(gself.map.camera))[1]
+	local s = gself.map:getStockpileAtWorld(getMousePos(gself.map.camera))
+
+	if key == 'e' then
+		if t then
+			local g = ghost:new(furniture, "dresser", gself.map, t.x, t.y)
+			gself.ghost = g
+		end
+	elseif key == 'r' then
+		if gself.ghost then
+			gself.ghost:rotate()
+		end
+	end
+
+	if key == 'q' then
+		if gself.ghost then
+			gself.ghost:place()
+		end
+	end
 end
 
 local function mousereleased(gself, x, y, button)
@@ -36,10 +62,6 @@ local function mousereleased(gself, x, y, button)
 			if f then gself.map.mouseSelection = f end
 			if i then gself.map.mouseSelection = i end
 			if e then gself.map.mouseSelection = e end
-			-- if s then setMouseSelection(s) end
-			-- if f then setMouseSelection(f) end
-			-- if i then setMouseSelection(i) end
-			-- if e then setMouseSelection(e) end
 		end
 	end
 
@@ -95,6 +117,7 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 		gself.map = map
 		gself.map.camera = camera
 		gself.context = context:new(gself.map)
+		gself.ghost = nil
 
 		if not passthrough then
 			--local b = background:new(500)
@@ -110,6 +133,9 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 			gself.background:draw()
 		end
 		gself.map:draw()
+		if gself.ghost then
+			gself.ghost:draw()
+		end
 		gself.context:draw()
 	end
 
@@ -145,6 +171,10 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 
 		if gself.background then
 			gself.background:update(dt)
+		end
+
+		if gself.ghost then
+			gself.ghost:update(self, dt)
 		end
 
 		d:updateTextField("Objects under mouse", objStr)

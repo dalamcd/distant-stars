@@ -1,8 +1,8 @@
 local class = require('middleclass')
-local furniture = require('furniture/furniture')
+local furniture = require('furniture.furniture')
 local task = require('task')
-local gamestate = require('gamestate/gamestate')
-local stationstate = require('gamestate/gamestate_station')
+local gamestate = require('gamestate.gamestate')
+local stationstate = require('gamestate.gamestate_station')
 
 local station = class('station', furniture)
 

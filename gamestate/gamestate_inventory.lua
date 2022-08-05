@@ -1,4 +1,4 @@
-local gamestate = require('gamestate/gamestate')
+local gamestate = require('gamestate.gamestate')
 local gui = require("gui")
 
 function gamestate.static:getInventoryState(source, destination)

@@ -1,5 +1,5 @@
 local class = require('middleclass')
-local furniture = require('furniture/furniture')
+local furniture = require('furniture.furniture')
 
 local hull = class('hull', furniture)
 

@@ -1,4 +1,4 @@
-local gamestate = require('gamestate/gamestate')
+local gamestate = require('gamestate.gamestate')
 
 function gamestate.static:getFadeState(max, step)
 	max = max or 0.85

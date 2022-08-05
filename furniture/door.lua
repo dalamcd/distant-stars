@@ -1,5 +1,5 @@
 local class = require('middleclass')
-local furniture = require('furniture/furniture')
+local furniture = require('furniture.furniture')
 local drawable = require('drawable')
 
 local door = class("door", furniture)

@@ -1,4 +1,4 @@
-local gamestate = require('gamestate/gamestate')
+local gamestate = require('gamestate.gamestate')
 
 local function loadFunc(sself, gstate, entity)
 	local str = entity.dname .. " is working on " .. sself.name

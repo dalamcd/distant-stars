@@ -1,8 +1,8 @@
 local class = require('middleclass')
 local drawable = require('drawable')
-local gamestate = require('gamestate/gamestate')
-local inventory = require('gamestate/gamestate_inventory')
-local fade = require('gamestate/gamestate_fade')
+local gamestate = require('gamestate.gamestate')
+local inventory = require('gamestate.gamestate_inventory')
+local fade = require('gamestate.gamestate_fade')
 local task = require('task')
 
 local furniture = class('furniture', drawable)
@@ -36,7 +36,7 @@ end
 function furniture:initialize(name, map, posX, posY)
 	local i = furniture:retrieve(name)
 	if i then
-		drawable.initialize(self, i.tileset, i.tilesetX, i.tilesetY, i.spriteWidth, i.spriteHeight, posX, posY, i.tileWidth, i.tileHeight)
+		drawable.initialize(self, i.tileset, i.tilesetX, i.tilesetY, i.spriteWidth, i.spriteHeight, posX, posY, i.tileWidth, i.tileHeight, true)
 	else
 		error("attempted to initialize " .. self.name .. " but no furniture with that name was found")
 	end
@@ -47,7 +47,7 @@ function furniture:initialize(name, map, posX, posY)
 
 	if not i.interactPoints then
 		local points = {{x=posX+1, y=posY}, {x=posX-1, y=posY}, {x=posX, y=posY+1}, {x=posX, y=posY-1}}
-		interactTiles = self.map:getTilesFromPoints(points, true)
+		interactTiles = self.map:getTilesFromPoints(points)
 	else
 		for _, p in ipairs(i.interactPoints) do
 			table.insert(interactTiles, self.map:getTile(posX + p.x + map.xOffset, posY + p.y + map.yOffset))
@@ -58,6 +58,11 @@ function furniture:initialize(name, map, posX, posY)
 	self.inventory = {}
 	self.output = {}
 	self.interactTiles = interactTiles
+	self.rotation = 0
+	self.originTileWidth = i.tileWidth
+	self.originTileHeight = i.tileHeight
+	self.originSpriteWidth = i.spriteWidth
+	self.originSpriteHeight = i.spriteHeight
 end
 
 function furniture:draw()
@@ -143,14 +148,14 @@ function furniture:getRemoveFromInventoryTask(item, parentTask)
 				break
 			end
 		end
-	
+
 		if not inRange then
 			local tile = self:getAvailableInteractionTile()
 			if tile then
 				p.dest = tile
 				local walkTask = p.entity:getWalkTask(tile, tself)
-				p.entity:pushTask(walkTask)	
-			end		
+				p.entity:pushTask(walkTask)
+			end
 		else
 
 			tself:complete()

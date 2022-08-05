@@ -2,12 +2,12 @@ local class = require('middleclass')
 local luastar = require('lua-star')
 local utils = require('utils')
 local tile = require('tile')
-local door = require('furniture/door')
-local hull = require('furniture/hull')
+local door = require('furniture.door')
+local hull = require('furniture.hull')
 local room = require('room')
-local furniture = require('furniture/furniture')
-local wall = require('furniture/wall')
-local map_utils = require('map/map_utils')
+local furniture = require('furniture.furniture')
+local wall = require('furniture.wall')
+local map_utils = require('map.map_utils')
 local alert = require('alert')
 local map = class('map')
 map:include(map_utils)
@@ -226,6 +226,7 @@ function map:addFurniture(f)
 	f.map = self
 	f.x = f.x + self.xOffset
 	f.y = f.y + self.yOffset
+	print(f)
 	f.mapTranslationXOffset = self.mapTranslationXOffset
 	f.mapTranslationYOffset = self.mapTranslationYOffset
 	table.insert(self.furniture, f)
