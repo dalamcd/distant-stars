@@ -9,6 +9,7 @@ local furniture = require('furniture.furniture')
 local wall = require('furniture.wall')
 local map_utils = require('map.map_utils')
 local alert = require('alert')
+
 local map = class('map')
 map:include(map_utils)
 
@@ -167,6 +168,14 @@ function map:drawSelectionDetails()
 								love.graphics.getHeight() - height + textPadding*itemNum*3)
 			itemNum = itemNum + 1
 		end
+		love.graphics.print("Health: " .. self.mouseSelection.health,
+							love.graphics.getWidth() - width - textPadding,
+							love.graphics.getHeight() - height + textPadding*itemNum*3)
+		itemNum = itemNum + 1
+		love.graphics.print("Satiation: " .. self.mouseSelection.satiation,
+							love.graphics.getWidth() - width - textPadding,
+							love.graphics.getHeight() - height + textPadding*itemNum*3)
+		itemNum = itemNum + 1
 
 		for i=#tlist, 1, -1 do
 			if not tlist[i]:isChild() then
@@ -232,6 +241,16 @@ function map:removeItem(i)
 	return false
 end
 
+function map:removeEntity(e)
+	for idx, entity in ipairs(self.entities) do
+		if e.uid == entity.uid then
+			table.remove(self.entities, idx)
+			return true
+		end
+	end
+	return false
+end
+
 function map:addFurniture(f)
 	f.map = self
 	f.x = f.x + self.xOffset
@@ -244,6 +263,23 @@ end
 function map:addStockpile(s)
 	s.map = self
 	table.insert(self.stockpiles, s)
+end
+
+function map:getNearbyObject(objType, x, y)
+	local nearest = math.huge
+	local found = nil
+	for _, tile in ipairs(self.tiles) do
+		for _, obj in ipairs(self:getObjectsInTile(tile)) do
+			if obj:isType(objType) then
+				local dist = (x - obj.x)^2 + (y - obj.y)^2
+				if dist < nearest then
+					nearest = dist
+					found = obj
+				end
+			end
+		end
+	end
+	return found
 end
 
 function map:addAlert(str)

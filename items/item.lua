@@ -1,6 +1,9 @@
 local class = require('middleclass')
 local game = require('game')
-local task = require('task')
+local task = require('tasks.task')
+local walkTask = require('tasks.task_walk')
+local pickupTask = require('tasks.task_item_pickup')
+local dropTask = require('tasks.task_item_drop')
 local drawable = require('drawable')
 
 local item = class('item', drawable)
@@ -71,8 +74,11 @@ function item:addedToInventory(entity)
 	self.y = entity.y
 end
 
-function item:increaseAmount(amt)
+function item:adjustAmount(amt)
 	self.amount = self.amount + amt
+	if self.amount <= 0 then
+		self:delete()
+	end
 end
 
 function item:addedToTile()
@@ -100,7 +106,7 @@ function item:mergeWith(mergeItem)
 	if self:getType() ~= mergeItem:getType() or mergeItem.uid == self.uid then return false end
 
 	if self.amount + mergeItem.amount < self.maxStack then
-		self:increaseAmount(mergeItem.amount)
+		self:adjustAmount(mergeItem.amount)
 		mergeItem:delete()
 		return true
 	elseif self.amount < self.maxStack then
@@ -124,8 +130,8 @@ function item:getAvailableJobs()
 	if self.x ~= 2 or self.y ~= 8 then
 		local function startFunc(tself)
 			local p = tself:getParams()
-			p.pickup = self:getPickupTask(tself)
-			p.drop = self:getDropTask(tself)
+			p.pickup = pickupTask:new(self, tself)
+			p.drop = dropTask:new(self, tself)
 			p.dest = self.map:getTile(2, 8)
 			if not self.owned then
 				p.entity:pushTask(p.pickup)
@@ -161,106 +167,10 @@ function item:getPossibleTasks()
 
 	if self.owned then return {} end
 
-	local pickupTask = self:getPickupTask()
-	table.insert(tasks, pickupTask)
+	local pt = pickupTask:new(self)
+	table.insert(tasks, pt)
 
 	return tasks
-end
-
-function item:getPickupTask(parentTask)
-	local function startFunc(tself)
-		local p = tself:getParams()
-		if p.entity.x ~= self.x or p.entity.y ~= self.y then
-			local walkTask = p.entity:getWalkTask(p.map:getTile(self.x, self.y), tself)
-			p.entity:pushTask(walkTask)
-		else
-			tself:complete()
-		end
-	end
-
-	local function runFunc(tself)
-		local p = tself:getParams()
-		if not p.entity.walking and p.entity.x == self.x and p.entity.y == self.y then
-			tself:complete()
-		elseif not p.routeFound then
-			tself.finished = true
-		end
-	end
-
-	local function endFunc(tself)
-		local p = tself:getParams()
-		if not tself.abandoned then
-			local s = self.map:inStockpile(self.x, self.y)
-			self.owned = true
-			if s then
-				s:removeFromStockpile(self)
-			end
-			p.pickedUp = true
-			p.entity:addToInventory(self)
-		end
-	end
-
-	local function strFunc(tself)
-		return "Moving to (" .. self.x .. ", " .. self.y .. ") to pick up " .. self.name
-	end
-
-	local function contextFunc(tself)
-		return "Pick up " .. self.name
-	end
-
-	local pickupTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
-	return pickupTask
-end
-
--- requires params.dest (destination tile)
-function item:getDropTask(parentTask)
-	local function runFunc(tself)
-		local p = tself:getParams()
-		if not p.entity.walking and p.entity.x == p.dest.x and p.entity.y == p.dest.y then
-			p.entity:removeFromInventory(self)
-			tself:complete()
-		elseif not p.routeFound then
-			tself.finished = true
-		end
-	end
-	
-	local function startFunc(tself)
-		local p = tself:getParams()
-		if not self.owned then
-			tself:complete()
-			return
-		end
-
-		if p.entity.x ~= p.dest.x or p.entity.y ~= p.dest.y then
-			local walkTask = p.entity:getWalkTask(p.dest, tself)
-			p.entity:pushTask(walkTask)			
-		else
-			p.entity:removeFromInventory(self)
-			tself:complete()
-		end
-	end
-
-	local function endFunc(tself)
-		local p = tself:getParams()
-		if not tself.abandoned then
-			local s = self.map:inStockpile(self.x, self.y)
-			p.dropped = true
-			if s then
-				s:addToStockpile(self)
-			end
-		end
-	end
-
-	local function contextFunc(tself)
-		return "Drop " .. self.name
-	end
-
-	local function strFunc(tself)
-		return "Dropping " .. self.name
-	end
-
-	local dropTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
-	return dropTask
 end
 
 function item:setPos(x, y, xOffset, yOffset)

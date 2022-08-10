@@ -3,7 +3,10 @@ local drawable = require('drawable')
 local gamestate = require('gamestate.gamestate')
 local inventory = require('gamestate.gamestate_inventory')
 local fade = require('gamestate.gamestate_fade')
-local task = require('task')
+local task = require('tasks.task')
+local walkTask = require('tasks.task_walk')
+local withdrawTask = require('tasks.task_furniture_withdraw')
+local viewContentsTask = require('tasks.task_furniture_view_contents')
 
 local furniture = class('furniture', drawable)
 
@@ -46,7 +49,14 @@ function furniture:initialize(name, map, posX, posY)
 	local interactTiles = {}
 
 	if not i.interactPoints then
-		local points = {{x=posX+1, y=posY}, {x=posX-1, y=posY}, {x=posX, y=posY+1}, {x=posX, y=posY-1}}
+		local points = {{x=posX+map.xOffset+1, y=posY+map.yOffset},
+						{x=posX+map.xOffset-1, y=posY+map.yOffset},
+						{x=posX+map.xOffset, y=posY+map.yOffset+1},
+						{x=posX+map.xOffset, y=posY+map.yOffset-1}}
+
+		for _, p in ipairs(points) do
+			if name == "station" then print(p.x, p.y) end
+		end
 		interactTiles = self.map:getTilesFromPoints(points)
 	else
 		for _, p in ipairs(i.interactPoints) do
@@ -74,178 +84,15 @@ function furniture:draw()
 end
 
 function furniture:getPossibleTasks()
-	local tasks = {self:getViewContentsTask()}
+	local tasks = {viewContentsTask:new(self)}
 
 	if #self:getInventory() > 0 then
 		for _, item in ipairs(self:getInventory()) do
-			local t = self:getRemoveFromInventoryTask(item)
-			table.insert(tasks, t)
+			local wt = withdrawTask:new(self, item)
+			table.insert(tasks, wt)
 		end
 	end
 	return tasks
-end
-
-function furniture:getAddToInventoryTask(item, parentTask)
-	local function startFunc(tself)
-		local p = tself:getParams()
-		local inRange = false
-
-		for _, tile in ipairs(self:getInteractionTiles()) do
-			if p.entity.x == tile.x and p.entity.y == tile.y then
-				inRange = true
-				break
-			end
-		end
-	
-		if not inRange then
-			local tile = self:getAvailableInteractionTile()
-			if tile then
-				p.dest = tile
-				local walkTask = p.entity:getWalkTask(tile, tself)
-				p.entity:pushTask(walkTask)	
-			end		
-		else
-
-			tself:complete()
-		end
-	end
-
-	local function runFunc(tself)
-		local p = tself:getParams()
-		if not p.entity.walking and p.entity.x == p.dest.x and p.entity.y == p.dest.y then
-			tself:complete()
-		elseif not p.routeFound then
-			tself.finished = true
-		end
-	end
-
-	local function endFunc(tself)
-		local p = tself:getParams()
-		p.entity:removeFromInventory(item)
-		self:addToInventory(item)
-	end
-
-	local function contextFunc(tself)
-		return "Put " .. item.name .. " in " .. self.name
-	end
-
-	local function strFunc(tself)
-		return "Putting " .. item.name .. " in " .. self.name
-	end
-
-	local depositTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
-	return depositTask
-end
-
-function furniture:getRemoveFromInventoryTask(item, parentTask)
-	local function startFunc(tself)
-		local p = tself:getParams()
-		local inRange = false
-
-		for _, tile in ipairs(self:getInteractionTiles()) do
-			if p.entity.x == tile.x and p.entity.y == tile.y then
-				inRange = true
-				break
-			end
-		end
-
-		if not inRange then
-			local tile = self:getAvailableInteractionTile()
-			if tile then
-				p.dest = tile
-				local walkTask = p.entity:getWalkTask(tile, tself)
-				p.entity:pushTask(walkTask)
-			end
-		else
-
-			tself:complete()
-		end
-	end
-
-	local function runFunc(tself)
-		local p = tself:getParams()
-		if not p.entity.walking and p.entity.x == p.dest.x and p.entity.y == p.dest.y then
-			tself:complete()
-		elseif not p.routeFound then
-			tself.finished = true
-		end
-	end
-
-	local function endFunc(tself)
-		local p = tself:getParams()
-		self:removeFromInventory(item)
-		p.entity:addToInventory(item)
-	end
-
-	local function contextFunc(tself)
-		return "Take " .. item.name .. " from " .. self.name
-	end
-
-	local function strFunc(tself)
-		return "Taking " .. item.name .. " from " .. self.name
-	end
-
-	local retrieveTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
-	return retrieveTask
-end
-
-function furniture:getViewContentsTask(parentTask)
-	local function startFunc(tself)
-		local p = tself:getParams()
-		local inRange = false
-
-		for _, tile in ipairs(self:getInteractionTiles()) do
-			if p.entity.x == tile.x and p.entity.y == tile.y then
-				inRange = true
-				break
-			end
-		end
-	
-		if not inRange then
-			local tile = self:getAvailableInteractionTile()
-			if tile then
-				p.dest = tile
-				local walkTask = p.entity:getWalkTask(tile, tself)
-				p.entity:pushTask(walkTask)	
-			end		
-		else
-			tself:complete()
-		end
-	end
-
-	local function runFunc(tself)
-		local p = tself:getParams()
-		if not p.routeFound then
-			tself:abandon()
-			tself:complete()
-			return
-		end
-		
-		if not p.entity.walking and p.entity.x == p.dest.x and p.entity.y == p.dest.y then
-			tself:complete()
-		end
-	end
-
-	local function endFunc(tself)
-		local p = tself:getParams()
-		if not tself.abandoned then
-			local f = gamestate:getFadeState()
-			local gs = gamestate:getInventoryState(self, p.entity)
-			gamestate:push(f)
-			gamestate:push(gs)
-		end
-	end
-
-	local function contextFunc(tself)
-		return "View inventory"
-	end
-
-	local function strFunc(tself)
-		return "Viewing the inventory of " .. self.name
-	end
-
-	local viewTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
-	return viewTask
 end
 
 function furniture:getInventory()

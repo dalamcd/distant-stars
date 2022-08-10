@@ -97,15 +97,16 @@ function drawable:update(dt)
 	end
 end
 
-function drawable:draw(x, y, s, nx, ny, nw, nh)
+function drawable:draw(x, y, s, r, nx, ny, nw, nh)
+	r = r or 0
 	if nx and ny and nw and nh then
 		local ox, oy, ow, oh = self.sprite:getViewport()
 		self.sprite:setViewport(nx, ny, nw, nh, self.tileset:getWidth(), self.tileset:getHeight())
 		love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
-		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, 0, s)
+		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, r, s)
 		self.sprite:setViewport(ox, oy, ow, oh, self.tileset:getWidth(), self.tileset:getHeight())
 	else
-		love.graphics.draw(self.tileset, self.sprite, math.floor(x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s), math.floor(y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s), 0, s)
+		love.graphics.draw(self.tileset, self.sprite, math.floor(x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s), math.floor(y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s), r, s)
 	end
 end
 
