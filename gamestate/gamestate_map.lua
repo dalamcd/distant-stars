@@ -42,6 +42,10 @@ local function keypressed(gself, key)
 			gself.ghost:place()
 		end
 	end
+
+	if key =='t' and i and gself.map:getMouseSelection():isType("item") then
+		gself.map:getMouseSelection():mergeWith(i)
+	end
 end
 
 local function mousereleased(gself, x, y, button)

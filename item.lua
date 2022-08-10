@@ -27,7 +27,7 @@ function item.static:retrieve(name)
 	return self._loaded_items[name] or false
 end
 
-function item:initialize(name, map, posX, posY)
+function item:initialize(name, map, posX, posY, amount, maxStack)
 	local i = item:retrieve(name)
 	if i then
 		drawable.initialize(self, i.tileset, i.tilesetX, i.tilesetY, i.spriteWidth, i.spriteHeight, posX, posY, 1, 1)
@@ -35,13 +35,23 @@ function item:initialize(name, map, posX, posY)
 		error("attempted to initialize " .. self.name .. " but no item with that name was found")
 	end
 
+	amount = amount or 1
+	maxStack = maxStack or 50
+
 	self.name = name
 	self.map = map
+	self.amount = amount
+	self.maxStack = maxStack
 end
 
 function item:draw()
 	local c = self.map.camera
-	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE), c:getRelativeY((self.y - 1)*TILE_SIZE), c.scale)
+	local x = c:getRelativeX((self.x - 1)*TILE_SIZE)
+	local y = c:getRelativeY((self.y - 1)*TILE_SIZE)
+	drawable.draw(self, x, y, c.scale)
+	if self.amount > 1 then
+		drawable.drawSubText(self, self.amount, x + c.scale*(TILE_SIZE/2 - love.graphics.getFont():getWidth(self.amount)/2), y + TILE_SIZE*c.scale/2, c.scale)
+	end
 end
 
 function item:removedFromInventory(entity)
@@ -51,6 +61,7 @@ function item:removedFromInventory(entity)
 	self.y = entity.y
 	self.xOffset = self.origXOffset
 	self.yOffset = self.origYOffset
+	self:addedToTile()
 end
 
 function item:addedToInventory(entity)
@@ -60,9 +71,56 @@ function item:addedToInventory(entity)
 	self.y = entity.y
 end
 
+function item:increaseAmount(amt)
+	self.amount = self.amount + amt
+end
+
+function item:addedToTile()
+	for _, mapItem in ipairs(self.map:getItemsInTile(self.map:getTile(self.x, self.y))) do
+		if mapItem.uid ~= self.uid then
+			local tmp = self:mergeWith(mapItem)
+			if tmp and tmp > 0 or tmp == false then
+				local t = self.map:getRandomWalkableTileInRadius(self.x, self.y, 1)
+				if self.amount > mapItem.amount then
+					mapItem.x = t.x
+					mapItem.y = t.y
+					mapItem:addedToTile()
+				else
+					self.x = t.x
+					self.y = t.y
+					self:addedToTile()
+				end
+			end
+		end
+	end
+end
+
+function item:mergeWith(mergeItem)
+
+	if self:getType() ~= mergeItem:getType() or mergeItem.uid == self.uid then return false end
+
+	if self.amount + mergeItem.amount < self.maxStack then
+		self:increaseAmount(mergeItem.amount)
+		mergeItem:delete()
+		return true
+	elseif self.amount < self.maxStack then
+		local diff = self.maxStack - self.amount
+		mergeItem.amount = mergeItem.amount - (self.maxStack - self.amount)
+		self.amount = self.maxStack
+		return diff
+	end
+	return false
+end
+
+function item:delete()
+	if self.map then
+		self.map:removeItem(self)
+	end
+end
+
 function item:getAvailableJobs()
 	local tasks = {}
-	
+
 	if self.x ~= 2 or self.y ~= 8 then
 		local function startFunc(tself)
 			local p = tself:getParams()
@@ -213,7 +271,7 @@ function item:setPos(x, y, xOffset, yOffset)
 end
 
 function item:getType()
-	return drawable.getType(self) .. "[[item]]"
+	return drawable.getType(self) .. "[[item]][[" .. self.name .. "]]"
 end
 
 function item:getPluralName()

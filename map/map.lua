@@ -222,6 +222,16 @@ function map:addItem(i)
 	table.insert(self.items, i)
 end
 
+function map:removeItem(i)
+	for idx, item in ipairs(self.items) do
+		if i.uid == item.uid then
+			table.remove(self.items, idx)
+			return true
+		end
+	end
+	return false
+end
+
 function map:addFurniture(f)
 	f.map = self
 	f.x = f.x + self.xOffset

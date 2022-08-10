@@ -79,6 +79,8 @@ function love.load()
 	local chicken = item:new("yummy chicken", m, 2, 7)
 	local pizza = item:new("yummy pizza", m, 3, 8)
 	local pizza2 = item:new("yummy pizza", m, 3, 8)
+	pizza.amount = 10
+	pizza2.amount = pizza2.maxStack - 5
 	m:addItem(chicken)
 	m:addItem(pizza)
 	m:addItem(pizza2)
@@ -202,21 +204,23 @@ function love.keypressed(key)
 		gameSpeed = clamp(gameSpeed - 1, 1, 3)
 	end
 
-	--[[
-		if key == 'e' and getMouseSelection() then
-			local e = getMouseSelection()
-			local dist = math.sqrt((t.x - e.x)^2 + (t.y - e.y)^2)
-			local function moveFunc(eself, x)
-				local p = eself.moveFuncParams
-				--p.smoothstep = true
-				
-				local y = -math.sin(math.pi*(1-p.percentComplete))*math.abs(p.tileDistance*5)
-				--local y = 0
-				return y
-			end
-			getMouseSelection():translate(t.x, t.y, 30*math.sqrt(dist), moveFunc)
+	local gs = gamestate:peek()
+
+	if key == 'e' and gs.map:getMouseSelection() then
+		local e = gs.map:getMouseSelection()
+		local t = gs.map:getTileAtWorld(getMousePos(gs.map.camera))
+		local dist = math.sqrt((t.x - e.x)^2 + (t.y - e.y)^2)
+		local function moveFunc(eself, x)
+			local p = eself.moveFuncParams
+			p.smoothstep = true
+			
+			local y = -math.sin(math.pi*(1-p.percentComplete))*math.abs(p.tileDistance*5)
+			--local y = 0
+			return y
 		end
-	]]
+		gs.map:getMouseSelection():translate(t.x, t.y, 30*math.sqrt(dist), moveFunc)
+	end
+
 end
 
 function love.wheelmoved(x, y)
