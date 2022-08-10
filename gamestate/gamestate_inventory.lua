@@ -42,7 +42,7 @@ function gamestate.static:getInventoryState(source, destination)
 		drawRect(gself.leftMargin, gself.topMargin, gself.width, gself.height)
 		love.graphics.print(gself.headerText, gself.headerPos, gself.topMargin + 20)
 		for i, item in ipairs(gself.items) do
-			love.graphics.print(item.name, gself.leftMargin + 20, gself.topMargin + 20 + (gself.textHeight + 5)*i)
+			love.graphics.print(item.name.."("..item.amount..")", gself.leftMargin + 20, gself.topMargin + 20 + (gself.textHeight + 5)*i)
 		end
 	end
 

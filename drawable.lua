@@ -109,6 +109,10 @@ function drawable:draw(x, y, s, nx, ny, nw, nh)
 	end
 end
 
+function drawable:drawSubText(text, x, y, s)
+	love.graphics.print(text, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, 0, s)
+end
+
 function drawable:recalculateOffsets()
 	self.xOffset = TILE_SIZE*self.width - self.spriteWidth
 	self.yOffset = TILE_SIZE*self.height - self.spriteHeight
