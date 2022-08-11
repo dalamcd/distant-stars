@@ -1,5 +1,5 @@
-local class = require('middleclass')
-local luastar = require('lua-star')
+local class = require('lib.middleclass')
+local luastar = require('lib.lua-star')
 local utils = require('utils')
 local tile = require('tile')
 local door = require('furniture.door')

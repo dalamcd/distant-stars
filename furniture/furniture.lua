@@ -1,4 +1,4 @@
-local class = require('middleclass')
+local class = require('lib.middleclass')
 local drawable = require('drawable')
 local gamestate = require('gamestate.gamestate')
 local inventory = require('gamestate.gamestate_inventory')

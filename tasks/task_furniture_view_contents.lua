@@ -1,4 +1,4 @@
-local class = require('middleclass')
+local class = require('lib.middleclass')
 local task = require('tasks.task')
 local walkTask = require('tasks.task_entity_walk')
 local gamestate = require('gamestate.gamestate')
