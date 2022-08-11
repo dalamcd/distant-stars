@@ -1,4 +1,4 @@
-local class = require('middleclass')
+local class = require('lib.middleclass')
 local furniture = require('furniture.furniture')
 
 local hull = class('hull', furniture)

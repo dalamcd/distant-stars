@@ -1,4 +1,4 @@
-local class = require('middleclass')
+local class = require('lib.middleclass')
 local item = require('items.item')
 local eatTask = require('tasks.task_entity_eat')
 

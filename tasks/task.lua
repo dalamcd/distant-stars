@@ -1,4 +1,4 @@
-local class = require('middleclass')
+local class = require('lib.middleclass')
 local utils = require('utils')
 
 local task = class('task')

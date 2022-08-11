@@ -1,4 +1,4 @@
-local class = require('middleclass')
+local class = require('lib.middleclass')
 local button = require('button')
 
 local alert = class('alert')
