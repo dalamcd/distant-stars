@@ -1,7 +1,11 @@
 local class = require('middleclass')
 local game = require('game')
 local drawable = require('drawable')
-local task = require('task')
+local task = require('tasks.task')
+local walkTask = require('tasks.task_entity_walk')
+local dropTask = require('tasks.task_item_drop')
+local eatTask = require('tasks.task_entity_eat')
+local depositTask = require('tasks.task_furniture_deposit')
 
 local entity = class('entity', drawable)
 
@@ -47,10 +51,18 @@ function entity:initialize(name, displayName, map, posX, posY)
 	self.jobs = {}
 	self.inventory = {}
 	self.name = name
-	self.speed = 1
-	self.idleTime = 0
 	self.dname = displayName
 
+	self.oneSecondTimer = 0
+
+	self.health = 100
+	self.satiation = 100
+	self.comfort = 0
+	self.speed = 1
+	self.idleTime = 0
+
+	self.sitting = false
+	self.seat = nil
 end
 
 function entity:update(dt)
@@ -88,11 +100,10 @@ function entity:update(dt)
 						self.dispersing = false
 					end
 
-					local walkTask = self:getWalkTask(t)
-					walkTask.params.map = self.map
-					walkTask.strFunc = strFunc
-					walkTask.endFunc = endFunc
-					self:setTask(walkTask)
+					local wt = walkTask:new(t)
+					wt.strFunc = strFunc
+					wt.endFunc = endFunc
+					self:setTask(wt)
 					self.dispersing = true
 					break
 				end
@@ -104,12 +115,20 @@ function entity:update(dt)
 			self:wanderAimlessly()
 	end
 	drawable.update(self, dt)
+
+	if self.oneSecondTimer >= 60 then
+		self.oneSecondTimer = 0
+		self:handleNeeds()
+	end
+
+	self.oneSecondTimer = self.oneSecondTimer + 1
 end
 
 function entity:draw()
 	local c = self.map.camera
 	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE + self.walkXOffset), c:getRelativeY((self.y - 1)*TILE_SIZE + self.walkYOffset), c.scale)
---	drawable.draw(self, (self.x - 1)*TILE_SIZE + self.walkXOffset, (self.y - 1)*TILE_SIZE + self.walkYOffset)
+
+	--	drawable.draw(self, (self.x - 1)*TILE_SIZE + self.walkXOffset, (self.y - 1)*TILE_SIZE + self.walkYOffset)
 
 	if #self.inventory > 0 then
 		for _, item in ipairs(self.inventory) do
@@ -146,17 +165,16 @@ end
 function entity:wanderAimlessly()
 	local tile = self.map:getRandomWalkableTileInRadius(self.x, self.y, 2)
 	if self.map:isOccupied(tile.x, tile.y) then return end
-	local walkTask = self:getWalkTask(tile)
-	walkTask.params.map = self.map
+	local wt = walkTask:new(tile)
 
 	local function strFunc(tself)
 		return "Wandering aimlessly"
 	end
 
-	walkTask.strFunc = strFunc
-	walkTask.keepIdle = true
+	wt.strFunc = strFunc
+	wt.keepIdle = true
 
-	self:setTask(walkTask)
+	self:setTask(wt)
 end
 
 function entity:setJobList(jlist)
@@ -199,17 +217,85 @@ function entity:handleTasks()
 	end
 end
 
+function entity:handleNeeds()
+	self.satiation = clamp(self.satiation - 1, 0, 100)
+	self.comfort = clamp(self.comfort - 0.1, -100, 100)
+
+	if self.satiation < 80 then
+		local edible = self.map:getNearbyObject('food', self.x, self.y)
+		if edible and self.idleTime > 0 then
+			local et = eatTask:new(edible)
+			self:pushTask(et)
+		end
+		if self.satiation < 10 then
+			self:adjustHealth(-1)
+			if self.satiation == 0 then
+				self:adjustHealth(-5)
+			end
+		end
+	end
+
+	if self.sitting then
+		if self.comfort < self.seat.maxComfort then
+			self.comfort = clamp(self.comfort + self.seat.comfortFactor, -100, self.seat.maxComfort)
+		end
+	end
+end
+
+function entity:handleWalking()
+	if self.moveFuncParams and self.moveFuncParams.stepCount then
+		local p = self.moveFuncParams
+		if p.stepCount >= p.steps then
+			self.walking = false
+			self.x = p.destX
+			self.y = p.destY
+			table.remove(self.route)
+		end
+	end
+
+	if not self.walking and #self.route > 0 then
+		local t = self.route[#self.route]
+		local tile = self.map:getTile(t.x, t.y)
+		local furniture = self.map:getFurnitureInTile(tile)
+		local blocked = false
+
+		for _, f in ipairs(furniture) do
+			if f:isType("door") then
+				if not f:isOpen() then
+					blocked = true
+					if not f:isOpening() or f:isClosing() then
+						f:openDoor(true)
+					end
+				else
+					f:holdOpenFor(self.uid)
+				end
+			end
+		end
+		if not blocked then
+			self:walkToAdjacentTile(t.x, t.y, self.speed)
+		end
+	end
+end
+
+function entity:adjustHealth(amt)
+	self.health = clamp(self.health + amt, 0, 100)
+end
+
+function entity:adjustSatiation(amt)
+	self.satiation = clamp(self.satiation + amt, 0, 100)
+end
+
 function entity:getTasks()
 	return self.tasks
 end
 
 function entity:pushTask(task)
-	task.params.entity = self
+	task.entity = self
 	table.insert(self.tasks, task)
 end
 
 function entity:queueTask(task)
-	task.params.entity = self
+	task.entity = self
 	table.insert(self.tasks, 1, task)
 end
 
@@ -252,17 +338,16 @@ function entity:getPossibleTasks(tile)
 
 	if self.map:isWalkable(tile.x, tile.y) then
 		for _, item in ipairs(self.inventory) do
-			local dropTask = item:getDropTask()
-			dropTask.params.dest = tile
-			table.insert(tasks, dropTask)
+			local dt = dropTask:new(item, tile)
+			table.insert(tasks, dt)
 		end
 	end
 
 	for _, furn in ipairs(self.map:getFurnitureInTile(tile)) do
 		for _, item in ipairs(self.inventory) do
 			if furn:hasAvailableInventorySpace(item) then
-				local depositTask = furn:getAddToInventoryTask(item)
-				table.insert(tasks, depositTask)
+				local dt = depositTask:new(item, furn)
+				table.insert(tasks, dt)
 			end
 		end
 	end
@@ -272,84 +357,6 @@ end
 
 function entity:setDestination(tile)
 	self.destination = tile
-end
-
-function entity:getWalkTask(destination, parentTask)
-
-	local function strFunc(tself)
-		return "Going to tile " .. destination.x .. ", " .. destination.y
-	end
-
-	local function startFunc(tself)
-		local p = tself:getParams()
-		local route = p.map:pathfind({x=self.x, y=self.y}, destination)
-		if route then
-			p.routeFound = true
-			self:setDestination(destination)
-			self:setRoute(route)
-		else
-			p.routeFound = false
-			tself.finished = true
-		end
-	end
-
-	local function runFunc(tself)
-		if #self.route == 0 then
-			tself:complete()
-		end
-	end
-
-	local function abandonFunc(tself)
-		if self.walking then
-			-- Clear the route of everything but the next closest tile
-			local count = #self.route
-			local nextRoute = self.route[count]
-			for i=1, count do self.route[i]=nil end
-			table.insert(self.route, nextRoute)
-		end
-	end
-
-	local function contextFunc(tself)
-		return "Walk here"
-	end
-
-	local t = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, nil, abandonFunc, parentTask)
-	return t
-end
-
-function entity:handleWalking()
-	if self.moveFuncParams and self.moveFuncParams.stepCount then
-		local p = self.moveFuncParams
-		if p.stepCount >= p.steps then
-			self.walking = false
-			self.x = p.destX
-			self.y = p.destY
-			table.remove(self.route)
-		end
-	end
-
-	if not self.walking and #self.route > 0 then
-		local t = self.route[#self.route]
-		local tile = self.map:getTile(t.x, t.y)
-		local furniture = self.map:getFurnitureInTile(tile)
-		local blocked = false
-
-		for _, f in ipairs(furniture) do
-			if f:isType("door") then
-				if not f:isOpen() then
-					blocked = true
-					if not f:isOpening() or f:isClosing() then
-						f:openDoor(true)
-					end
-				else
-					f:holdOpenFor(self.uid)
-				end
-			end
-		end
-		if not blocked then
-			self:walkToAdjacentTile(t.x, t.y, self.speed)
-		end
-	end
 end
 
 function entity:walkToAdjacentTile(x, y, speed)
@@ -409,6 +416,22 @@ function entity:moveToTile(x, y, speed, steps)
 
 	self.xStep = dx/self.steps
 	self.yStep = dy/self.steps
+end
+
+function entity:sitOn(furniture)
+	if furniture:beOccupiedBy(self) then
+		self.seat = furniture
+		self.sitting = true
+		return true
+	end
+	return false
+end
+
+function entity:getUp(furniture)
+	if self.seat and self.seat.uid == furniture.uid then
+		self.seat = nil
+		self.sitting = false
+	end
 end
 
 function entity:setRoute(route)

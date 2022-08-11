@@ -50,7 +50,7 @@ function door:draw()
 	x = x + self.openAmount
 	w = w - self.openAmount
 
-	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE), c:getRelativeY((self.y - 1)*TILE_SIZE), c.scale, x, y, w, h)
+	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE), c:getRelativeY((self.y - 1)*TILE_SIZE), c.scale, 0, x, y, w, h)
 end
 
 function door:openDoor(reclose)

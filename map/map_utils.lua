@@ -2,11 +2,11 @@
 local map_utils = {
 	isOccupied = function(self, x, y)
 
-		for _, furn in ipairs(self.furniture) do
-			if furn:inTile(x, y) then
-				return true
-			end
-		end
+		-- for _, furn in ipairs(self.furniture) do
+		-- 	if furn:inTile(x, y) then
+		-- 		return true
+		-- 	end
+		-- end
 
 		for _, ent in ipairs(self.entities) do
 			if ent.x == x and ent.y == y then

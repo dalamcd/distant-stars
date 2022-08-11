@@ -1,8 +1,9 @@
 local class = require('middleclass')
 local furniture = require('furniture.furniture')
-local task = require('task')
+local task = require('tasks.task')
 local gamestate = require('gamestate.gamestate')
 local stationstate = require('gamestate.gamestate_station')
+local walkTask = require('tasks.task_entity_walk')
 
 local station = class('station', furniture)
 
@@ -40,7 +41,7 @@ function station:getViewStationTask(parentTask)
 		local inRange = false
 
 		for _, tile in ipairs(self:getInteractionTiles()) do
-			if p.entity.x == tile.x and p.entity.y == tile.y then
+			if tself.entity.x == tile.x and tself.entity.y == tile.y then
 				inRange = true
 				break
 			end
@@ -50,8 +51,8 @@ function station:getViewStationTask(parentTask)
 			local tile = self:getAvailableInteractionTile()
 			if tile then
 				p.dest = tile
-				local walkTask = p.entity:getWalkTask(tile, tself)
-				p.entity:pushTask(walkTask)
+				local wt = walkTask:new(tile, tself)
+				tself.entity:pushTask(wt)
 			end
 		else
 			tself:complete()
@@ -66,16 +67,15 @@ function station:getViewStationTask(parentTask)
 			return
 		end
 		
-		if not p.entity.walking and p.entity.x == p.dest.x and p.entity.y == p.dest.y then
+		if not tself.entity.walking and tself.entity.x == p.dest.x and tself.entity.y == p.dest.y then
 			tself:complete()
 		end
 	end
 
 	local function endFunc(tself)
-		local p = tself:getParams()
 		if not tself.abandoned then
 			local fade = gamestate:getFadeState()
-			local gs = gamestate:getStationState(self, p.entity)
+			local gs = gamestate:getStationState(self, tself.entity)
 			gamestate:push(fade)
 			gamestate:push(gs)
 		end
