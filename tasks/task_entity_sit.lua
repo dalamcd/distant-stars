@@ -1,13 +1,15 @@
 local class = require('middleclass')
 local task = require('tasks.task')
 local walkTask = require('tasks.task_entity_walk')
-local gamestate = require('gamestate.gamestate')
-local fade = require('gamestate.gamestate_fade')
-local inventory = require('gamestate.gamestate_inventory')
 
-local viewContentsTask = class('viewContentsTask', task)
+local sitTask = class('sitTask', task)
 
 local function startFunc(self)
+	if self.furniture:isReserved() then
+		self:complete()
+		return
+	end
+
 	local inRange = false
 
 	for _, tile in ipairs(self.furniture:getInteractionTiles()) do
@@ -20,6 +22,7 @@ local function startFunc(self)
 	if not inRange then
 		local tile = self.furniture:getAvailableInteractionTile()
 		if tile then
+			self.furniture:reserveFor(self.entity)
 			local wt = walkTask:new(tile, self)
 			self.entity:pushTask(wt)
 		end
@@ -37,32 +40,37 @@ local function runFunc(self)
 	end
 
 	if not self.entity.walking and self.entity.x == self.entity.destination.x and self.entity.y == self.entity.destination.y then
-		self:complete()
+		if not self.entity.sitting then
+			self.entity:sitOn(self.furniture)
+			self:complete()
+		end
 	end
 end
 
 local function endFunc(self)
-	if not self.abandoned then
-		local f = gamestate:getFadeState()
-		local gs = gamestate:getInventoryState(self.furniture, self.entity)
-		gamestate:push(f)
-		gamestate:push(gs)
+	local p = self:getParams()
+	p.reachedSeat = true
+	self.furniture:unreserve()
+end
+
+local function strFunc(self)
+	if self.entity.walking then
+		return "Moving to (" .. self.entity.destination.x .. ", " .. self.entity.destination.y .. ") to sit on " .. self.furniture.name
+	else
+		return "Sitting on " .. self.furniture.name
 	end
 end
 
 local function contextFunc(self)
-	return "View inventory"
+	return "Sit on " .. self.furniture.name
 end
 
-local function strFunc(self)
-	return "Viewing the inventory of " .. self.furniture.name
-end
-
-function viewContentsTask:initialize(furniture, parentTask)
-	if not furniture then error("viewContentsTask initialized with no furniture") end
+function sitTask:initialize(furniture, parentTask)
+	if not furniture then error("sitTask initialized with no furniture") end
+	if not furniture:isType("comfort") then error("sitTask initialized with unsittable furniture") end
 
 	self.furniture = furniture
 	task.initialize(self, nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
 end
 
-return viewContentsTask
+return sitTask

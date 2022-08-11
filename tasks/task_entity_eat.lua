@@ -1,6 +1,7 @@
 local class = require('middleclass')
 local task = require('tasks.task')
-local walkTask = require('tasks.task_walk')
+local walkTask = require('tasks.task_entity_walk')
+local sitTask = require('tasks.task_entity_sit')
 
 local eatTask = class('eatTask', task)
 
@@ -15,8 +16,25 @@ end
 
 local function runFunc(self)
 	local p = self:getParams()
-	if not self.entity.walking and self.entity.x == self.item.x and self.entity.y == self.item.y then
-		self:complete()
+
+	if self.gettingSeated then
+		if p.reachedSeat then
+			self:complete()
+		end
+	elseif not self.entity.walking and self.entity.x == self.item.x and self.entity.y == self.item.y then
+		local singleItem = self.item:split(1)
+		if singleItem then
+			self.item = singleItem
+			self.entity:addToInventory(singleItem)
+			local seat = self.entity.map:getNearbyObject('comfort', self.entity.x, self.entity.y)
+			if seat and not seat:isReserved() then
+				self.gettingSeated = true
+				local st = sitTask:new(seat, self)
+				self.entity:pushTask(st)
+			else
+				self:complete()
+			end
+		end
 	elseif not p.routeFound then
 		self.finished = true
 	end

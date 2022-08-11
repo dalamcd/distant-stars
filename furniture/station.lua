@@ -3,7 +3,7 @@ local furniture = require('furniture.furniture')
 local task = require('tasks.task')
 local gamestate = require('gamestate.gamestate')
 local stationstate = require('gamestate.gamestate_station')
-local walkTask = require('tasks.task_walk')
+local walkTask = require('tasks.task_entity_walk')
 
 local station = class('station', furniture)
 

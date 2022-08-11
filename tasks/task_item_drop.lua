@@ -1,6 +1,6 @@
 local class = require('middleclass')
 local task = require('tasks.task')
-local walkTask = require('tasks.task_walk')
+local walkTask = require('tasks.task_entity_walk')
 
 local dropTask = class('dropTask', task)
 
@@ -8,6 +8,7 @@ local function runFunc(self)
 	local p = self:getParams()
 	if not self.entity.walking and self.entity.x == self.destination.x and self.entity.y == self.destination.y then
 		self.entity:removeFromInventory(self.item)
+		self.item:addedToTile()
 		self:complete()
 	elseif not p.routeFound then
 		self.finished = true
@@ -26,6 +27,7 @@ local function startFunc(self)
 		self.entity:pushTask(wt)
 	else
 		self.entity:removeFromInventory(self.item)
+		self.item:addedToTile()
 		self:complete()
 	end
 end

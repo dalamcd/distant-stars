@@ -12,6 +12,9 @@ local function startFunc(self)
 	local route = self.entity.map:pathfind({x=self.entity.x, y=self.entity.y}, self.destination)
 	if route then
 		p.routeFound = true
+		if self.entity.seat then
+			self.entity:getUp(self.entity.seat)
+		end
 		self.entity:setDestination(self.destination)
 		self.entity:setRoute(route)
 	else

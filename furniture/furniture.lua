@@ -4,7 +4,7 @@ local gamestate = require('gamestate.gamestate')
 local inventory = require('gamestate.gamestate_inventory')
 local fade = require('gamestate.gamestate_fade')
 local task = require('tasks.task')
-local walkTask = require('tasks.task_walk')
+local walkTask = require('tasks.task_entity_walk')
 local withdrawTask = require('tasks.task_furniture_withdraw')
 local viewContentsTask = require('tasks.task_furniture_view_contents')
 
@@ -46,6 +46,9 @@ function furniture:initialize(name, map, posX, posY)
 
 	self.map = map
 
+	self.reserved = false
+	self.reservedFor = nil
+
 	local interactTiles = {}
 
 	if not i.interactPoints then
@@ -54,9 +57,6 @@ function furniture:initialize(name, map, posX, posY)
 						{x=posX+map.xOffset, y=posY+map.yOffset+1},
 						{x=posX+map.xOffset, y=posY+map.yOffset-1}}
 
-		for _, p in ipairs(points) do
-			if name == "station" then print(p.x, p.y) end
-		end
 		interactTiles = self.map:getTilesFromPoints(points)
 	else
 		for _, p in ipairs(i.interactPoints) do
@@ -84,7 +84,7 @@ function furniture:draw()
 end
 
 function furniture:getPossibleTasks()
-	local tasks = {viewContentsTask:new(self)}
+	local tasks = {}
 
 	if #self:getInventory() > 0 then
 		for _, item in ipairs(self:getInventory()) do
@@ -137,6 +137,20 @@ end
 
 function furniture:getTiles()
 	return self.map:getTilesInRectangle(self.x, self.y, self.width, self.height, true)
+end
+
+function furniture:unreserve()
+	self.reserved = false
+	self.reservedFor = nil
+end
+
+function furniture:reserveFor(entity)
+	self.reserved = true
+	self.reservedFor = entity
+end
+
+function furniture:isReserved()
+	return self.reserved
 end
 
 function furniture:getType()

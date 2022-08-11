@@ -1,7 +1,7 @@
 local class = require('middleclass')
 local game = require('game')
 local drawable = require('drawable')
-local walkTask = require('tasks.task_walk')
+local walkTask = require('tasks.task_entity_walk')
 
 local tile = class('tile', drawable)
 

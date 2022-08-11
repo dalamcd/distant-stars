@@ -1,7 +1,7 @@
 local class = require('middleclass')
 local game = require('game')
 local task = require('tasks.task')
-local walkTask = require('tasks.task_walk')
+local walkTask = require('tasks.task_entity_walk')
 local pickupTask = require('tasks.task_item_pickup')
 local dropTask = require('tasks.task_item_drop')
 local drawable = require('drawable')
@@ -64,7 +64,7 @@ function item:removedFromInventory(entity)
 	self.y = entity.y
 	self.xOffset = self.origXOffset
 	self.yOffset = self.origYOffset
-	self:addedToTile()
+	--self:addedToTile()
 end
 
 function item:addedToInventory(entity)
@@ -85,7 +85,7 @@ function item:addedToTile()
 	for _, mapItem in ipairs(self.map:getItemsInTile(self.map:getTile(self.x, self.y))) do
 		if mapItem.uid ~= self.uid then
 			local tmp = self:mergeWith(mapItem)
-			if tmp and tmp > 0 or tmp == false then
+			if tmp ~= 0 then
 				local t = self.map:getRandomWalkableTileInRadius(self.x, self.y, 1)
 				if self.amount > mapItem.amount then
 					mapItem.x = t.x
@@ -108,17 +108,34 @@ function item:mergeWith(mergeItem)
 	if self.amount + mergeItem.amount < self.maxStack then
 		self:adjustAmount(mergeItem.amount)
 		mergeItem:delete()
-		return true
+		return 0
 	elseif self.amount < self.maxStack then
 		local diff = self.maxStack - self.amount
 		mergeItem.amount = mergeItem.amount - (self.maxStack - self.amount)
 		self.amount = self.maxStack
 		return diff
 	end
-	return false
+	return -1
+end
+
+function item:split(amt)
+	if self.amount >= amt then
+		local tmp = self:getClass():new(self.name, self.map, self.x, self.y, amt, self.maxStack)
+		print(tmp)
+		self:adjustAmount(-amt)
+		return tmp
+	else
+		return false
+	end
 end
 
 function item:delete()
+	if self.amount > 0 then
+		print(debug.traceback())
+	end
+	if self.owned then
+		self.owner:removeFromInventory(self)
+	end
 	if self.map then
 		self.map:removeItem(self)
 	end
@@ -184,12 +201,16 @@ function item:getType()
 	return drawable.getType(self) .. "[[item]][[" .. self.name .. "]]"
 end
 
+function item:getClass()
+	return item
+end
+
 function item:getPluralName()
 	return self.name + "s"
 end
 
 function item:__tostring()
-	return "Item(".. self.name .."["..self.uid.."], "..self.x..", "..self.y..")"
+	return "Item(".. self.amount .. " of " .. self.name .."["..self.uid.."], "..self.x..", "..self.y..")"
 end
 
 return item

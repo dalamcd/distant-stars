@@ -2,7 +2,7 @@ local class = require('middleclass')
 local game = require('game')
 local drawable = require('drawable')
 local task = require('tasks.task')
-local walkTask = require('tasks.task_walk')
+local walkTask = require('tasks.task_entity_walk')
 local dropTask = require('tasks.task_item_drop')
 local eatTask = require('tasks.task_entity_eat')
 local depositTask = require('tasks.task_furniture_deposit')
@@ -57,8 +57,12 @@ function entity:initialize(name, displayName, map, posX, posY)
 
 	self.health = 100
 	self.satiation = 100
+	self.comfort = 0
 	self.speed = 1
 	self.idleTime = 0
+
+	self.sitting = false
+	self.seat = nil
 end
 
 function entity:update(dt)
@@ -215,8 +219,9 @@ end
 
 function entity:handleNeeds()
 	self.satiation = clamp(self.satiation - 1, 0, 100)
+	self.comfort = clamp(self.comfort - 0.1, -100, 100)
 
-	if self.satiation < 60 then
+	if self.satiation < 80 then
 		local edible = self.map:getNearbyObject('food', self.x, self.y)
 		if edible and self.idleTime > 0 then
 			local et = eatTask:new(edible)
@@ -227,6 +232,12 @@ function entity:handleNeeds()
 			if self.satiation == 0 then
 				self:adjustHealth(-5)
 			end
+		end
+	end
+
+	if self.sitting then
+		if self.comfort < self.seat.maxComfort then
+			self.comfort = clamp(self.comfort + self.seat.comfortFactor, -100, self.seat.maxComfort)
 		end
 	end
 end
@@ -405,6 +416,22 @@ function entity:moveToTile(x, y, speed, steps)
 
 	self.xStep = dx/self.steps
 	self.yStep = dy/self.steps
+end
+
+function entity:sitOn(furniture)
+	if furniture:beOccupiedBy(self) then
+		self.seat = furniture
+		self.sitting = true
+		return true
+	end
+	return false
+end
+
+function entity:getUp(furniture)
+	if self.seat and self.seat.uid == furniture.uid then
+		self.seat = nil
+		self.sitting = false
+	end
 end
 
 function entity:setRoute(route)

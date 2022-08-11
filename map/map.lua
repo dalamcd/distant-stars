@@ -176,6 +176,14 @@ function map:drawSelectionDetails()
 							love.graphics.getWidth() - width - textPadding,
 							love.graphics.getHeight() - height + textPadding*itemNum*3)
 		itemNum = itemNum + 1
+		love.graphics.print("Comfort: " .. self.mouseSelection.comfort,
+							love.graphics.getWidth() - width - textPadding,
+							love.graphics.getHeight() - height + textPadding*itemNum*3)
+		itemNum = itemNum + 1
+		love.graphics.print("Seated? " .. tostring(self.mouseSelection.sitting),
+							love.graphics.getWidth() - width - textPadding,
+							love.graphics.getHeight() - height + textPadding*itemNum*3)
+		itemNum = itemNum + 1
 
 		for i=#tlist, 1, -1 do
 			if not tlist[i]:isChild() then

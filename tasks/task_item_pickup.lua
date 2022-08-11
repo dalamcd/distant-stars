@@ -1,6 +1,6 @@
 local class = require('middleclass')
 local task = require('tasks.task')
-local walkTask = require('tasks.task_walk')
+local walkTask = require('tasks.task_entity_walk')
 
 local pickupTask = class('pickupTask', task)
 

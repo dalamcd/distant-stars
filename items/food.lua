@@ -4,8 +4,8 @@ local eatTask = require('tasks.task_entity_eat')
 
 local food = class('food', item)
 
-function food:initialize(name, map, posX, posY)
-	item.initialize(self, name, map, posX, posY)
+function food:initialize(name, map, posX, posY, amount, maxStack)
+	item.initialize(self, name, map, posX, posY, amount, maxStack)
 
 	self.satiety = 50
 end
@@ -23,6 +23,10 @@ end
 
 function food:getType()
 	return item.getType(self) .. "[[food]]"
+end
+
+function food:getClass()
+	return food
 end
 
 return food
