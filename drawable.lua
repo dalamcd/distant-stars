@@ -104,7 +104,7 @@ function drawable:draw(x, y, s, r, nx, ny, nw, nh)
 	if nx and ny and nw and nh then
 		local ox, oy, ow, oh = self.sprite:getViewport()
 		self.sprite:setViewport(nx, ny, nw, nh, self.tileset:getWidth(), self.tileset:getHeight())
-		love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
+		--love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
 		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, r, s)
 		self.sprite:setViewport(ox, oy, ow, oh, self.tileset:getWidth(), self.tileset:getHeight())
 	else
@@ -161,6 +161,10 @@ end
 
 function drawable:getType()
 	return "[[drawable]]"
+end
+
+function drawable:getClass()
+	error("a subclass of drawable has not implemented getClass()")
 end
 
 function drawable:isType(str)

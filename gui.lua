@@ -1,3 +1,10 @@
+---Draw an opaque box on screen with a white outline 
+---@param x integer x position on screen
+---@param y integer y position on screen
+---@param width integer width of box
+---@param height integer height of box
+---@param color? table r, g, b, a values for internal color
+---@param outline? boolean set false to draw without outline
 function drawRect(x, y, width, height, color, outline)
 
 	color = color or {r=0.0, g=0.0, b=0.0, a=1.0}

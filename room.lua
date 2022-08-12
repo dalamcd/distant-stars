@@ -1,4 +1,5 @@
 local class = require('lib.middleclass')
+local utils = require('utils')
 
 local room = class('room')
 
@@ -36,6 +37,7 @@ function room:initialize(map, tiles)
 	self.map = map
 	self.tiles = tiles
 
+	self.uid = getUID()
 	self.edges = {}
 	self.walls = {}
 	self.atmo = 100
@@ -89,6 +91,37 @@ function room:inTile(x, y)
 		end
 	end
 	return false
+end
+
+function room:listAttributes()
+	if self.attributes then
+		for k, v in pairs(self.attributes) do
+			print(self.uid, k, v)
+		end
+	end
+end
+
+function room:getAttribute(attr)
+	if self.attributes then
+		if self.attributes[attr] then
+			return self.attributes[attr]
+		else
+			return nil
+		end
+	end
+end
+
+function room:adjustAttribute(attribute, amount, min, max)
+	min = min or -math.huge
+	max = max or math.huge
+	if not self.attributes then
+		self.attributes = {}
+	end
+	if self.attributes[attribute] then
+		self.attributes[attribute] = clamp(self.attributes[attribute] + amount, min, max)
+	else
+		self.attributes[attribute] = clamp(amount, min, max)
+	end
 end
 
 function room:detectEdgeTiles()

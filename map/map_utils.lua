@@ -87,6 +87,16 @@ local map_utils = {
 		return true
 	end,
 
+	inRoom = function(self, x, y)
+		local t = self:getTile(x, y)
+		for _, room in ipairs(self.rooms) do
+			if room:inRoom(t) then
+				return room
+			end
+		end
+		return false
+	end,
+
 	getTile = function(self, x, y)
 		local nx = x - self.xOffset
 		local ny = y - self.yOffset
@@ -281,6 +291,7 @@ local map_utils = {
 
 	getTilesInRectangle = function(self, x, y, width, height)
 		local points = {}
+
 		--x = x - self.xOffset
 		--y = y - self.yOffset
 		for r=0, width-1 do

@@ -6,6 +6,7 @@ local walkTask = require('tasks.task_entity_walk')
 local dropTask = require('tasks.task_item_drop')
 local eatTask = require('tasks.task_entity_eat')
 local depositTask = require('tasks.task_furniture_deposit')
+local corpse = require('items.corpse')
 
 local entity = class('entity', drawable)
 
@@ -55,9 +56,11 @@ function entity:initialize(name, displayName, map, posX, posY)
 
 	self.oneSecondTimer = 0
 
+	self.dead = false
 	self.health = 100
 	self.satiation = 100
 	self.comfort = 0
+	self.oxygenStarvation = 0
 	self.speed = 1
 	self.idleTime = 0
 
@@ -66,6 +69,11 @@ function entity:initialize(name, displayName, map, posX, posY)
 end
 
 function entity:update(dt)
+
+	if self.dead then
+		drawable.update(self, dt)
+		return
+	end
 
 	for _, item in ipairs(self.inventory) do
 		item:setPos(self.x, self.y, self.xOffset + self.translationXOffset, self.yOffset + self.translationYOffset)
@@ -126,7 +134,12 @@ end
 
 function entity:draw()
 	local c = self.map.camera
+	local r, g, b, a = love.graphics.getColor()
+	if self.dead then
+		love.graphics.setColor(1.0, 0.0, 0.0, 1.0)
+	end
 	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE + self.walkXOffset), c:getRelativeY((self.y - 1)*TILE_SIZE + self.walkYOffset), c.scale)
+	love.graphics.setColor(r, g, b, a)
 
 	--	drawable.draw(self, (self.x - 1)*TILE_SIZE + self.walkXOffset, (self.y - 1)*TILE_SIZE + self.walkYOffset)
 
@@ -160,6 +173,17 @@ end
 
 function entity:isIdle()
 	return self.idleTime > 0
+end
+
+function entity:die()
+	print(self.name)
+	local c = corpse:new(self:getClass(), self.name, self.map, self.x - self.map.xOffset, self.y - self.map.yOffset)
+	c.name = "corpse of " .. self.dname
+	self.map:addItem(c)
+	if self.map:getMouseSelection() and self.map:getMouseSelection().uid == self.uid then
+		self.map:setMouseSelection(c)
+	end
+	self.map:removeEntity(self)
 end
 
 function entity:wanderAimlessly()
@@ -221,6 +245,8 @@ function entity:handleNeeds()
 	self.satiation = clamp(self.satiation - 1, 0, 100)
 	self.comfort = clamp(self.comfort - 0.1, -100, 100)
 
+	self:breathe()
+
 	if self.satiation < 80 then
 		local edible = self.map:getNearbyObject('food', self.x, self.y)
 		if edible and self.idleTime > 0 and not self.walking then
@@ -273,6 +299,23 @@ function entity:handleWalking()
 		end
 		if not blocked then
 			self:walkToAdjacentTile(t.x, t.y, self.speed)
+		end
+	end
+end
+
+function entity:breathe()
+	if not self.dead then 
+		local r = self.map:inRoom(self.x, self.y)
+		if r then
+			r:adjustAttribute("oxygen", -5, -5)
+			if r:getAttribute("oxygen") < 0 then
+				self.oxygenStarvation = self.oxygenStarvation - r:getAttribute("oxygen")
+				if self.oxygenStarvation >= 100 then
+					self:die()
+				end
+			elseif self.oxygenStarvation > 0 then
+				self.oxygenStarvation = clamp(self.oxygenStarvation - 1, 0, math.huge)
+			end
 		end
 	end
 end
@@ -441,6 +484,10 @@ end
 
 function entity:getType()
 	return drawable.getType(self) .. "[[entity]]"
+end
+
+function entity:getClass()
+	return entity
 end
 
 function entity:__tostring()

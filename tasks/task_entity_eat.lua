@@ -35,9 +35,8 @@ local function runFunc(self)
 				self.entity:addToInventory(singleItem)
 				local seat = self.entity.map:getNearbyObject('comfort', self.entity.x, self.entity.y)
 				if seat and not seat:isReserved() then
-					self.gettingSeated = true
+					self.gettingSeated = seat
 					local st = sitTask:new(seat, self)
-					
 					self.entity:pushTask(st)
 				else
 					self:complete()
@@ -65,7 +64,11 @@ local function abandonFunc(self)
 end
 
 local function strFunc(self)
-	return "Moving to (" .. self.item.x .. ", " .. self.item.y .. ") to eat " .. self.item.name
+	if self.gettingSeated then
+		return "Going to " .. self.gettingSeated.name .. " to sit and eat " .. self.item.name
+	else
+		return "Going to eat " .. self.item.name
+	end
 end
 
 local function contextFunc(self)

@@ -108,7 +108,7 @@ function map:draw()
 	for _, r in ipairs(self.rooms) do
 		r:draw()
 	end
-
+--[[
 	for _, r in ipairs(self.rooms) do
 		for _, t in ipairs(r.tiles) do
 			circ("fill", t:getWorldCenterX(), t:getWorldCenterY(), 2, self.camera)
@@ -123,11 +123,13 @@ function map:draw()
 		-- end
 		love.graphics.reset()
 	end
+	--]]
 
 	if self.mouseSelection then
 		self:drawSelectionDetails()
 		self:drawSelectionBox()
 	end
+	self:drawRoomDetails()
 
 	self.alert:draw()
 end
@@ -143,18 +145,24 @@ function map:drawSelectionDetails()
 	local height = 100
 	local padding = 10
 	local textPadding = 5
-	love.graphics.rectangle("line", love.graphics.getWidth() - width - padding, 
-									love.graphics.getHeight() - height - padding, 
+	love.graphics.rectangle("line", love.graphics.getWidth() - width - padding,
+									love.graphics.getHeight() - height - padding,
 									width,
 									height)
 	love.graphics.setColor(0, 0, 0, 1)
-	love.graphics.rectangle("fill", love.graphics.getWidth() - width - padding + 1, 
-									love.graphics.getHeight() - height - padding + 1, 
+	love.graphics.rectangle("fill", love.graphics.getWidth() - width - padding + 1,
+									love.graphics.getHeight() - height - padding + 1,
 									width - 1,
 									height -1)
 	love.graphics.reset()
 
-	love.graphics.print(self.mouseSelection.name .."["..self.mouseSelection.uid.."]",
+	local name
+	if self.mouseSelection:isType('entity') then
+		name = self.mouseSelection.dname
+	else
+		name = self.mouseSelection.name
+	end
+	love.graphics.print(name .."["..self.mouseSelection.uid.."]",
 						love.graphics.getWidth() - width - textPadding,
 						love.graphics.getHeight() - height - textPadding)
 
@@ -162,7 +170,12 @@ function map:drawSelectionDetails()
 		local tlist = self.mouseSelection:getTasks()
 		local itemNum = 1
 		local idleSeconds = math.floor(self.mouseSelection.idleTime/60)
-		if idleSeconds > 0 then
+		if self.mouseSelection.dead then
+			love.graphics.print("Dead",
+								love.graphics.getWidth() - width - textPadding,
+								love.graphics.getHeight() - height + textPadding*itemNum*3)
+			itemNum = itemNum + 1
+		elseif idleSeconds > 0 then
 			love.graphics.print("Idle for " .. idleSeconds .. " seconds",
 								love.graphics.getWidth() - width - textPadding,
 								love.graphics.getHeight() - height + textPadding*itemNum*3)
@@ -180,7 +193,7 @@ function map:drawSelectionDetails()
 							love.graphics.getWidth() - width - textPadding,
 							love.graphics.getHeight() - height + textPadding*itemNum*3)
 		itemNum = itemNum + 1
-		love.graphics.print("Seated? " .. tostring(self.mouseSelection.sitting),
+		love.graphics.print("Oxy Starv: " .. self.mouseSelection.oxygenStarvation,
 							love.graphics.getWidth() - width - textPadding,
 							love.graphics.getHeight() - height + textPadding*itemNum*3)
 		itemNum = itemNum + 1
@@ -198,6 +211,26 @@ function map:drawSelectionDetails()
 			love.graphics.print(item.name,
 								love.graphics.getWidth() - width - textPadding,
 								love.graphics.getHeight() - height + textPadding*i*3)
+		end
+	end
+end
+
+--- Draw details about the room that the mouse is hovering over
+function map:drawRoomDetails()
+	local t = self:getTileAtWorld(getMousePos(self.camera))
+	local r
+	if t then
+		r = self:inRoom(t.x, t.y)
+	end
+	if r then
+		local x = love.graphics.getWidth() - 200
+		local y = 20
+		drawRect(x, 20, 180, 100)
+		if r.attributes then
+			for k, v in pairs(r.attributes) do
+				love.graphics.print(k..": "..tostring(math.floor(v+0.5)), x + 10, y)
+				y = y + love.graphics.getFont():getHeight() + 2
+			end
 		end
 	end
 end

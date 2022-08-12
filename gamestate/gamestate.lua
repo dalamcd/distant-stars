@@ -71,12 +71,18 @@ function gamestate.static:rebuild()
 	end
 end
 
-function gamestate.static:update(dt)
-
+function gamestate.static:updateInput(dt)
 	-- Only the topmost state processes inputs
 	-- TODO: allow the state to pass input to child states? although this is probably easily doable in the state
 	-- itself by accessing the gamestate.child object (which I should test to see if it even works)
 	self._updateStack[#self._updateStack]:inputFunc(self._input)
+
+	for k, _ in pairs(self._input) do
+		self._input[k] = nil
+	end
+end
+
+function gamestate.static:update(dt)
 
 	--update from the top of the stack to the bottom so the most recent stack is always updated first
 	for i=#self._updateStack, 1, -1 do
@@ -87,10 +93,6 @@ function gamestate.static:update(dt)
 			self:update(dt)
 			return
 		end
-	end
-
-	for k, _ in pairs(self._input) do
-		self._input[k] = nil
 	end
 end
 
