@@ -59,6 +59,8 @@ function drawable:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHei
 		self.mapTranslationXOffset = 0
 		self.mapTranslationYOffset = 0
 		self.selected = false
+		self.reserved = false
+		self.reservedFor = nil
 		self.moveFunc = function () return 0,0 end
 	else
 		error("drawable initialized, but no matching tileset named " .. tileset .. " found")
@@ -172,6 +174,25 @@ end
 
 function drawable:isWalkable()
 	return true
+end
+
+function drawable:unreserve(entity)
+	if self.reservedFor and entity.uid == self.reservedFor.uid then
+		self.reserved = false
+		self.reservedFor = nil
+		return true
+	else
+		return false
+	end
+end
+
+function drawable:reserveFor(entity)
+	self.reserved = true
+	self.reservedFor = entity
+end
+
+function drawable:isReserved()
+	return self.reserved
 end
 
 function drawable:select()

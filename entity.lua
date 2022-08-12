@@ -223,7 +223,7 @@ function entity:handleNeeds()
 
 	if self.satiation < 80 then
 		local edible = self.map:getNearbyObject('food', self.x, self.y)
-		if edible and self.idleTime > 0 then
+		if edible and self.idleTime > 0 and not self.walking then
 			local et = eatTask:new(edible)
 			self:pushTask(et)
 		end
@@ -365,7 +365,7 @@ function entity:walkToAdjacentTile(x, y, speed)
 	local dy = y - self.y
 
 	if math.abs(dx) > 1 or math.abs(dy) > 1 then
-		error("pawn attempted to walk a distance longer than 1 tile")
+		error("pawn '".. self.dname .."' attempted to walk a distance longer than 1 tile: " .. dx .. ", " .. dy)
 	end
 
 	if dy < 0 then

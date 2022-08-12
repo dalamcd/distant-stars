@@ -47,9 +47,6 @@ end
 function task:abandon()
 	self.abandoned = true
 	self:abandonFunc()
-	if self.parent then
-		self.parent:abandon()
-	end
 end
 
 function task:getDesc()

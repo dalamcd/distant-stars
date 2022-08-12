@@ -6,10 +6,11 @@ local sitTask = class('sitTask', task)
 
 local function startFunc(self)
 	if self.furniture:isReserved() then
-		self:complete()
+		self:abandon()
 		return
 	end
 
+	self.furniture:reserveFor(self.entity)
 	local inRange = false
 
 	for _, tile in ipairs(self.furniture:getInteractionTiles()) do
@@ -22,7 +23,6 @@ local function startFunc(self)
 	if not inRange then
 		local tile = self.furniture:getAvailableInteractionTile()
 		if tile then
-			self.furniture:reserveFor(self.entity)
 			local wt = walkTask:new(tile, self)
 			self.entity:pushTask(wt)
 		end
@@ -50,7 +50,7 @@ end
 local function endFunc(self)
 	local p = self:getParams()
 	p.reachedSeat = true
-	self.furniture:unreserve()
+	self.furniture:unreserve(self.entity)
 end
 
 local function strFunc(self)

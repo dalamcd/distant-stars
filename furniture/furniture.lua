@@ -46,9 +46,6 @@ function furniture:initialize(name, map, posX, posY)
 
 	self.map = map
 
-	self.reserved = false
-	self.reservedFor = nil
-
 	local interactTiles = {}
 
 	if not i.interactPoints then
@@ -137,20 +134,6 @@ end
 
 function furniture:getTiles()
 	return self.map:getTilesInRectangle(self.x, self.y, self.width, self.height, true)
-end
-
-function furniture:unreserve()
-	self.reserved = false
-	self.reservedFor = nil
-end
-
-function furniture:reserveFor(entity)
-	self.reserved = true
-	self.reservedFor = entity
-end
-
-function furniture:isReserved()
-	return self.reserved
 end
 
 function furniture:getType()

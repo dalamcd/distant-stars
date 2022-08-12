@@ -121,10 +121,11 @@ end
 function item:split(amt)
 	if self.amount >= amt then
 		local tmp = self:getClass():new(self.name, self.map, self.x, self.y, amt, self.maxStack)
-		print(tmp)
+		print("split", amt, tmp)
 		self:adjustAmount(-amt)
 		return tmp
 	else
+		print("failed split")
 		return false
 	end
 end
