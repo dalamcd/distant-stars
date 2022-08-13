@@ -121,7 +121,6 @@ end
 function item:split(amt)
 	if self.amount >= amt then
 		local tmp = self:getClass():new(self.name, self.map, self.x, self.y, amt, self.maxStack)
-		print("split", amt, tmp)
 		self:adjustAmount(-amt)
 		return tmp
 	else
@@ -131,9 +130,6 @@ function item:split(amt)
 end
 
 function item:delete()
-	if self.amount > 0 then
-		print(debug.traceback())
-	end
 	if self.owned then
 		self.owner:removeFromInventory(self)
 	end

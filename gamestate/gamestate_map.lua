@@ -78,10 +78,8 @@ local function mousereleased(gself, x, y, button)
 	end
 
 	if button == 4 then
-		-- for i, r in ipairs(gself.map.rooms) do
-		-- 	print(i, #r.tiles)
-		-- end
-		for _, r in ipairs(gself.map.rooms) do
+		for i, r in ipairs(gself.map.rooms) do
+			print(i, #r.tiles)
 			r:listAttributes()
 		end
 	end

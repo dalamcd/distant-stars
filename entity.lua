@@ -176,7 +176,6 @@ function entity:isIdle()
 end
 
 function entity:die()
-	print(self.name)
 	local c = corpse:new(self:getClass(), self.name, self.map, self.x - self.map.xOffset, self.y - self.map.yOffset)
 	c.name = "corpse of " .. self.dname
 	self.map:addItem(c)

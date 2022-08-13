@@ -108,8 +108,8 @@ function map:draw()
 	for _, r in ipairs(self.rooms) do
 		r:draw()
 	end
---[[
 	for _, r in ipairs(self.rooms) do
+		--[[
 		for _, t in ipairs(r.tiles) do
 			circ("fill", t:getWorldCenterX(), t:getWorldCenterY(), 2, self.camera)
 		end
@@ -118,12 +118,12 @@ function map:draw()
 			line((edge[1]*TILE_SIZE)+self.mapTranslationXOffset, edge[2]*TILE_SIZE+self.mapTranslationYOffset,
 			edge[3]*TILE_SIZE+self.mapTranslationXOffset, edge[4]*TILE_SIZE+self.mapTranslationYOffset, self.camera)
 		end
-		-- for _, wall in ipairs(r.walls) do
-		-- 	circ("fill", wall:getWorldCenterX(), wall:getWorldCenterY(), 2, self.camera)
-		-- end
+		--]]
+		for _, wall in ipairs(r.walls) do
+			circ("fill", wall:getWorldCenterX(), wall:getWorldCenterY(), 2, self.camera)
+		end
 		love.graphics.reset()
 	end
-	--]]
 
 	if self.mouseSelection then
 		self:drawSelectionDetails()
@@ -226,9 +226,11 @@ function map:drawRoomDetails()
 		local x = love.graphics.getWidth() - 200
 		local y = 20
 		drawRect(x, 20, 180, 100)
+		love.graphics.print("Room " .. r.uid, x + 10, y)
+		y = y + love.graphics.getFont():getHeight() + 2
 		if r.attributes then
 			for k, v in pairs(r.attributes) do
-				love.graphics.print(k..": "..tostring(math.floor(v+0.5)), x + 10, y)
+				love.graphics.print(k..": "..string.format('%.2f', v), x + 10, y)
 				y = y + love.graphics.getFont():getHeight() + 2
 			end
 		end

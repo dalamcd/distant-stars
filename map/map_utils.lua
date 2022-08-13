@@ -10,7 +10,7 @@ local map_utils = {
 
 		for _, ent in ipairs(self.entities) do
 			if ent.x == x and ent.y == y then
-				return true
+				return ent
 			end
 		end
 
@@ -23,8 +23,8 @@ local map_utils = {
 		local t = self:getTile(x, y)
 
 		for _, furn in ipairs(self:getFurnitureInTile(t)) do
-			if furn:isType("door") or furn:isType("wall") or furn:isType("hull") then
-				wall = true
+			if furn:isType("wall") or furn:isType("hull") then
+				wall = furn
 			end
 		end
 		return wall
@@ -59,7 +59,16 @@ local map_utils = {
 	isHull = function(self, x, y)
 		for _, f in ipairs(self.furniture) do
 			if f.x == x and f.y == y and f:getType() == "hull" then
-				return true
+				return f
+			end
+		end
+		return false
+	end,
+
+	isDoor = function(self, x, y)
+		for _, f in ipairs(self.furniture) do
+			if f.x == x and f.y == y and f:isType('door') then
+				return f
 			end
 		end
 		return false
