@@ -54,7 +54,7 @@ local function keypressed(gself, key)
 	end
 
 	if key =='f' and t then
-		local ent = entity:new("pawn", data:getBase():getRandomFullName(), gself.map, t.x, t.y)
+		local ent = entity:new("tallpawn", data:getBase():getRandomFullName(), gself.map, t.x, t.y)
 		gself.map:addEntity(ent)
 	end
 end

@@ -193,7 +193,7 @@ function map:drawSelectionDetails()
 							love.graphics.getWidth() - width - textPadding,
 							love.graphics.getHeight() - height + textPadding*itemNum*3)
 		itemNum = itemNum + 1
-		love.graphics.print("Oxy Starv: " .. self.mouseSelection.oxygenStarvation,
+		love.graphics.print("Oxy Starv: " .. fstr(self.mouseSelection.oxygenStarvation, 0),
 							love.graphics.getWidth() - width - textPadding,
 							love.graphics.getHeight() - height + textPadding*itemNum*3)
 		itemNum = itemNum + 1
@@ -230,7 +230,7 @@ function map:drawRoomDetails()
 		y = y + love.graphics.getFont():getHeight() + 2
 		if r.attributes then
 			for k, v in pairs(r.attributes) do
-				love.graphics.print(k..": "..string.format('%.2f', v), x + 10, y)
+				love.graphics.print(k..": "..fstr(v), x + 10, y)
 				y = y + love.graphics.getFont():getHeight() + 2
 			end
 		end

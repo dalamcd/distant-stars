@@ -14,7 +14,7 @@ entity.static.base_tile_walk_distance = 30
 
 entity.static._loaded_entities = {}
 
-function entity.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight)
+function entity.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, attributes)
 	local internalItem = self._loaded_entities[name]
 
 	if internalItem then
@@ -26,6 +26,7 @@ function entity.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spri
 			tilesetY = tilesetY,
 			spriteWidth = spriteWidth,
 			spriteHeight = spriteHeight,
+			attributes = attributes
 		}
 	end
 end
@@ -57,11 +58,11 @@ function entity:initialize(name, displayName, map, posX, posY)
 	self.oneSecondTimer = 0
 
 	self.dead = false
-	self.health = 100
-	self.satiation = 100
-	self.comfort = 0
-	self.oxygenStarvation = 0
-	self.speed = 1
+	self.health = i.attributes.health or 100
+	self.satiation = i.attributes.satiation or 100
+	self.comfort = i.attributes.comfort or 0
+	self.oxygenStarvation = i.attributes.oxygenStarvation or 0
+	self.speed = i.attributes.speed or 1
 	self.idleTime = 0
 
 	self.sitting = false
@@ -178,6 +179,7 @@ end
 function entity:die()
 	local c = corpse:new(self:getClass(), self.name, self.map, self.x - self.map.xOffset, self.y - self.map.yOffset)
 	c.name = "corpse of " .. self.dname
+	self.dead = true
 	self.map:addItem(c)
 	if self.map:getMouseSelection() and self.map:getMouseSelection().uid == self.uid then
 		self.map:setMouseSelection(c)

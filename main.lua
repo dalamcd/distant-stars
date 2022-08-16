@@ -75,7 +75,7 @@ function love.load()
 
 
 	local dresser = furniture:new("dresser", m, 7, 2)
-	local o2gen = generator:new("o2gen", m, 2, 2, "oxygen", 4.95/60)
+	local o2gen = generator:new("o2gen", m, 2, 2, "oxygen", 15/60)
 	local n2gen = generator:new("o2gen", m, 7, 7, "nitrogen", 2/60)
 	local stool = comfort:new("stool", m, 7, 3)
 	local def = require('furniture/station_default')
@@ -91,7 +91,7 @@ function love.load()
 	--m:addStockpile(sp)
 
 	local c = camera:new()
-	local bg = background:new(3000)
+	local bg = background:new(300)
 	local gs = gamestate:getMapState("main map", m, c, true)
 	gs.camera = c
 
@@ -116,7 +116,9 @@ function love.update(dt)
 	gamestate:updateInput(dt)
 
 	while delta >= 1/(60 * gameSpeed) do
-		gamestate:update(dt)
+		if not paused then
+			gamestate:update(dt)
+		end
 		delta = delta - 1/(60 * gameSpeed)
 	end
 end

@@ -56,7 +56,8 @@ function data:loadBaseEntityData(fname)
 		error(tostring(entityData))
 	else
 		for _, newEntity in ipairs(entityData()) do
-			entity:load(newEntity.name, newEntity.tileset, newEntity.spriteX, newEntity.spriteY, newEntity.spriteWidth, newEntity.spriteHeight)
+			newEntity.attributes = newEntity.attributes or {}
+			entity:load(newEntity.name, newEntity.tileset, newEntity.spriteX, newEntity.spriteY, newEntity.spriteWidth, newEntity.spriteHeight, newEntity.attributes)
 		end
 	end
 end

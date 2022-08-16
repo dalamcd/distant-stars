@@ -21,6 +21,9 @@ return {
 		spriteX = TILE_SIZE*2,
 		spriteY = 0,
 		spriteWidth = TILE_SIZE,
-		spriteHeight = TILE_SIZE+9
+		spriteHeight = TILE_SIZE+9,
+		attributes = {
+			speed = 1.1
+		}
 	},
 }

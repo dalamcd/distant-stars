@@ -68,6 +68,7 @@ end
 function room:draw()
 	-- Draw a color on a gradient from blue to red based on the atmo
 	-- Interpolation function is (amount-min)/(max-min)*startColor + (1-(amount-min)/(max-min))*endColor
+--[[
 
 	-- This variable stands in for (amount-min)/(max-min) where min is 0
 	local oxy = self:getAttribute('oxygen') or 0
@@ -93,6 +94,7 @@ function room:draw()
 			love.graphics.line(self.map.camera:getRelativeX(t:getWorldCenterX()), self.map.camera:getRelativeY(t:getWorldCenterY()), self.map.camera:getRelativeX(center:getWorldCenterX()), self.map.camera:getRelativeY(center:getWorldCenterY()))
 		end
 	end
+	]]
 end
 
 function room:inRoom(tile)

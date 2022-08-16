@@ -196,6 +196,10 @@ function drawable:reserveFor(entity)
 end
 
 function drawable:isReserved()
+	if self.reservedFor and self.reservedFor.dead then
+		self:unreserve(self.reservedFor)
+	end
+
 	return self.reserved
 end
 
