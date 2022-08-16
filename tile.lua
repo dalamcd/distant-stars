@@ -32,7 +32,7 @@ function tile:initialize(name, map, posX, posY, index, walkable)
 	if i then
 		drawable.initialize(self, i.tileset, i.tilesetX, i.tilesetY, i.spriteWidth, i.spriteHeight, posX, posY, 1, 1)
 	else
-		error("attempted to initialize " .. self.name .. " but no tile with that name was found")
+		error("attempted to initialize " .. name .. " but no tile with that name was found")
 	end
 	if not index then error("tile initialized without index") end
 	if not map then error("tile initialized without map") end

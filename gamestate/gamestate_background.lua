@@ -32,7 +32,7 @@ function background:initialize(num)
 		local x = math.floor(math.random()*love.graphics.getWidth() + 1)
 		local y = math.floor(math.random()*love.graphics.getHeight() + 1)
 		local speed = math.random(5)/100
-		local r = math.random(self.maxRadius)*1
+		local r = math.random()*2
 		local red, blue = 1, 1
 		if math.random(2) > 1 then red = 0.7 else blue = 0.7 end
 		local point = {x=x, y=y, r=r, speed=speed, red=red, blue=blue}

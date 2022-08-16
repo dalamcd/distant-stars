@@ -6,6 +6,7 @@ local debugtext = require('debugtext')
 local entity = require('entity')
 local item = require('items.item')
 local food = require('items.food')
+local data = require('data')
 local corpse = require('items.corpse')
 local furniture = require('furniture.furniture')
 local comfort = require('furniture.furniture_comfort')
@@ -22,6 +23,7 @@ local inventory = require('gamestate.gamestate_inventory')
 local mapstate = require('gamestate.gamestate_map')
 local background = require('gamestate.gamestate_background')
 local station = require('furniture.station')
+local data = require('data')
 
 TILE_SIZE = 32
 
@@ -29,61 +31,34 @@ local previousTime
 local delta = 0
 local paused = false
 local gameSpeed = 1
+local gdata
 
 d = debugtext:new()
 tmpTiles = {}
 local oTmpTiles = {}
-
 function love.load()
 
 	--love.window.setMode(1025,768, {vsync=true})
 
 	love.graphics.setDefaultFilter('nearest', 'nearest')
-	love.math.setRandomSeed(-love.timer.getTime(), love.timer.getTime())
+	math.randomseed(love.timer.getTime())
+
+	gdata = data:new()
+	data:setBase(gdata)
 
 	d:addTextField("MousePos", "(" .. love.mouse.getX() .. ", " .. love.mouse.getY() .. ")")
-	d:addTextField("MouseRel", "")
 	d:addTextField("Tile under mouse", "")
 	d:addTextField("Objects under mouse", "")
-	d:addTextField("Is walkable", "")
 
-	drawable:addTileset("entity", "sprites/tilesheets/entities.png")
-	drawable:addTileset("item", "sprites/tilesheets/items.png")
-	drawable:addTileset("furniture", "sprites/tilesheets/furniture.png")
-	drawable:addTileset("floorTile", "sprites/tilesheets/tiles.png")
-
-	local dresserTiles = {{x=0, y=1}, {x=1, y=1}}
-	local stoolTiles = {{x=0, y=0}}
-
-	tile:load("metal floor", "floorTile", 0, 0, TILE_SIZE, TILE_SIZE)
-	tile:load("metal wall", "floorTile", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE)
-	tile:load("void", "floorTile", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE)
-	furniture:load("dresser", "furniture", 0, 0, TILE_SIZE*2, TILE_SIZE+14, 2, 1, dresserTiles)
-	furniture:load("station", "furniture", TILE_SIZE*7, 0, TILE_SIZE, TILE_SIZE+13, 1, 1)
-	furniture:load("bigthing", "furniture", TILE_SIZE*9, 0, TILE_SIZE*2, TILE_SIZE*4, 2, 4)
-	furniture:load("o2gen", "furniture", TILE_SIZE*13, 0, TILE_SIZE, TILE_SIZE, 1, 1)
-	furniture:load("door", "furniture", TILE_SIZE*5, 0, TILE_SIZE, TILE_SIZE, 1, 1)
-	furniture:load("stool", "furniture", TILE_SIZE*5, TILE_SIZE*2, TILE_SIZE, TILE_SIZE, 1, 1, stoolTiles)
-	furniture:load("hull", "floorTile", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE, 1, 1)
-	furniture:load("wall", "floorTile", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, 1, 1)
-	entity:load("pawn", "entity", 0, 0, TILE_SIZE, TILE_SIZE)
-	entity:load("cow", "entity", TILE_SIZE*4, 0, TILE_SIZE*2, TILE_SIZE+10)
-	entity:load("tallpawn", "entity", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE+9)
-	item:load("yummy chicken", "item", 0, 0, TILE_SIZE, TILE_SIZE)
-	item:load("yummy pizza", "item", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE)
-	--item:load("a corpse!", "entity", TILE_SIZE, 0, TILE_SIZE, TILE_SIZE)
-	--item:load("a corpse!", "entity", TILE_SIZE*2, 0, TILE_SIZE, TILE_SIZE+9)
-	item:load("a corpse!", "furniture", 0, 0, TILE_SIZE*2, TILE_SIZE+14)
-
-	local m = map:new("main map", 5, 2)
+	local m = map:new("main map", 0, 0)
 	m:load('newmap.txt')
 
-	local dylan = entity:new("pawn", "Dylan", m, 3, 7)
+	local rando = entity:new("pawn", gdata:getRandomFullName(), m, 3, 7)
 	local barnaby = entity:new("pawn", "Barnaby", m, 4, 5)
 	local dio = entity:new("tallpawn", "Diocletian", m, 6, 3)
 	--local cow = entity:new("cow", "cow", m, 8, 5)
 	--local gus = entity:new("pawn", "Gustav", m, 6, 4)
-	--m:addEntity(dylan)
+	m:addEntity(rando)
 	--m:addEntity(barnaby)
 	--m:addEntity(dio)
 	--m:addEntity(gus)
@@ -91,18 +66,16 @@ function love.load()
 	local chicken = food:new("yummy chicken", m, 2, 7)
 	local pizza = food:new("yummy pizza", m, 3, 8)
 	local pizza2 = food:new("yummy pizza", m, 3, 8)
-	--local body = item:new("a corpse!", m, 7, 7)
-	--local body2 = corpse:new("a corpse!", m, 7, 8)
+
 	pizza.amount = 10
 	pizza2.amount = pizza2.maxStack - 5
 	m:addItem(chicken)
 	m:addItem(pizza)
 	m:addItem(pizza2)
-	--m:addItem(body)
-	--m:addItem(body2)
+
 
 	local dresser = furniture:new("dresser", m, 7, 2)
-	local o2gen = generator:new("o2gen", m, 2, 2, "oxygen", 14/60)
+	local o2gen = generator:new("o2gen", m, 2, 2, "oxygen", 4.95/60)
 	local n2gen = generator:new("o2gen", m, 7, 7, "nitrogen", 2/60)
 	local stool = comfort:new("stool", m, 7, 3)
 	local def = require('furniture/station_default')
@@ -118,7 +91,7 @@ function love.load()
 	--m:addStockpile(sp)
 
 	local c = camera:new()
-	local bg = background:new(300)
+	local bg = background:new(3000)
 	local gs = gamestate:getMapState("main map", m, c, true)
 	gs.camera = c
 
@@ -126,6 +99,7 @@ function love.load()
 	gamestate:push(gs)
 
 	previousTime = love.timer.getTime()
+	print(gdata:getRandomFullName('male'))
 end
 
 function love.update(dt)

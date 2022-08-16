@@ -41,7 +41,7 @@ function furniture:initialize(name, map, posX, posY)
 	if i then
 		drawable.initialize(self, i.tileset, i.tilesetX, i.tilesetY, i.spriteWidth, i.spriteHeight, posX, posY, i.tileWidth, i.tileHeight, true)
 	else
-		error("attempted to initialize " .. self.name .. " but no furniture with that name was found")
+		error("attempted to initialize " .. name .. " but no furniture with that name was found")
 	end
 
 	self.map = map

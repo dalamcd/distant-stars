@@ -306,14 +306,20 @@ function entity:breathe()
 	if not self.dead then 
 		local r = self.map:inRoom(self.x, self.y)
 		if r then
+			-- Adjust oxygen down, allowing it to go below zero
 			r:adjustAttribute("oxygen", -5, -5)
 			if r:getAttribute("oxygen") < 0 then
-				self.oxygenStarvation = self.oxygenStarvation - r:getAttribute("oxygen")
+				-- If it is below zero, increase our oxygen starvation (subtracting a negative value)
+				self.oxygenStarvation = self.oxygenStarvation - r:getAttribute("oxygen")*r:getTileCount()
 				if self.oxygenStarvation >= 100 then
 					self:die()
+				elseif self.oxygenStarvation < 0.01 then
+					self.oxygenStarvation = 0
 				end
+				-- Reset oxygen back to 0 because negative attributes don't make sense
+				r:setAttribute('oxygen', 0)
 			elseif self.oxygenStarvation > 0 then
-				self.oxygenStarvation = clamp(self.oxygenStarvation - 1, 0, math.huge)
+				self.oxygenStarvation = clamp(self.oxygenStarvation - 10, 0, math.huge)
 			end
 		end
 	end

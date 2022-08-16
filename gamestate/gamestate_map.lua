@@ -3,6 +3,8 @@ local context = require('context')
 local furniture = require('furniture.furniture')
 local ghost = require('furniture.ghost')
 local hull = require('furniture.hull')
+local entity = require('entity')
+local data = require('data')
 
 -- TODO Maximum velocity for map movement, need to think about what to do about this and other basic constants
 local MAX_VEL = 3
@@ -43,8 +45,17 @@ local function keypressed(gself, key)
 		end
 	end
 
+	if key == 'm' and gself.map:getMouseSelection():isType('generator') then
+		gself.map:getMouseSelection():pause()
+	end
+
 	if key =='t' and i and gself.map:getMouseSelection():isType("item") then
 		gself.map:getMouseSelection():mergeWith(i)
+	end
+
+	if key =='f' and t then
+		local ent = entity:new("pawn", data:getBase():getRandomFullName(), gself.map, t.x, t.y)
+		gself.map:addEntity(ent)
 	end
 end
 

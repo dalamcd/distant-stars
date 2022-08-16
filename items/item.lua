@@ -35,7 +35,7 @@ function item:initialize(name, map, posX, posY, amount, maxStack)
 	if i then
 		drawable.initialize(self, i.tileset, i.tilesetX, i.tilesetY, i.spriteWidth, i.spriteHeight, posX, posY, 1, 1)
 	else
-		error("attempted to initialize " .. self.name .. " but no item with that name was found")
+		error("attempted to initialize " .. name .. " but no item with that name was found")
 	end
 
 	amount = amount or 1
