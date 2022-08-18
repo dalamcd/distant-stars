@@ -1,9 +1,10 @@
 local class = require('lib.middleclass')
 local game = require('game')
 local drawable = require('drawable')
+local mapObject = require('mapObject')
 local walkTask = require('tasks.task_entity_walk')
 
-local tile = class('tile', drawable)
+local tile = class('tile', mapObject)
 
 tile.static._loaded_tiles = {}
 
@@ -28,11 +29,11 @@ function tile.static:retrieve(name)
 end
 
 function tile:initialize(name, map, posX, posY, index, walkable)
-	local i = tile:retrieve(name)
-	if i then
-		drawable.initialize(self, i.tileset, i.tilesetX, i.tilesetY, i.spriteWidth, i.spriteHeight, posX, posY, 1, 1)
+	local obj = tile:retrieve(name)
+	if obj then
+		mapObject.initialize(self, obj, name, map, posX, posY, 1, 1, false)
 	else
-		error("attempted to initialize " .. self.name .. " but no tile with that name was found")
+		error("attempted to initialize " .. name .. " but no item with that name was found")
 	end
 	if not index then error("tile initialized without index") end
 	if not map then error("tile initialized without map") end
@@ -45,17 +46,19 @@ end
 
 function tile:draw()
 	local c = self.map.camera
-	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE), c:getRelativeY((self.y - 1)*TILE_SIZE), c.scale)
+	local x = self:getWorldX()
+	local y = self:getWorldY()
+	mapObject.draw(self, c:getRelativeX(x), c:getRelativeY(y), c.scale)
 end
 
-function tile:inBounds(x, y)
-	if( x - self:getWorldX() <= TILE_SIZE and x - self:getWorldX() >= 0) then
-		if( y - self:getWorldY() <= TILE_SIZE and y - self:getWorldY() >= 0) then
-			return true
-		end
-	end
-	return false
-end
+-- function tile:inBounds(x, y)
+-- 	if( x - self:getWorldX() <= TILE_SIZE*self.map.scale and x - self:getWorldX() >= 0) then
+-- 		if( y - self:getWorldY() <= TILE_SIZE*self.map.scale and y - self:getWorldY() >= 0) then
+-- 			return true
+-- 		end
+-- 	end
+-- 	return false
+-- end
 
 function tile:isWalkable()
 	return self.walkable

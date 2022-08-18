@@ -10,8 +10,8 @@ function ghost:initialize(objClass, name, map, posX, posY)
 end
 
 function ghost:update(dt)
-	local t = self.map:getTileAtWorld(getMousePos(self.map.camera))
-	if t then 
+	local t = self.map:getTileAtWorld(getMousePos())
+	if t then
 		self.x = t.x
 		self.y = t.y
 	end

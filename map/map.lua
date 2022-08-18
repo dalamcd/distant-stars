@@ -108,8 +108,8 @@ function map:draw()
 	for _, r in ipairs(self.rooms) do
 		r:draw()
 	end
+	--[[
 	for _, r in ipairs(self.rooms) do
-		--[[
 		for _, t in ipairs(r.tiles) do
 			circ("fill", t:getWorldCenterX(), t:getWorldCenterY(), 2, self.camera)
 		end
@@ -118,12 +118,12 @@ function map:draw()
 			line((edge[1]*TILE_SIZE)+self.mapTranslationXOffset, edge[2]*TILE_SIZE+self.mapTranslationYOffset,
 			edge[3]*TILE_SIZE+self.mapTranslationXOffset, edge[4]*TILE_SIZE+self.mapTranslationYOffset, self.camera)
 		end
-		--]]
 		for _, wall in ipairs(r.walls) do
 			circ("fill", wall:getWorldCenterX(), wall:getWorldCenterY(), 2, self.camera)
 		end
 		love.graphics.reset()
 	end
+	--]]
 
 	if self.mouseSelection then
 		self:drawSelectionDetails()
@@ -193,7 +193,7 @@ function map:drawSelectionDetails()
 							love.graphics.getWidth() - width - textPadding,
 							love.graphics.getHeight() - height + textPadding*itemNum*3)
 		itemNum = itemNum + 1
-		love.graphics.print("Oxy Starv: " .. self.mouseSelection.oxygenStarvation,
+		love.graphics.print("Oxy Starv: " .. fstr(self.mouseSelection.oxygenStarvation, 0),
 							love.graphics.getWidth() - width - textPadding,
 							love.graphics.getHeight() - height + textPadding*itemNum*3)
 		itemNum = itemNum + 1
@@ -217,7 +217,7 @@ end
 
 --- Draw details about the room that the mouse is hovering over
 function map:drawRoomDetails()
-	local t = self:getTileAtWorld(getMousePos(self.camera))
+	local t = self:getTileAtWorld(getMousePos())
 	local r
 	if t then
 		r = self:inRoom(t.x, t.y)
@@ -230,7 +230,7 @@ function map:drawRoomDetails()
 		y = y + love.graphics.getFont():getHeight() + 2
 		if r.attributes then
 			for k, v in pairs(r.attributes) do
-				love.graphics.print(k..": "..string.format('%.2f', v), x + 10, y)
+				love.graphics.print(k..": "..fstr(v), x + 10, y)
 				y = y + love.graphics.getFont():getHeight() + 2
 			end
 		end

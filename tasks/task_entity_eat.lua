@@ -2,6 +2,8 @@ local class = require('lib.middleclass')
 local task = require('tasks.task')
 local walkTask = require('tasks.task_entity_walk')
 local sitTask = require('tasks.task_entity_sit')
+local timer = require('timer')
+local drawable = require('drawable')
 
 local eatTask = class('eatTask', task)
 
@@ -19,12 +21,24 @@ local function startFunc(self)
 	end
 end
 
+local function complete(self)
+	if not self.timer then
+		self.timer = timer:new(30)
+	end
+	local status, count = self.timer:tick()
+	if status then
+		self.count = count
+	else
+		self:complete()
+	end
+end
+
 local function runFunc(self)
 	local p = self:getParams()
 
 	if self.gettingSeated then
 		if p.reachedSeat then
-			self:complete()
+			complete(self)
 		end
 	elseif not self.entity.walking and self.entity.x == self.entity.destination.x and self.entity.y == self.entity.destination.y then
 		if self.item.amount > 0 then
@@ -39,7 +53,7 @@ local function runFunc(self)
 					local st = sitTask:new(seat, self)
 					self.entity:pushTask(st)
 				else
-					self:complete()
+					complete(self)
 				end
 			end
 		else
@@ -64,6 +78,10 @@ local function abandonFunc(self)
 end
 
 local function strFunc(self)
+	if self.timer then
+		return "Eating " .. self.item.name .. ": " .. self.count
+	end
+
 	if self.gettingSeated then
 		return "Going to " .. self.gettingSeated.name .. " to sit and eat " .. self.item.name
 	else

@@ -42,7 +42,7 @@ function room:initialize(map, tiles)
 	self.walls = {}
 	self.doors = {}
 	self.connections = {}
-	self.atmo = 100
+	self.attributes = {}
 	self.roomConnections = false
 	self:detectEdgeTiles()
 
@@ -68,18 +68,20 @@ end
 function room:draw()
 	-- Draw a color on a gradient from blue to red based on the atmo
 	-- Interpolation function is (amount-min)/(max-min)*startColor + (1-(amount-min)/(max-min))*endColor
+--[[
 
 	-- This variable stands in for (amount-min)/(max-min) where min is 0
-	local interpolate = self.atmo/100
+	local oxy = self:getAttribute('oxygen') or 0
+	local interpolate = oxy/100
 	-- The 0 terms are pointless but left in for clarity
 	local gr = interpolate*0 + (1-interpolate)*255
-	local gg = interpolate*0 + (1-interpolate)*0
-	local gb = interpolate*255 + (1-interpolate)*0
+	local gg = interpolate*255 + (1-interpolate)*0
+	local gb = interpolate*0 + (1-interpolate)*0
 	local r, g, b, a = love.math.colorFromBytes(gr, gg, gb, 255/3)
 	local color = {r=r, g=g, b=b, a=a}
-	-- for _, t in ipairs(self.tiles) do
-	-- 	drawRect(self.map.camera:getRelativeX((t.x - 1)*TILE_SIZE), self.map.camera:getRelativeY((t.y - 1)*TILE_SIZE), TILE_SIZE, TILE_SIZE, color)
-	-- end
+	for _, t in ipairs(self.tiles) do
+		drawRect(self.map.camera:getRelativeX((t.x - 1)*TILE_SIZE), self.map.camera:getRelativeY((t.y - 1)*TILE_SIZE), TILE_SIZE*self.map.camera.scale, TILE_SIZE*self.map.camera.scale, color)
+	end
 	for _, dt in ipairs(self.doors) do
 		circ("fill", dt.door:getWorldCenterX(), dt.door:getWorldCenterY(), 2, self.map.camera)
 	end
@@ -92,6 +94,7 @@ function room:draw()
 			love.graphics.line(self.map.camera:getRelativeX(t:getWorldCenterX()), self.map.camera:getRelativeY(t:getWorldCenterY()), self.map.camera:getRelativeX(center:getWorldCenterX()), self.map.camera:getRelativeY(center:getWorldCenterY()))
 		end
 	end
+	]]
 end
 
 function room:inRoom(tile)
@@ -127,7 +130,7 @@ function room:disperseAttributes()
 			local conAmt = con:getAttribute(attr)
 			local selfAmt = value
 			local transfer
-			
+
 			if conAmt then
 				if conAmt > selfAmt then
 					transfer = -(conAmt/con:getTileCount())
@@ -161,6 +164,10 @@ function room:getAttribute(attr)
 	end
 end
 
+function room:setAttribute(attr, amt)
+	self.attributes[attr] = amt
+end
+
 function room:getAllAttributes()
 	return self.attributes or {}
 end
@@ -169,10 +176,11 @@ function room:adjustAttribute(attribute, amount, min, max)
 	min = min or -math.huge
 	max = max or math.huge
 	amount = amount / #self.tiles
-	if not self.attributes then
-		self.attributes = {}
-	end
+
 	if self.attributes[attribute] then
+		-- Do nothing if the current value is arleady greater than the max or less than the min
+		if self.attributes[attribute] > max or self.attributes[attribute] < min then return end
+
 		self.attributes[attribute] = clamp(self.attributes[attribute] + amount, min, max)
 	else
 		self.attributes[attribute] = clamp(amount, min, max)
@@ -183,14 +191,13 @@ function room:getCentermostTile()
 	local x = self.rightMost - math.floor(self.width/2)
 	local y = self.bottomMost - math.floor(self.height/2)
 	local t = self.map:getTile(x, y)
+	--local t = self.map:getTile(self.xAvg, self.yAvg)
 
 	if t and self:inTile(t.x, t.y) then
 		return t
 	else
 		return self.tiles[1]
 	end
-
-	return nil
 end
 
 function room:getTileCount()
@@ -201,6 +208,8 @@ function room:detectEdgeTiles()
 
 	local minX, minY = math.huge, math.huge
 	local maxX, maxY = -math.huge, -math.huge
+	local xSum, ySum = 0, 0
+	local vertices = {}
 
 	for _, tile in ipairs(self.tiles) do
 		local right = self.map:getTile(tile.x + 1, tile.y) 
@@ -244,7 +253,26 @@ function room:detectEdgeTiles()
 				table.insert(self.doors, {door=top:isDoor(), x=0, y=-1})
 			end
 		end
+
+		if left and top and not self:inRoom(left) and not self:inRoom(top) then
+			local t = self.map:getTile(tile.x - 1, tile.y - 1)
+			if t then table.insert(self.walls, t) end
+		end
+		if right and top and not self:inRoom(right) and not self:inRoom(top) then
+			local t = self.map:getTile(tile.x + 1, tile.y - 1)
+			if t then table.insert(self.walls, t) end
+		end
+		if left and bottom and not self:inRoom(left) and not self:inRoom(bottom) then
+			local t = self.map:getTile(tile.x - 1, tile.y + 1)
+			if t then table.insert(self.walls, t) end
+		end
+		if right and bottom and not self:inRoom(right) and not self:inRoom(bottom) then
+			local t = self.map:getTile(tile.x + 1, tile.y + 1)
+			if t then table.insert(self.walls, t) end
+		end
 	end
+
+
 	self.rightMost = maxX
 	self.leftMost = minX
 	self.bottomMost = maxY

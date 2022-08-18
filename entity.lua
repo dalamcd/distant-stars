@@ -1,6 +1,7 @@
 local class = require('lib.middleclass')
 local game = require('game')
 local drawable = require('drawable')
+local mapObject = require('mapObject')
 local task = require('tasks.task')
 local walkTask = require('tasks.task_entity_walk')
 local dropTask = require('tasks.task_item_drop')
@@ -8,13 +9,13 @@ local eatTask = require('tasks.task_entity_eat')
 local depositTask = require('tasks.task_furniture_deposit')
 local corpse = require('items.corpse')
 
-local entity = class('entity', drawable)
+local entity = class('entity', mapObject)
 
 entity.static.base_tile_walk_distance = 30
 
 entity.static._loaded_entities = {}
 
-function entity.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight)
+function entity.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, attributes)
 	local internalItem = self._loaded_entities[name]
 
 	if internalItem then
@@ -26,6 +27,7 @@ function entity.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spri
 			tilesetY = tilesetY,
 			spriteWidth = spriteWidth,
 			spriteHeight = spriteHeight,
+			attributes = attributes
 		}
 	end
 end
@@ -34,34 +36,33 @@ function entity.static:retrieve(name)
 	return self._loaded_entities[name] or false
 end
 
-function entity:initialize(name, displayName, map, posX, posY)
-	local i = entity:retrieve(name)
-	if i then
-		drawable.initialize(self, i.tileset, i.tilesetX, i.tilesetY, i.spriteWidth, i.spriteHeight, posX, posY, 1, 1)
+function entity:initialize(name, label, map, posX, posY)
+	local obj = entity:retrieve(name)
+	if label == "" then label = name end
+	if obj then
+		mapObject.initialize(self, obj, label, map, posX, posY, 1, 1, false)
 	else
-		error("attempted to initialize " .. name .. " but no entity with that name was found")
+		error("attempted to initialize " .. name .. " but no item with that name was found")
 	end
 
 	self.map = map
 	self.steps = 0
 	self.route = {}
-	self.walkXOffset = 0
-	self.walkYOffset = 0
 	self.destination = nil
 	self.tasks = {}
 	self.jobs = {}
 	self.inventory = {}
 	self.name = name
-	self.dname = displayName
+	self.dname = label
 
 	self.oneSecondTimer = 0
 
 	self.dead = false
-	self.health = 100
-	self.satiation = 100
-	self.comfort = 0
-	self.oxygenStarvation = 0
-	self.speed = 1
+	self.health = obj.attributes.health or 100
+	self.satiation = obj.attributes.satiation or 100
+	self.comfort = obj.attributes.comfort or 0
+	self.oxygenStarvation = obj.attributes.oxygenStarvation or 0
+	self.speed = obj.attributes.speed or 1
 	self.idleTime = 0
 
 	self.sitting = false
@@ -71,7 +72,7 @@ end
 function entity:update(dt)
 
 	if self.dead then
-		drawable.update(self, dt)
+		mapObject.update(self, dt)
 		return
 	end
 
@@ -138,7 +139,9 @@ function entity:draw()
 	if self.dead then
 		love.graphics.setColor(1.0, 0.0, 0.0, 1.0)
 	end
-	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE + self.walkXOffset), c:getRelativeY((self.y - 1)*TILE_SIZE + self.walkYOffset), c.scale)
+	local x = self:getWorldX()
+	local y = self:getWorldY()
+	mapObject.draw(self, c:getRelativeX(x), c:getRelativeY(y), c.scale)
 	love.graphics.setColor(r, g, b, a)
 
 	--	drawable.draw(self, (self.x - 1)*TILE_SIZE + self.walkXOffset, (self.y - 1)*TILE_SIZE + self.walkYOffset)
@@ -176,8 +179,9 @@ function entity:isIdle()
 end
 
 function entity:die()
-	local c = corpse:new(self:getClass(), self.name, self.map, self.x - self.map.xOffset, self.y - self.map.yOffset)
+	local c = corpse:new(self:getClass(), self.name, self.map, self.x, self.y)
 	c.name = "corpse of " .. self.dname
+	self.dead = true
 	self.map:addItem(c)
 	if self.map:getMouseSelection() and self.map:getMouseSelection().uid == self.uid then
 		self.map:setMouseSelection(c)
@@ -306,14 +310,20 @@ function entity:breathe()
 	if not self.dead then 
 		local r = self.map:inRoom(self.x, self.y)
 		if r then
+			-- Adjust oxygen down, allowing it to go below zero
 			r:adjustAttribute("oxygen", -5, -5)
 			if r:getAttribute("oxygen") < 0 then
-				self.oxygenStarvation = self.oxygenStarvation - r:getAttribute("oxygen")
+				-- If it is below zero, increase our oxygen starvation (subtracting a negative value)
+				self.oxygenStarvation = self.oxygenStarvation - r:getAttribute("oxygen")*r:getTileCount()
 				if self.oxygenStarvation >= 100 then
 					self:die()
+				elseif self.oxygenStarvation < 0.01 then
+					self.oxygenStarvation = 0
 				end
+				-- Reset oxygen back to 0 because negative attributes don't make sense
+				r:setAttribute('oxygen', 0)
 			elseif self.oxygenStarvation > 0 then
-				self.oxygenStarvation = clamp(self.oxygenStarvation - 1, 0, math.huge)
+				self.oxygenStarvation = clamp(self.oxygenStarvation - 10, 0, math.huge)
 			end
 		end
 	end
@@ -422,42 +432,13 @@ function entity:walkToAdjacentTile(x, y, speed)
 		self.sprite = self.westFacingQuad
 	end
 
-	function moveFunc(eself, x)
+	local function moveFunc(eself, x)
 		return 0
 	end
 
 	self.walking = true
 	local steps = entity.base_tile_walk_distance / speed
 	self:translate(x, y, steps, moveFunc)
-end
-
-function entity:moveToTile(x, y, speed, steps)
-	local dx = TILE_SIZE*(x - self.x)
-	local dy = TILE_SIZE*(y - self.y)
-
-	if dy < 0 then
-		self.sprite = self.northFacingQuad
-	elseif dy > 0 then
-		self.sprite = self.southFacingQuad
-	end
-
-	if dx > 0 then
-		self.sprite = self.eastFacingQuad
-	elseif dx < 0 then
-		self.sprite = self.westFacingQuad
-	end
-
-	self.previousX = self.x
-	self.previousY = self.y
-	self.x = x
-	self.y = y
-	self.steps = steps / speed
-	self.walking = true
-	self.walkXOffset = -dx
-	self.walkYOffset = -dy
-
-	self.xStep = dx/self.steps
-	self.yStep = dy/self.steps
 end
 
 function entity:sitOn(furniture)

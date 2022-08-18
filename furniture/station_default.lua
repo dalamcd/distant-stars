@@ -34,7 +34,7 @@ local function inputFunc(sself, gstate, entity, input)
 end
 
 local function updateFunc(sself, gstate, entity, dt)
-	entity.map.velX = clamp(entity.map.velX + 0.01, -3, 3)
+	--entity.map.velX = clamp(entity.map.velX + 0.01, -3, 3)
 end
 
 local station_defaultTable = {

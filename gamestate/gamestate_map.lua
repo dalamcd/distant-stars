@@ -3,6 +3,8 @@ local context = require('context')
 local furniture = require('furniture.furniture')
 local ghost = require('furniture.ghost')
 local hull = require('furniture.hull')
+local entity = require('entity')
+local data = require('data')
 
 -- TODO Maximum velocity for map movement, need to think about what to do about this and other basic constants
 local MAX_VEL = 3
@@ -20,15 +22,15 @@ local function wheelmoved(gself, x, y)
 end
 
 local function keypressed(gself, key)
-	local t = gself.map:getTileAtWorld(getMousePos(gself.map.camera))
-	local e = gself.map:getEntitiesAtWorld(getMousePos(gself.map.camera))[1]
-	local i = gself.map:getItemsAtWorld(getMousePos(gself.map.camera))[1]
-	local f = gself.map:getFurnitureAtWorld(getMousePos(gself.map.camera))[1]
-	local s = gself.map:getStockpileAtWorld(getMousePos(gself.map.camera))
+	local t = gself.map:getTileAtWorld(getMousePos())
+	local e = gself.map:getEntitiesAtWorld(getMousePos())[1]
+	local i = gself.map:getItemsAtWorld(getMousePos())[1]
+	local f = gself.map:getFurnitureAtWorld(getMousePos())[1]
+	local s = gself.map:getStockpileAtWorld(getMousePos())
 
 	if key == 'e' then
 		if t then
-			local g = ghost:new(hull, "hull", gself.map, t.x, t.y)
+			local g = ghost:new(furniture, "bigthing", gself.map, t.x, t.y)
 			gself.ghost = g
 		end
 	elseif key == 'r' then
@@ -43,17 +45,27 @@ local function keypressed(gself, key)
 		end
 	end
 
+	if key == 'm' and gself.map:getMouseSelection():isType('generator') then
+		gself.map:getMouseSelection():pause()
+	end
+
 	if key =='t' and i and gself.map:getMouseSelection():isType("item") then
 		gself.map:getMouseSelection():mergeWith(i)
+	end
+
+	if key =='f' and t then
+		local ent = entity:new("tallpawn", data:getBase():getRandomFullName(), gself.map, t.x, t.y)
+		gself.map:addEntity(ent)
+		ent:die()
 	end
 end
 
 local function mousereleased(gself, x, y, button)
-	local t = gself.map:getTileAtWorld(getMousePos(gself.map.camera))
-	local e = gself.map:getEntitiesAtWorld(getMousePos(gself.map.camera))[1]
-	local i = gself.map:getItemsAtWorld(getMousePos(gself.map.camera))[1]
-	local f = gself.map:getFurnitureAtWorld(getMousePos(gself.map.camera))[1]
-	local s = gself.map:getStockpileAtWorld(getMousePos(gself.map.camera))
+	local t = gself.map:getTileAtWorld(getMousePos())
+	local e = gself.map:getEntitiesAtWorld(getMousePos())[1]
+	local i = gself.map:getItemsAtWorld(getMousePos())[1]
+	local f = gself.map:getFurnitureAtWorld(getMousePos())[1]
+	local s = gself.map:getStockpileAtWorld(getMousePos())
 
 	if button == 1 then
 		local msg = gself.map.alert:inBounds(x, y)
@@ -161,7 +173,7 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 	end
 
 	local function updateFunc(gself, dt)
-		local rx, ry = getMousePos(gself.map.camera)
+		local rx, ry = getMousePos()
 		d:updateTextField("Tile under mouse", tostring(gself.map:getTileAtWorld(rx, ry)))
 
 		local objStr = ""
