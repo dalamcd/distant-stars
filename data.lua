@@ -17,6 +17,7 @@ function data.static:getBase()
 end
 
 function data:initialize()
+
 	drawable:addTileset("entity", "sprites/tilesheets/entities.png")
 	drawable:addTileset("item", "sprites/tilesheets/items.png")
 	drawable:addTileset("furniture", "sprites/tilesheets/furniture.png")

@@ -22,15 +22,15 @@ local function wheelmoved(gself, x, y)
 end
 
 local function keypressed(gself, key)
-	local t = gself.map:getTileAtWorld(getMousePos(gself.map.camera))
-	local e = gself.map:getEntitiesAtWorld(getMousePos(gself.map.camera))[1]
-	local i = gself.map:getItemsAtWorld(getMousePos(gself.map.camera))[1]
-	local f = gself.map:getFurnitureAtWorld(getMousePos(gself.map.camera))[1]
-	local s = gself.map:getStockpileAtWorld(getMousePos(gself.map.camera))
+	local t = gself.map:getTileAtWorld(getMousePos())
+	local e = gself.map:getEntitiesAtWorld(getMousePos())[1]
+	local i = gself.map:getItemsAtWorld(getMousePos())[1]
+	local f = gself.map:getFurnitureAtWorld(getMousePos())[1]
+	local s = gself.map:getStockpileAtWorld(getMousePos())
 
 	if key == 'e' then
 		if t then
-			local g = ghost:new(hull, "hull", gself.map, t.x, t.y)
+			local g = ghost:new(furniture, "bigthing", gself.map, t.x, t.y)
 			gself.ghost = g
 		end
 	elseif key == 'r' then
@@ -56,15 +56,16 @@ local function keypressed(gself, key)
 	if key =='f' and t then
 		local ent = entity:new("tallpawn", data:getBase():getRandomFullName(), gself.map, t.x, t.y)
 		gself.map:addEntity(ent)
+		ent:die()
 	end
 end
 
 local function mousereleased(gself, x, y, button)
-	local t = gself.map:getTileAtWorld(getMousePos(gself.map.camera))
-	local e = gself.map:getEntitiesAtWorld(getMousePos(gself.map.camera))[1]
-	local i = gself.map:getItemsAtWorld(getMousePos(gself.map.camera))[1]
-	local f = gself.map:getFurnitureAtWorld(getMousePos(gself.map.camera))[1]
-	local s = gself.map:getStockpileAtWorld(getMousePos(gself.map.camera))
+	local t = gself.map:getTileAtWorld(getMousePos())
+	local e = gself.map:getEntitiesAtWorld(getMousePos())[1]
+	local i = gself.map:getItemsAtWorld(getMousePos())[1]
+	local f = gself.map:getFurnitureAtWorld(getMousePos())[1]
+	local s = gself.map:getStockpileAtWorld(getMousePos())
 
 	if button == 1 then
 		local msg = gself.map.alert:inBounds(x, y)
@@ -172,7 +173,7 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 	end
 
 	local function updateFunc(gself, dt)
-		local rx, ry = getMousePos(gself.map.camera)
+		local rx, ry = getMousePos()
 		d:updateTextField("Tile under mouse", tostring(gself.map:getTileAtWorld(rx, ry)))
 
 		local objStr = ""

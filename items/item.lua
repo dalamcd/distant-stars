@@ -5,8 +5,9 @@ local walkTask = require('tasks.task_entity_walk')
 local pickupTask = require('tasks.task_item_pickup')
 local dropTask = require('tasks.task_item_drop')
 local drawable = require('drawable')
+local mapObject = require('mapObject')
 
-local item = class('item', drawable)
+local item = class('item', mapObject)
 
 item.static._loaded_items = {}
 
@@ -31,9 +32,9 @@ function item.static:retrieve(name)
 end
 
 function item:initialize(name, map, posX, posY, amount, maxStack)
-	local i = item:retrieve(name)
-	if i then
-		drawable.initialize(self, i.tileset, i.tilesetX, i.tilesetY, i.spriteWidth, i.spriteHeight, posX, posY, 1, 1)
+	local obj = item:retrieve(name)
+	if obj then
+		mapObject.initialize(self, obj, name, map, posX, posY, 1, 1, false)
 	else
 		error("attempted to initialize " .. name .. " but no item with that name was found")
 	end
@@ -49,11 +50,11 @@ end
 
 function item:draw()
 	local c = self.map.camera
-	local x = c:getRelativeX((self.x - 1)*TILE_SIZE)
-	local y = c:getRelativeY((self.y - 1)*TILE_SIZE)
-	drawable.draw(self, x, y, c.scale)
+	local x = c:getRelativeX(self:getWorldX())
+	local y = c:getRelativeY(self:getWorldY())
+	mapObject.draw(self, x, y, c.scale)
 	if self.amount > 1 then
-		drawable.drawSubText(self, self.amount, x + c.scale*(TILE_SIZE/2 - love.graphics.getFont():getWidth(self.amount)/2), y + TILE_SIZE*c.scale/2, c.scale)
+		drawable.drawSubText(self, self.amount, x, y, c.scale)
 	end
 end
 

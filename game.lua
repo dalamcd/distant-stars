@@ -56,8 +56,8 @@ function getFont(name)
 	return love.graphics.getFont()
 end
 
-function getMousePos(camera)
-	local mx = (love.mouse.getX() - camera.xOffset) / camera.scale
-	local my = (love.mouse.getY() - camera.yOffset) / camera.scale
+function getMousePos()
+	local mx = love.mouse.getX()
+	local my = love.mouse.getY()
 	return mx, my
 end

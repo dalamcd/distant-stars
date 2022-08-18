@@ -47,6 +47,7 @@ function love.load()
 	data:setBase(gdata)
 
 	d:addTextField("MousePos", "(" .. love.mouse.getX() .. ", " .. love.mouse.getY() .. ")")
+	d:addTextField("MouseTest", "")
 	d:addTextField("Tile under mouse", "")
 	d:addTextField("Objects under mouse", "")
 
@@ -59,7 +60,7 @@ function love.load()
 	--local cow = entity:new("cow", "cow", m, 8, 5)
 	--local gus = entity:new("pawn", "Gustav", m, 6, 4)
 	m:addEntity(rando)
-	--m:addEntity(barnaby)
+	m:addEntity(barnaby)
 	--m:addEntity(dio)
 	--m:addEntity(gus)
 
@@ -72,7 +73,6 @@ function love.load()
 	m:addItem(chicken)
 	m:addItem(pizza)
 	m:addItem(pizza2)
-
 
 	local dresser = furniture:new("dresser", m, 7, 2)
 	local o2gen = generator:new("o2gen", m, 2, 2, "oxygen", 15/60)
@@ -208,7 +208,7 @@ function love.keypressed(key)
 
 	if key == 'e' and gs.map:getMouseSelection() then
 		local e = gs.map:getMouseSelection()
-		local t = gs.map:getTileAtWorld(getMousePos(gs.map.camera))
+		local t = gs.map:getTileAtWorld(getMousePos())
 		local dist = math.sqrt((t.x - e.x)^2 + (t.y - e.y)^2)
 		local function moveFunc(eself, x)
 			local p = eself.moveFuncParams

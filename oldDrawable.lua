@@ -14,7 +14,7 @@ function drawable.static:getTileset(name)
 	return self._tilesets[name] or nil
 end
 
-function drawable:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, tileWidth, tileHeight, invertDimensions)
+function drawable:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, posX, posY, tileWidth, tileHeight, invertDimensions)
 
 	local ts = drawable:getTileset(tileset)
 
@@ -46,6 +46,8 @@ function drawable:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHei
 		self.eastFacingQuad = eastFacingQuad
 		self.spriteWidth = spriteWidth
 		self.spriteHeight = spriteHeight
+		self.x = posX
+		self.y = posY
 		self.width = tileWidth
 		self.height = tileHeight
 		self.xOffset = TILE_SIZE*self.width - spriteWidth
@@ -54,6 +56,11 @@ function drawable:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHei
 		self.origYOffset = self.yOffset
 		self.translationXOffset = 0
 		self.translationYOffset = 0
+		self.mapTranslationXOffset = 0
+		self.mapTranslationYOffset = 0
+		self.selected = false
+		self.reserved = false
+		self.reservedFor = nil
 		self.moveFunc = function () return 0,0 end
 	else
 		error("drawable initialized, but no matching tileset named " .. tileset .. " found")
@@ -98,21 +105,15 @@ function drawable:draw(x, y, s, r, nx, ny, nw, nh)
 		local ox, oy, ow, oh = self.sprite:getViewport()
 		self.sprite:setViewport(nx, ny, nw, nh, self.tileset:getWidth(), self.tileset:getHeight())
 		--love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
-		love.graphics.draw(self.tileset, self.sprite, math.floor(x), math.floor(y), r, s)
+		love.graphics.draw(self.tileset, self.sprite, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, r, s)
 		self.sprite:setViewport(ox, oy, ow, oh, self.tileset:getWidth(), self.tileset:getHeight())
 	else
-		love.graphics.draw(self.tileset, self.sprite, math.floor(x), math.floor(y), r, s)
+		love.graphics.draw(self.tileset, self.sprite, math.floor(x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s), math.floor(y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s), r, s)
 	end
 end
 
 function drawable:drawSubText(text, x, y, s)
-	local fh = love.graphics.getFont():getHeight()
-	local fw = love.graphics.getFont():getWidth(text)
-	-- Adjust x to the middle of the tile
-	x = x + (TILE_SIZE - fw)*s/2
-	-- Adjust y to the bottom of the tile
-	y = y + (TILE_SIZE - fh)*s
-	love.graphics.print(text, x, y, 0, s)
+	love.graphics.print(text, x + (self.xOffset + self.translationXOffset + self.mapTranslationXOffset)*s, y + (self.yOffset + self.translationYOffset + self.mapTranslationYOffset)*s, 0, s)
 end
 
 function drawable:recalculateOffsets()
@@ -120,20 +121,42 @@ function drawable:recalculateOffsets()
 	self.yOffset = TILE_SIZE*self.height - self.spriteHeight
 end
 
+function drawable:inBounds(worldX, worldY)
+	if(worldX - self:getWorldX() <= self.spriteWidth and worldX - self:getWorldX() >= 0) then
+		if(worldY - self:getWorldY() <= self.spriteHeight and worldY - self:getWorldY() >= 0) then
+			return true
+		end
+	end
+	return false
+end
+
+function drawable:inTile(tileX, tileY)
+	if tileX - self.x < self.width and tileX - self.x >= 0 then
+		if tileY - self.y < self.height and tileY - self.y >= 0 then
+			return true
+		end
+	end
+	return false
+end
+
 function drawable:getWorldX()
-	return self.xOffset + self.translationXOffset
+	return (self.x - 1)*TILE_SIZE + self.xOffset + self.translationXOffset + self.mapTranslationXOffset
 end
 
 function drawable:getWorldY()
-	return self.yOffset + self.translationYOffset
+	return (self.y - 1)*TILE_SIZE + self.yOffset + self.translationYOffset + self.mapTranslationYOffset
 end
 
 function drawable:getWorldCenterY()
-	return self.spriteHeight/2 + self.yOffset + self.translationYOffset
+	return (self.y - 1)*TILE_SIZE + self.spriteHeight/2 + self.yOffset + self.translationYOffset + self.mapTranslationYOffset
 end
 
 function drawable:getWorldCenterX()
-	return self.spriteWidth/2 + self.xOffset + self.translationXOffset
+	return (self.x - 1)*TILE_SIZE + self.spriteWidth/2 + self.xOffset + self.translationXOffset + self.mapTranslationXOffset
+end
+
+function drawable:getPos()
+	return {x=self.x, y=self.y}
 end
 
 function drawable:getType()
@@ -151,6 +174,49 @@ function drawable:isType(str)
 	else
 		return false
 	end
+end
+
+function drawable:isWalkable()
+	return true
+end
+
+function drawable:unreserve(entity)
+	if self.reservedFor and entity.uid == self.reservedFor.uid then
+		self.reserved = false
+		self.reservedFor = nil
+		return true
+	else
+		return false
+	end
+end
+
+function drawable:reserveFor(entity)
+	self.reserved = true
+	self.reservedFor = entity
+end
+
+function drawable:isReserved()
+	if self.reservedFor and self.reservedFor.dead then
+		self:unreserve(self.reservedFor)
+	end
+
+	return self.reserved
+end
+
+function drawable:select()
+	self.selected = true
+end
+
+function drawable:deselect()
+	self.selected = false
+end
+
+function drawable:getPossibleTasks()
+	return {}
+end
+
+function drawable:getPossibleJobs()
+	return {}
 end
 
 function drawable:translate(x, y, steps, moveFunc)

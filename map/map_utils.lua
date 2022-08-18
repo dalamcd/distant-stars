@@ -127,10 +127,10 @@ local map_utils = {
 		return nil
 	end,
 
-	getEntitiesAtWorld = function(self, worldX, y)
+	getEntitiesAtWorld = function(self, worldX, worldY)
 		local entities = {}
 		for _, e in ipairs(self.entities) do
-			if e:inBounds(worldX, y) then
+			if e:inBounds(worldX, worldY) then
 				table.insert(entities, e)
 			end
 		end

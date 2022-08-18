@@ -1,15 +1,16 @@
 local class = require('lib.middleclass')
 local item = require('items.item')
 local drawable = require('drawable')
+local mapObject = require('mapObject')
 
 local corpse = class('corpse', item)
 
 function corpse:initialize(objClass, name, map, posX, posY)
-	local i = objClass:retrieve(name)
-	if i then
-		drawable.initialize(self, i.tileset, i.tilesetX, i.tilesetY, i.spriteWidth, i.spriteHeight, posX, posY, 1, 1)
+	local obj = objClass:retrieve(name)
+	if obj then
+		mapObject.initialize(self, obj, name, map, posX, posY, 1, 1, false)
 	else
-		error("attempted to initialize " .. name .. " but no entity with that name was found")
+		error("attempted to initialize " .. name .. " but no object with that name was found")
 	end
 
 	self.maxStack = 1
@@ -36,19 +37,9 @@ end
 
 function corpse:draw()
 	local c = self.map.camera
-	local x = c:getRelativeX((self.x - 1)*TILE_SIZE) + self.originSpriteHeight*c.scale
-	local y = c:getRelativeY((self.y - 1)*TILE_SIZE) + (self.originSpriteWidth - TILE_SIZE)*c.scale
-	drawable.draw(self, x, y, c.scale, math.pi/2)
-end
-
-function corpse:getWorldX()
-	local c = self.map.camerax
-	return drawable.getWorldX(self)
-end
-
-function corpse:getWorldY()
-	local c = self.map.camera
-	return drawable.getWorldY(self) + (self.originSpriteWidth - TILE_SIZE)
+	local x = c:getRelativeX(self:getWorldX() + self.originSpriteHeight)
+	local y = c:getRelativeY(self:getWorldY() + self.originSpriteWidth - TILE_SIZE)
+	mapObject.draw(self, x, y, c.scale, math.pi/2)
 end
 
 function corpse:removedFromInventory(entity)

@@ -1,6 +1,7 @@
 local class = require('lib.middleclass')
 local furniture = require('furniture.furniture')
 local drawable = require('drawable')
+local mapObject = require('mapObject')
 
 local door = class("door", furniture)
 
@@ -45,12 +46,14 @@ function door:update(dt)
 end
 
 function door:draw()
-	local x, y, w, h = self.sprite:getViewport()
+	local nx, ny, w, h = self.sprite:getViewport()
 	local c = self.map.camera
-	x = x + self.openAmount
+	local x = c:getRelativeX(self:getWorldX())
+	local y = c:getRelativeY(self:getWorldY())
+	nx = nx + self.openAmount
 	w = w - self.openAmount
 
-	drawable.draw(self, c:getRelativeX((self.x - 1)*TILE_SIZE), c:getRelativeY((self.y - 1)*TILE_SIZE), c.scale, 0, x, y, w, h)
+	mapObject.draw(self, x, y, c.scale, 0, nx, ny, w, h)
 end
 
 function door:openDoor(reclose)
