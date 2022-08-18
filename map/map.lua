@@ -135,8 +135,12 @@ function map:draw()
 end
 
 function map:drawSelectionBox()
-	rect("line", self.mouseSelection:getWorldX(), self.mouseSelection:getWorldY(),
-				self.mouseSelection.spriteWidth, self.mouseSelection.spriteHeight, self.mouseSelection.map.camera)
+	if self.mouseSelection:isType('stockpile') then
+		self.mouseSelection:draw()
+	else
+		rect("line", self.mouseSelection:getWorldX(), self.mouseSelection:getWorldY(),
+					self.mouseSelection.spriteWidth, self.mouseSelection.spriteHeight, self.mouseSelection.map.camera)
+	end
 end
 
 function map:drawSelectionDetails()
@@ -206,9 +210,9 @@ function map:drawSelectionDetails()
 				itemNum = itemNum + 1
 			end
 		end
-	elseif self.mouseSelection:getType() == "stockpile" then
+	elseif self.mouseSelection:isType("stockpile") then
 		for i, item in ipairs(self.mouseSelection.contents) do
-			love.graphics.print(item.name,
+			love.graphics.print(item.name .. "(" ..item.uid..") " .. #self.mouseSelection.contents,
 								love.graphics.getWidth() - width - textPadding,
 								love.graphics.getHeight() - height + textPadding*i*3)
 		end
@@ -308,6 +312,39 @@ function map:addStockpile(s)
 	table.insert(self.stockpiles, s)
 end
 
+function map:updateStockpiles()
+	for _, sp in ipairs(self.stockpiles) do
+		sp:updateContents()
+	end
+end
+
+function map:checkStockpileAvailableFor(it)
+	for _, sp in ipairs(self.stockpiles) do
+		local t = sp:getAvailableTileFor(it)
+		if t then
+			return sp
+		end
+	end
+	return nil
+end
+
+function map:getNearbyUnreservedObject(objType, x, y)
+	local nearest = math.huge
+	local found = nil
+	for _, tile in ipairs(self.tiles) do
+		for _, obj in ipairs(self:getObjectsInTile(tile)) do
+			if obj:isType(objType) then
+				local dist = (x - obj.x)^2 + (y - obj.y)^2
+				if dist < nearest and not obj:isReserved() then
+					nearest = dist
+					found = obj
+				end
+			end
+		end
+	end
+	return found
+end
+
 function map:getNearbyObject(objType, x, y)
 	local nearest = math.huge
 	local found = nil
@@ -405,7 +442,6 @@ end
 
 function map:getAvailableJobs()
 	local tasks = {}
-	-- tasks = tile:getAvailableJobs(self, entity)
 	for _, tile in ipairs(self.tiles) do
 		for _, item in ipairs(self:getItemsInTile(tile)) do
 			for _, task in ipairs(item:getAvailableJobs()) do

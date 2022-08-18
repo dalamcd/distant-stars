@@ -4,7 +4,7 @@ local utils = require('utils')
 local task = class('task')
 
 function task:initialize(params, contextFunc, strFunc, initFunc, startFunc, runFunc, endFunc, abandonFunc, parent)
-		
+
 		strFunc = strFunc or function () return "<no description function>" end
 		contextFunc = contextFunc or function () return "<no context function>" end
 		startFunc = startFunc or function () self:runFunc() end
@@ -73,7 +73,7 @@ function task:isChild()
 	if self.parent then
 		return true
 	end
-	
+
 	return false
 end
 

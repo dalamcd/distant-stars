@@ -6,7 +6,6 @@ local debugtext = require('debugtext')
 local entity = require('entity')
 local item = require('items.item')
 local food = require('items.food')
-local data = require('data')
 local corpse = require('items.corpse')
 local furniture = require('furniture.furniture')
 local comfort = require('furniture.furniture_comfort')
@@ -16,7 +15,6 @@ local context = require('context')
 local door = require('furniture.door')
 local drawable = require('drawable')
 local stockpile = require('stockpile')
---local background = require('background')
 local gamestate = require('gamestate.gamestate')
 local fadein = require('gamestate.gamestate_fade')
 local inventory = require('gamestate.gamestate_inventory')
@@ -60,7 +58,7 @@ function love.load()
 	--local cow = entity:new("cow", "cow", m, 8, 5)
 	--local gus = entity:new("pawn", "Gustav", m, 6, 4)
 	m:addEntity(rando)
-	m:addEntity(barnaby)
+	--m:addEntity(barnaby)
 	--m:addEntity(dio)
 	--m:addEntity(gus)
 
@@ -70,9 +68,9 @@ function love.load()
 
 	pizza.amount = 10
 	pizza2.amount = pizza2.maxStack - 5
-	m:addItem(chicken)
+	--m:addItem(chicken)
 	m:addItem(pizza)
-	m:addItem(pizza2)
+	--m:addItem(pizza2)
 
 	local dresser = furniture:new("dresser", m, 7, 2)
 	local o2gen = generator:new("o2gen", m, 2, 2, "oxygen", 15/60)
@@ -87,8 +85,12 @@ function love.load()
 	m:addFurniture(o2gen)
 	m:addFurniture(n2gen)
 
-	--local sp = stockpile:new(m, tmp, "new stockpile")
-	--m:addStockpile(sp)
+	local spTiles = m:getTilesFromPoints({{x=2, y=2}, {x=3, y=2}, {x=4, y=2}, {x=5, y=2}, 
+											{x=2, y=3}, {x=3, y=3}, {x=4, y=3}, {x=5, y=3},
+											{x=2, y=4}, {x=3, y=4}, {x=4, y=4}, {x=5, y=4},
+											{x=2, y=5}, {x=3, y=5}, {x=4, y=5}, {x=5, y=5},})
+	local sp = stockpile:new(m, spTiles, "new stockpile")
+	m:addStockpile(sp)
 
 	local c = camera:new()
 	local bg = background:new(300)

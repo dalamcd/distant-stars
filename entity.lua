@@ -118,6 +118,9 @@ function entity:update(dt)
 				end
 			end
 		end
+		if #self.jobs > 0 then
+			self:getNextJob()
+		end
 	end
 
 	if self:isIdle() and (self.idleTime / 60) % 10 == 0 then
@@ -179,7 +182,7 @@ function entity:isIdle()
 end
 
 function entity:die()
-	local c = corpse:new(self:getClass(), self.name, self.map, self.x, self.y)
+	local c = corpse:new(self:getClass(), self.name, self.map, self.x - self.map.xOffset, self.y - self.map.yOffset)
 	c.name = "corpse of " .. self.dname
 	self.dead = true
 	self.map:addItem(c)
@@ -212,6 +215,13 @@ function entity:getNextJob()
 	if #self.jobs > 0 then
 		self:setTask(self.jobs[#self.jobs])
 		self.map:removeJobFromJobList(self.jobs[#self.jobs])
+		table.remove(self.jobs, #self.jobs)
+	end
+end
+
+function entity:printTasks()
+	for _, t in ipairs(self.tasks) do
+		print(t.uid.. ": " ..t:strFunc())
 	end
 end
 
@@ -251,7 +261,7 @@ function entity:handleNeeds()
 	self:breathe()
 
 	if self.satiation < 80 then
-		local edible = self.map:getNearbyObject('food', self.x, self.y)
+		local edible = self.map:getNearbyUnreservedObject('food', self.x, self.y)
 		if edible and self.idleTime > 0 and not self.walking then
 			local et = eatTask:new(edible)
 			self:pushTask(et)
@@ -331,6 +341,9 @@ end
 
 function entity:adjustHealth(amt)
 	self.health = clamp(self.health + amt, 0, 100)
+	if self.health == 0 then
+		self:die()
+	end
 end
 
 function entity:adjustSatiation(amt)
@@ -381,7 +394,7 @@ function entity:removeFromInventory(item)
 		if item.uid == invItem.uid then
 			table.remove(self.inventory, i)
 			item:removedFromInventory(self)
-		end	
+		end
 	end
 end
 

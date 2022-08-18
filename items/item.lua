@@ -142,32 +142,41 @@ end
 function item:getAvailableJobs()
 	local tasks = {}
 
-	if self.x ~= 2 or self.y ~= 8 then
+	local sp = self.map:checkStockpileAvailableFor(self)
+	if sp and not sp:inStockpile(self) then
 		local function startFunc(tself)
-			local p = tself:getParams()
-			p.pickup = pickupTask:new(self, tself)
-			p.drop = dropTask:new(self, tself)
-			p.dest = self.map:getTile(2, 8)
-			if not self.owned then
-				p.entity:pushTask(p.pickup)
+			local t = sp:getAvailableTileFor(self)
+			if t then
+				local p = tself:getParams()
+				p.pickup = pickupTask:new(self, tself)
+				p.drop = dropTask:new(self, t, tself)
+				p.dest = t
+				if not self.owned then
+					tself.entity:pushTask(p.drop)
+					tself.entity:pushTask(p.pickup)
+				else
+					tself.entity:pushTask(p.drop)
+				end
 			else
-				p.entity:pushTask(p.drop)
+				tself:abandon()
+				tself:complete()
 			end
 		end
 
 		local function runFunc(tself)
 			local p = tself:getParams()
-			if not p.pickedUp and not p.dropped then
-				p.entity:pushTask(p.pickup)
-			elseif p.pickedUp and not p.dropped then
-				p.entity:pushTask(p.drop)
-			elseif p.dropped then
+			if p.dropped then
 				tself:complete()
 			end
 		end
 
 		local function strFunc(tself)
-			return "Hauling " .. self.name .. " to tile (1, 1)"
+			local p = tself:getParams()
+			if not p.dropped and p.dest then
+				return "Hauling " .. self.name .. " to tile (".. p.dest.x ..", "..p.dest.y..")"
+			else
+				return ""
+			end
 		end
 
 		local haulTask = task:new(nil, nil, strFunc, nil, startFunc, runFunc, nil, nil, nil)

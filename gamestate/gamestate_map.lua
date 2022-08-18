@@ -74,7 +74,7 @@ local function mousereleased(gself, x, y, button)
 		elseif gself.context.active and gself.context:inBounds(x, y) then
 			gself.context:handleClick(x, y)
 		else
-			if s then gself.map.mouseSelection = s end
+			if s then gself.map.mouseSelection = s; s:select() end
 			if f then gself.map.mouseSelection = f end
 			if i then gself.map.mouseSelection = i end
 			if e then gself.map.mouseSelection = e end
@@ -86,6 +86,12 @@ local function mousereleased(gself, x, y, button)
 		if selection and t and selection:isType("entity") and selection.map.uid == t.map.uid then
 			local tlist = gself.map:getPossibleTasks(t, selection)
 			gself.context:set(x, y, tlist)
+		end
+	end
+
+	if button == 5 then
+		if e then
+			e:printTasks()
 		end
 	end
 
