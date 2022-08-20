@@ -49,20 +49,28 @@ end
 
 local function endFunc(self)
 	local p = self:getParams()
-	p.reachedSeat = true
 	self.furniture:unreserve(self.entity)
+	if not self.abandoned then
+		p.reachedSeat = true
+	end
+end
+
+local function abandonFunc(self)
+	if self:isChild() then
+		self.parent:abandon()
+	end
 end
 
 local function strFunc(self)
 	if self.entity.walking then
-		return "Moving to (" .. self.entity.destination.x .. ", " .. self.entity.destination.y .. ") to sit on " .. self.furniture.name
+		return "Moving to (" .. self.entity.destination.x .. ", " .. self.entity.destination.y .. ") to sit on " .. self.furniture.label
 	else
-		return "Sitting on " .. self.furniture.name
+		return "Sitting on " .. self.furniture.label
 	end
 end
 
 local function contextFunc(self)
-	return "Sit on " .. self.furniture.name
+	return "Sit on " .. self.furniture.label
 end
 
 function sitTask:initialize(furniture, parentTask)
@@ -70,7 +78,7 @@ function sitTask:initialize(furniture, parentTask)
 	if not furniture:isType("comfort") then error("sitTask initialized with unsittable furniture") end
 
 	self.furniture = furniture
-	task.initialize(self, nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
+	task.initialize(self, nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, abandonFunc, parentTask)
 end
 
 return sitTask

@@ -40,11 +40,11 @@ local function endFunc(self)
 end
 
 local function contextFunc(self)
-	return "Take " .. self.item.name .. " from " .. self.furniture.name
+	return "Take " .. self.item.label .. " from " .. self.furniture.label
 end
 
 local function strFunc(self)
-	return "Taking " .. self.item.name .. " from " .. self.furniture.name
+	return "Taking " .. self.item.label .. " from " .. self.furniture.label
 end
 
 function withdrawTask:initialize(furniture, item, parentTask)

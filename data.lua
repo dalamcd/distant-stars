@@ -2,7 +2,7 @@ local class = require('lib.middleclass')
 local utils = require('utils')
 local drawable = require('drawable')
 local item = require('items.item')
-local entity = require('entity')
+local entity = require('entities.entity')
 local furniture = require('furniture.furniture')
 local tile = require('tile')
 

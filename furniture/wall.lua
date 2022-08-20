@@ -18,7 +18,7 @@ function wall:isWall()
 end
 
 function wall:getType()
-	return furniture.getType(self) .. "[[wall]][[" .. self.name .. "]]"
+	return furniture.getType(self) .. "[[wall]][[" .. self.label .. "]]"
 end
 
 return wall

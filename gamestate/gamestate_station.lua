@@ -25,6 +25,6 @@ function gamestate.static:getStationState(station, entity)
 		station:exitFunc(gself, entity)
 	end
 
-	local gs = gamestate:new("view station " .. station.name, loadFunc, updateFunc, drawFunc, exitFunc, inputFunc, true, true)
+	local gs = gamestate:new("view station " .. station.label, loadFunc, updateFunc, drawFunc, exitFunc, inputFunc, true, true)
 	return gs
 end

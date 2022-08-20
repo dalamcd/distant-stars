@@ -79,14 +79,17 @@ function mapObject:unreserve(obj)
 		self.reserved = false
 		self.reservedFor = nil
 		return true
-	else
-		return false
 	end
+	if self.reservedFor then
+		print("ERR: attempted to unreserve "..self.label.." for "..obj.label.." but was reserved for "..self.reservedFor.label)
+	end
+	return false
 end
 
 function mapObject:reserveFor(obj)
 	self.reserved = true
 	self.reservedFor = obj
+	return true
 end
 
 function mapObject:isReserved()

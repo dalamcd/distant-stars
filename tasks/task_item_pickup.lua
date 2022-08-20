@@ -36,19 +36,25 @@ local function endFunc(self)
 	end
 end
 
+local function abandonFunc(self)
+	if self:isChild() then
+		self.parent:abandon()
+	end
+end
+
 local function strFunc(self)
-	return "Moving to (" .. self.item.x .. ", " .. self.item.y .. ") to pick up " .. self.item.name
+	return "Moving to (" .. self.item.x .. ", " .. self.item.y .. ") to pick up " .. self.item.label
 end
 
 local function contextFunc(self)
-	return "Pick up " .. self.item.name
+	return "Pick up " .. self.item.label
 end
 
 function pickupTask:initialize(item, parentTask)
 	if not item then error("pickupTask initialized with no item") end
 
 	self.item = item
-	task.initialize(self, nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
+	task.initialize(self, nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, abandonFunc, parentTask)
 end
 
 return pickupTask

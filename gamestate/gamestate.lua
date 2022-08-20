@@ -29,8 +29,8 @@ function gamestate.static:push(gs)
 end
 
 function gamestate.static:pop()
-	local peek = self._stack[#self._stack]
-	if #self._stack > 0 then
+	local peek = self:peek()
+	if #self._stack > 1 then
 		local gs = table.remove(self._stack)
 		if self._stack[#self._stack] then
 			self._stack[#self._stack].top = true
@@ -75,7 +75,8 @@ function gamestate.static:updateInput(dt)
 	-- Only the topmost state processes inputs
 	-- TODO: allow the state to pass input to child states? although this is probably easily doable in the state
 	-- itself by accessing the gamestate.child object (which I should test to see if it even works)
-	self._updateStack[#self._updateStack]:inputFunc(self._input)
+	--self._updateStack[#self._updateStack]:inputFunc(self._input)
+	self._updateStack[#self._updateStack]:input(self._input)
 
 	for k, _ in pairs(self._input) do
 		self._input[k] = nil
@@ -84,11 +85,14 @@ end
 
 function gamestate.static:update(dt)
 
-	--update from the top of the stack to the bottom so the most recent stack is always updated first
+	--update from the top of the stack to the bottom so the topmost stack is always updated first
 	for i=#self._updateStack, 1, -1 do
+		-- Have we pushed or popped a stack in the middle of this loop?
 		if not self.rebuilt then
+			-- If not, update the next state
 			self._updateStack[i]:update(dt)
 		else
+			-- If so, start over
 			self.rebuilt = false
 			self:update(dt)
 			return
@@ -105,13 +109,13 @@ function gamestate.static:draw()
 	end
 end
 
-function gamestate.static:input(name, value)
+function gamestate.static:addInput(name, value)
 	self._input[name] = value
 end
 
-function gamestate:initialize(name, loadFunc, updateFunc, drawFunc, exitFunc, inputFunc, updateBelow, drawBelow)
+function gamestate:initialize(label, loadFunc, updateFunc, drawFunc, exitFunc, inputFunc, updateBelow, drawBelow)
 
-	name = name or "unknown gamestate"
+	label = label or "unknown gamestate"
 	loadFunc = loadFunc or function () return end
 	updateFunc = updateFunc or function () return end
 	drawFunc = drawFunc or function () return end
@@ -122,7 +126,7 @@ function gamestate:initialize(name, loadFunc, updateFunc, drawFunc, exitFunc, in
 	drawBelow = drawBelow or false
 
 	self.uid = getUID()
-	self.name = name
+	self.label = label
 	self.loadFunc = loadFunc
 	self.updateFunc = updateFunc
 	self.drawFunc = drawFunc
@@ -141,18 +145,22 @@ function gamestate:draw()
 	self:drawFunc()
 end
 
+function gamestate:input(input)
+	self:inputFunc(input)
+end
+
 function gamestate:exit()
 	self:exitFunc()
 end
 
 function gamestate:getName()
-	if self.name == "fadestate" then
+	if self.label == "fadestate" then
 		if self.child then
 			return "fade atop of " .. self.child:getName()
 		end
 	end
 
-	return self.name
+	return self.label
 end
 
 return gamestate
