@@ -9,10 +9,8 @@ local bottomPadding = 3
 local textTopPadding = 5
 local textInnerPadding = 3
 
-function context:initialize(map, font)
-	font = font or love.graphics.getFont()
-	self.map = map
-	self.font = font
+function context:initialize(state)
+	self.state = state
 	self.color = {r=0.0, g=0.0, b=0.0, a=1.0}
 end
 
@@ -28,7 +26,7 @@ function context:update()
 			local right = self.x + self.txtWidth + falloff - mx
 			local bottom = self.y + self.txtHeight + falloff - my
 			local dx, dy = 0, 0
-			
+
 			if left > 0 then dx = left end
 			if right < 0 then dx = right end
 			if top > 0 then dy = top end
@@ -90,7 +88,6 @@ function context:set(x, y, items)
 			txt = item:getContext()
 		end
 	end
-	love.graphics.setFont(self.font)
 	self.txtWidth = love.graphics.getFont():getWidth(txt)
 	self.fontHeight = love.graphics:getFont():getHeight()
 	self.txtHeight = (#items)*(self.fontHeight + textTopPadding) + bottomPadding
@@ -113,9 +110,9 @@ function context:handleClick(x, y)
 	for i, item in ipairs(self.items) do
 		if self:inBounds(x, y, item) then
 			if love.keyboard.isDown('lshift') then
-				self.map:getMouseSelection():queueTask(item)
+				self.state:getSelection():queueTask(item)
 			else
-				self.map:getMouseSelection():setTask(item)
+				self.state:getSelection():setTask(item)
 			end
 			self:clear()
 		end
@@ -155,11 +152,7 @@ function context:drawMenuItem(item, index)
 		drawRect(item.left, item.top, item.right, item.bottom, self.color)
 	end
 
-	love.graphics.setFont(self.font)
-	love.graphics.setColor(1, 1, 1, self.color.a)
 	love.graphics.print(item:getContext(), item.left + textInnerPadding, item.top)
-	love.graphics.reset()
-
 end
 
 return context

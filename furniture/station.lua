@@ -86,7 +86,7 @@ function station:getViewStationTask(parentTask)
 	end
 
 	local function strFunc(tself)
-		return "Working on " .. self.name
+		return "Working on " .. self.label
 	end
 
 	local viewTask = task:new(nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)

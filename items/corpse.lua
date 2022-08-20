@@ -15,11 +15,11 @@ function corpse:initialize(objClass, name, map, posX, posY)
 
 	self.maxStack = 1
 	self.amount = 1
-	self.name = name
+	self.label = name
 	self.map = map
 
-	self.originTileWidth = self.tileWidth
-	self.originTileHeight = self.tileHeight
+	self.originTileWidth = self.width
+	self.originTileHeight = self.height
 	self.originSpriteWidth = self.spriteWidth
 	self.originSpriteHeight = self.spriteHeight
 	self.originXOffset = self.xOffset
@@ -31,21 +31,23 @@ function corpse:initialize(objClass, name, map, posX, posY)
 	self.height = self.originTileWidth
 	self.spriteWidth = self.originSpriteHeight
 	self.spriteHeight = self.originSpriteWidth
-	self.xOffset = self.originYOffset
-	self.yOffset = self.originXOffset
 end
 
-function corpse:draw()
+function corpse:draw(ent)
 	local c = self.map.camera
-	local x = c:getRelativeX(self:getWorldX() + self.originSpriteHeight)
-	local y = c:getRelativeY(self:getWorldY() + self.originSpriteWidth - TILE_SIZE)
+	local x, y
+	if ent then
+		x = c:getRelativeX(ent:getWorldX())
+		y = c:getRelativeY(ent:getWorldY())
+	else
+		x = c:getRelativeX(self:getWorldX())
+		y = c:getRelativeY(self:getWorldY())
+	end
 	mapObject.draw(self, x, y, c.scale, math.pi/2)
 end
 
 function corpse:removedFromInventory(entity)
 	item.removedFromInventory(self, entity)
-	self.xOffset = self.originYOffset
-	self.yOffset = self.originXOffset
 end
 
 return corpse

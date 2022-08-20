@@ -13,9 +13,9 @@ local alert = require('alert')
 local map = class('map')
 map:include(map_utils)
 
-function map:initialize(name, xOffset, yOffset)
+function map:initialize(label, xOffset, yOffset)
 
-	name = name or "new map"
+	label = label or "new map"
 
 	self.tiles = {}
 	self.entities = {}
@@ -26,7 +26,8 @@ function map:initialize(name, xOffset, yOffset)
 	self.rooms = {}
 	self.alert = alert:new(self)
 
-	self.name = name
+	self.label = label
+	self.selected = false
 	self.uid = getUID()
 	self.xOffset = xOffset or 0
 	self.yOffset = yOffset or 0
@@ -78,35 +79,36 @@ function map:draw()
 		t.mapTranslationYOffset = self.mapTranslationYOffset
 		t:draw()
 	end
-
-	for _, s in ipairs(self.stockpiles) do
-		s:draw()
-		--s.translationXOffset = s.translationXOffset + self.translationXOffset
-		--s.translationYOffset = s.translationYOffset + self.translationYOffset
-	end
-
-	for _, i in ipairs(self.items) do
-		i.mapTranslationXOffset = self.mapTranslationXOffset
-		i.mapTranslationYOffset = self.mapTranslationYOffset
-		if not i.owned then
-			i:draw()
+	if self.selected then
+		for _, s in ipairs(self.stockpiles) do
+			s:draw()
 		end
-	end
 
-	for _, f in ipairs(self.furniture) do
-		f.mapTranslationXOffset = self.mapTranslationXOffset
-		f.mapTranslationYOffset = self.mapTranslationYOffset
-		f:draw()
-	end
+		for _, i in ipairs(self.items) do
+			i.mapTranslationXOffset = self.mapTranslationXOffset
+			i.mapTranslationYOffset = self.mapTranslationYOffset
+			if not i.owned then
+				i:draw()
+			end
+		end
 
-	for _, e in ipairs(self.entities) do
-		e.mapTranslationXOffset = self.mapTranslationXOffset
-		e.mapTranslationYOffset = self.mapTranslationYOffset
-		e:draw()
-	end
+		for _, f in ipairs(self.furniture) do
+			f.mapTranslationXOffset = self.mapTranslationXOffset
+			f.mapTranslationYOffset = self.mapTranslationYOffset
+			f:draw()
+		end
 
-	for _, r in ipairs(self.rooms) do
-		r:draw()
+		for _, e in ipairs(self.entities) do
+			e.mapTranslationXOffset = self.mapTranslationXOffset
+			e.mapTranslationYOffset = self.mapTranslationYOffset
+			e:draw()
+		end
+
+		for _, r in ipairs(self.rooms) do
+			r:draw()
+		end
+
+		self.alert:draw()
 	end
 	--[[
 	for _, r in ipairs(self.rooms) do
@@ -125,139 +127,14 @@ function map:draw()
 	end
 	--]]
 
-	if self.mouseSelection then
-		self:drawSelectionDetails()
-		self:drawSelectionBox()
-	end
-	self:drawRoomDetails()
-
-	self.alert:draw()
 end
 
-function map:drawSelectionBox()
-	if self.mouseSelection:isType('stockpile') then
-		self.mouseSelection:draw()
-	else
-		rect("line", self.mouseSelection:getWorldX(), self.mouseSelection:getWorldY(),
-					self.mouseSelection.spriteWidth, self.mouseSelection.spriteHeight, self.mouseSelection.map.camera)
-	end
+function map:select()
+	self.selected = true
 end
 
-function map:drawSelectionDetails()
-
-	local width = 300
-	local height = 100
-	local padding = 10
-	local textPadding = 5
-	love.graphics.rectangle("line", love.graphics.getWidth() - width - padding,
-									love.graphics.getHeight() - height - padding,
-									width,
-									height)
-	love.graphics.setColor(0, 0, 0, 1)
-	love.graphics.rectangle("fill", love.graphics.getWidth() - width - padding + 1,
-									love.graphics.getHeight() - height - padding + 1,
-									width - 1,
-									height -1)
-	love.graphics.reset()
-
-	local name
-	if self.mouseSelection:isType('entity') then
-		name = self.mouseSelection.dname
-	else
-		name = self.mouseSelection.name
-	end
-	love.graphics.print(name .."["..self.mouseSelection.uid.."]",
-						love.graphics.getWidth() - width - textPadding,
-						love.graphics.getHeight() - height - textPadding)
-
-	if self.mouseSelection:isType("entity") then
-		local tlist = self.mouseSelection:getTasks()
-		local itemNum = 1
-		local idleSeconds = math.floor(self.mouseSelection.idleTime/60)
-		if self.mouseSelection.dead then
-			love.graphics.print("Dead",
-								love.graphics.getWidth() - width - textPadding,
-								love.graphics.getHeight() - height + textPadding*itemNum*3)
-			itemNum = itemNum + 1
-		elseif idleSeconds > 0 then
-			love.graphics.print("Idle for " .. idleSeconds .. " seconds",
-								love.graphics.getWidth() - width - textPadding,
-								love.graphics.getHeight() - height + textPadding*itemNum*3)
-			itemNum = itemNum + 1
-		end
-		love.graphics.print("Health: " .. self.mouseSelection.health,
-							love.graphics.getWidth() - width - textPadding,
-							love.graphics.getHeight() - height + textPadding*itemNum*3)
-		itemNum = itemNum + 1
-		love.graphics.print("Satiation: " .. self.mouseSelection.satiation,
-							love.graphics.getWidth() - width - textPadding,
-							love.graphics.getHeight() - height + textPadding*itemNum*3)
-		itemNum = itemNum + 1
-		love.graphics.print("Comfort: " .. self.mouseSelection.comfort,
-							love.graphics.getWidth() - width - textPadding,
-							love.graphics.getHeight() - height + textPadding*itemNum*3)
-		itemNum = itemNum + 1
-		love.graphics.print("Oxy Starv: " .. fstr(self.mouseSelection.oxygenStarvation, 0),
-							love.graphics.getWidth() - width - textPadding,
-							love.graphics.getHeight() - height + textPadding*itemNum*3)
-		itemNum = itemNum + 1
-
-		for i=#tlist, 1, -1 do
-			if not tlist[i]:isChild() then
-				love.graphics.print(tlist[i]:getDesc(),
-									love.graphics.getWidth() - width - textPadding,
-									love.graphics.getHeight() - height + textPadding*itemNum*3)
-				itemNum = itemNum + 1
-			end
-		end
-	elseif self.mouseSelection:isType("stockpile") then
-		for i, item in ipairs(self.mouseSelection.contents) do
-			love.graphics.print(item.name .. "(" ..item.uid..") " .. #self.mouseSelection.contents,
-								love.graphics.getWidth() - width - textPadding,
-								love.graphics.getHeight() - height + textPadding*i*3)
-		end
-	end
-end
-
---- Draw details about the room that the mouse is hovering over
-function map:drawRoomDetails()
-	local t = self:getTileAtWorld(getMousePos())
-	local r
-	if t then
-		r = self:inRoom(t.x, t.y)
-	end
-	if r then
-		local x = love.graphics.getWidth() - 200
-		local y = 20
-		drawRect(x, 20, 180, 100)
-		love.graphics.print("Room " .. r.uid, x + 10, y)
-		y = y + love.graphics.getFont():getHeight() + 2
-		if r.attributes then
-			for k, v in pairs(r.attributes) do
-				love.graphics.print(k..": "..fstr(v), x + 10, y)
-				y = y + love.graphics.getFont():getHeight() + 2
-			end
-		end
-	end
-end
-
-function map:setMouseSelection(object)
-	if self.mouseSelection then
-		self.mouseSelection:deselect()
-	end
-	object:select()
-	self.mouseSelection = object
-end
-
-function map:clearMouseSelection()
-	if self.mouseSelection then
-		self.mouseSelection:deselect()
-	end
-	self.mouseSelection = nil
-end
-
-function map:getMouseSelection()
-	return self.mouseSelection
+function map:unselect()
+	self.selected = false
 end
 
 function map:addEntity(e)
@@ -289,8 +166,8 @@ function map:removeItem(i)
 end
 
 function map:removeEntity(e)
-	for idx, entity in ipairs(self.entities) do
-		if e.uid == entity.uid then
+	for idx, ent in ipairs(self.entities) do
+		if e.uid == ent.uid then
 			table.remove(self.entities, idx)
 			return true
 		end
@@ -331,8 +208,8 @@ end
 function map:getNearbyUnreservedObject(objType, x, y)
 	local nearest = math.huge
 	local found = nil
-	for _, tile in ipairs(self.tiles) do
-		for _, obj in ipairs(self:getObjectsInTile(tile)) do
+	for _, t in ipairs(self.tiles) do
+		for _, obj in ipairs(self:getObjectsInTile(t)) do
 			if obj:isType(objType) then
 				local dist = (x - obj.x)^2 + (y - obj.y)^2
 				if dist < nearest and not obj:isReserved() then
@@ -348,8 +225,8 @@ end
 function map:getNearbyObject(objType, x, y)
 	local nearest = math.huge
 	local found = nil
-	for _, tile in ipairs(self.tiles) do
-		for _, obj in ipairs(self:getObjectsInTile(tile)) do
+	for _, t in ipairs(self.tiles) do
+		for _, obj in ipairs(self:getObjectsInTile(t)) do
 			if obj:isType(objType) then
 				local dist = (x - obj.x)^2 + (y - obj.y)^2
 				if dist < nearest then
@@ -360,6 +237,18 @@ function map:getNearbyObject(objType, x, y)
 		end
 	end
 	return found
+end
+
+function map:inBounds(worldX, worldY)
+	local s = self.camera.scale
+	local x = worldX - self.camera:getRelativeX(TILE_SIZE*self.xOffset)
+	local y = worldY - self.camera:getRelativeY(TILE_SIZE*self.yOffset)
+	if(x <= TILE_SIZE*self.width*s and x >= 0) then
+		if(y <= TILE_SIZE*self.height*s and y >= 0) then
+			return true
+		end
+	end
+	return false
 end
 
 function map:addAlert(str)
@@ -390,30 +279,30 @@ function map:pathfind(start, goal)
 	return nodes
 end
 
-function map:getPossibleTasks(tile, entity)
+function map:getPossibleTasks(theTile, entity)
 
 	local tasks = {}
 	
-	for _, task in ipairs(tile:getPossibleTasks(self, entity)) do
+	for _, task in ipairs(theTile:getPossibleTasks(self, entity)) do
 		task.params.map = self
 		tasks[#tasks+1] = task
 	end
 
-	for _, item in ipairs(self:getItemsInTile(tile)) do
+	for _, item in ipairs(self:getItemsInTile(theTile)) do
 		for _, task in ipairs(item:getPossibleTasks()) do
 			task.params.map = self
 			tasks[#tasks+1] = task
 		end
 	end
 
-	for _, furn in ipairs(self:getFurnitureInTile(tile)) do
+	for _, furn in ipairs(self:getFurnitureInTile(theTile)) do
 		for _, task in ipairs(furn:getPossibleTasks()) do
 			task.params.map = self
 			tasks[#tasks+1] = task
 		end
 	end
 
-	for _, task in ipairs(entity:getPossibleTasks(tile)) do
+	for _, task in ipairs(entity:getPossibleTasks(theTile)) do
 		task.params.map = self
 		tasks[#tasks+1] = task
 	end
@@ -461,12 +350,10 @@ end
 function map:load(fname)
 
 	io.input(fname)
-	local width = 0
-	local height = 0
 	local grid = {}
   -- Read format "N,M" where N and M are numbers specifying width and height, resepectively, discarding the comma
 	local numOne, _, numTwo = io.read("*number", 1, "*number")
-	
+
 	if numOne and numTwo then
     	self.width = numOne
 		self.height = numTwo
@@ -521,8 +408,8 @@ function map:load(fname)
 				self:addFurniture(newDoor)
 			elseif grid[index] == 5 then
 				t = tile:new("metal floor", self, x, y, index, true)
-				local hull = hull:new("hull", self, c, r)
-				self:addFurniture(hull)
+				local h = hull:new("hull", self, c, r)
+				self:addFurniture(h)
 			end
 			self.tiles[index] = t
 		end

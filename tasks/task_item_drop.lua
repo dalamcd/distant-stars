@@ -40,15 +40,23 @@ local function endFunc(self)
 		if s then
 			s:addToStockpile(self.item)
 		end
+	elseif self:isChild() then
+		self.parent:abandon()
+	end
+end
+
+local function abandonFunc(self)
+	if self:isChild() then
+		self.parent:abandon()
 	end
 end
 
 local function contextFunc(self)
-	return "Drop " .. self.item.name
+	return "Drop " .. self.item.label
 end
 
 local function strFunc(self)
-	return "Dropping " .. self.item.name
+	return "Dropping " .. self.item.label
 end
 
 function dropTask:initialize(item, destination, parentTask)
@@ -57,7 +65,7 @@ function dropTask:initialize(item, destination, parentTask)
 
 	self.item = item
 	self.destination = destination
-	task.initialize(self, nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, nil, parentTask)
+	task.initialize(self, nil, contextFunc, strFunc, nil, startFunc, runFunc, endFunc, abandonFunc, parentTask)
 end
 
 return dropTask

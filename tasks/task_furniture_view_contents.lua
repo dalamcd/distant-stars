@@ -55,7 +55,7 @@ local function contextFunc(self)
 end
 
 local function strFunc(self)
-	return "Viewing the inventory of " .. self.furniture.name
+	return "Viewing the inventory of " .. self.furniture.label
 end
 
 function viewContentsTask:initialize(furniture, parentTask)

@@ -1,7 +1,7 @@
 local gamestate = require('gamestate.gamestate')
 
 local function loadFunc(sself, gstate, entity)
-	local str = entity.dname .. " is working on " .. sself.name
+	local str = entity.label .. " is working on " .. sself.label
 
 	gstate.topMargin = love.graphics.getHeight()*0.15
 	gstate.leftMargin = love.graphics.getWidth()*0.15

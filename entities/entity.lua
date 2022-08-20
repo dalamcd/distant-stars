@@ -8,6 +8,8 @@ local dropTask = require('tasks.task_item_drop')
 local eatTask = require('tasks.task_entity_eat')
 local depositTask = require('tasks.task_furniture_deposit')
 local corpse = require('items.corpse')
+local priorities = require('entities.priorities')
+local schedule = require('entities.schedule')
 
 local entity = class('entity', mapObject)
 
@@ -52,8 +54,10 @@ function entity:initialize(name, label, map, posX, posY)
 	self.tasks = {}
 	self.jobs = {}
 	self.inventory = {}
+	self.priorities = priorities:new()
+	self.schedule = schedule:new()
 	self.name = name
-	self.dname = label
+	self.label = label
 
 	self.oneSecondTimer = 0
 
@@ -74,10 +78,6 @@ function entity:update(dt)
 	if self.dead then
 		mapObject.update(self, dt)
 		return
-	end
-
-	for _, item in ipairs(self.inventory) do
-		item:setPos(self.x, self.y, self.xOffset + self.translationXOffset, self.yOffset + self.translationYOffset)
 	end
 
 	self:handleWalking()
@@ -138,20 +138,13 @@ end
 
 function entity:draw()
 	local c = self.map.camera
-	local r, g, b, a = love.graphics.getColor()
-	if self.dead then
-		love.graphics.setColor(1.0, 0.0, 0.0, 1.0)
-	end
 	local x = self:getWorldX()
 	local y = self:getWorldY()
 	mapObject.draw(self, c:getRelativeX(x), c:getRelativeY(y), c.scale)
-	love.graphics.setColor(r, g, b, a)
-
-	--	drawable.draw(self, (self.x - 1)*TILE_SIZE + self.walkXOffset, (self.y - 1)*TILE_SIZE + self.walkYOffset)
 
 	if #self.inventory > 0 then
 		for _, item in ipairs(self.inventory) do
-			item:draw()
+			item:draw(self)
 		end
 	end
 	self:drawRoute()
@@ -183,12 +176,14 @@ end
 
 function entity:die()
 	local c = corpse:new(self:getClass(), self.name, self.map, self.x - self.map.xOffset, self.y - self.map.yOffset)
-	c.name = "corpse of " .. self.dname
+	local t = self.tasks[#self.tasks]
+	if t then
+		t:abandon()
+	end
+
+	c.label = "corpse of " .. self.label
 	self.dead = true
 	self.map:addItem(c)
-	if self.map:getMouseSelection() and self.map:getMouseSelection().uid == self.uid then
-		self.map:setMouseSelection(c)
-	end
 	self.map:removeEntity(self)
 end
 
@@ -430,7 +425,7 @@ function entity:walkToAdjacentTile(x, y, speed)
 	local dy = y - self.y
 
 	if math.abs(dx) > 1 or math.abs(dy) > 1 then
-		error("pawn '".. self.dname .."' attempted to walk a distance longer than 1 tile: " .. dx .. ", " .. dy)
+		error("pawn '".. self.label .."' attempted to walk a distance longer than 1 tile: " .. dx .. ", " .. dy)
 	end
 
 	if dy < 0 then
@@ -484,7 +479,7 @@ function entity:getClass()
 end
 
 function entity:__tostring()
-	return "Entity(".. self.dname .."["..self.uid.."], "..self.x..", "..self.y..")"
+	return "Entity(".. self.label .."["..self.uid.."], "..self.x..", "..self.y..")"
 end
 
 return entity

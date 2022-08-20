@@ -225,8 +225,17 @@ local map_utils = {
 		for _, f in ipairs(self:getFurnitureInTile(tile)) do
 			table.insert(objects, f)
 		end
+		for _, s in ipairs(self.stockpiles) do
+			if s:inTile(tile) then
+				table.insert(objects, s)
+			end
+		end
 
 		return objects
+	end,
+
+	getCentermostTile = function(self)
+		return self:getTile(math.floor(self.width/2), math.floor(self.height/2))
 	end,
 
 	getRandomWalkableTile = function(self)
@@ -290,7 +299,7 @@ local map_utils = {
 	getTilesFromPoints = function(self, points)
 		local tiles = {}
 		for _, point in ipairs(points) do
-			local t = self:getTile(point.x, point.y)
+			local t = self:getTile(point.x + self.xOffset, point.y + self.yOffset)
 			if t then
 				table.insert(tiles, t)
 			end

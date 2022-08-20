@@ -101,7 +101,12 @@ function drawable:draw(x, y, s, r, nx, ny, nw, nh)
 		love.graphics.draw(self.tileset, self.sprite, math.floor(x), math.floor(y), r, s)
 		self.sprite:setViewport(ox, oy, ow, oh, self.tileset:getWidth(), self.tileset:getHeight())
 	else
-		love.graphics.draw(self.tileset, self.sprite, math.floor(x), math.floor(y), r, s)
+		if r == 0 then
+			love.graphics.draw(self.tileset, self.sprite, math.floor(x), math.floor(y), r, s)
+		elseif r == math.pi/2 then
+			local ox = self.spriteWidth
+			love.graphics.draw(self.tileset, self.sprite, math.floor(x), math.floor(y), r, s, s, 0, ox)
+		end
 	end
 end
 

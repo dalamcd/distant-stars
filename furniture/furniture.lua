@@ -62,7 +62,7 @@ function furniture:initialize(name, map, posX, posY)
 		end
 	end
 
-	self.name = name
+	self.label = name
 	self.inventory = {}
 	self.output = {}
 	self.interactTiles = interactTiles
@@ -148,7 +148,7 @@ function furniture:isWalkable()
 end
 
 function furniture:__tostring()
-	return "Furniture(".. self.name .."["..self.uid.."], "..self.x..", "..self.y..")"
+	return "Furniture(".. self.label .."["..self.uid.."], "..self.x..", "..self.y..")"
 end
 
 return furniture

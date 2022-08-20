@@ -41,11 +41,11 @@ local function endFunc(self)
 end
 
 local function contextFunc(self)
-	return "Put " .. self.item.name .. " in " .. self.furniture.name
+	return "Put " .. self.item.label .. " in " .. self.furniture.label
 end
 
 local function strFunc(self)
-	return "Putting " .. self.item.name .. " in " .. self.furniture.name
+	return "Putting " .. self.item.label .. " in " .. self.furniture.label
 end
 
 function depositTask:initialize(item, furniture, parentTask)

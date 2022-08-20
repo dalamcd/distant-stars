@@ -161,9 +161,9 @@ end
 
 function door:__tostring()
 	if self.open then
-		return "Door(".. self.name .."["..self.uid.."], " .. self.x .. ", " .. self.y .. ") (open)"
+		return "Door(".. self.label .."["..self.uid.."], " .. self.x .. ", " .. self.y .. ") (open)"
 	else
-		return "Door(".. self.name .."["..self.uid.."], " .. self.x .. ", " .. self.y .. ") (closed)"
+		return "Door(".. self.label .."["..self.uid.."], " .. self.x .. ", " .. self.y .. ") (closed)"
 	end
 end
 

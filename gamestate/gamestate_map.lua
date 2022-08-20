@@ -3,7 +3,7 @@ local context = require('context')
 local furniture = require('furniture.furniture')
 local ghost = require('furniture.ghost')
 local hull = require('furniture.hull')
-local entity = require('entity')
+local entity = require('entities.entity')
 local data = require('data')
 
 -- TODO Maximum velocity for map movement, need to think about what to do about this and other basic constants
@@ -94,13 +94,6 @@ local function mousereleased(gself, x, y, button)
 			e:printTasks()
 		end
 	end
-
-	if button == 4 then
-		for i, r in ipairs(gself.map.rooms) do
-			print(i, #r.tiles)
-			r:listAttributes()
-		end
-	end
 end
 
 local function keysdown(gself)
@@ -136,7 +129,7 @@ function gamestate.static:getMapState(name, map, camera, passthrough)
 
 	local function loadFunc(gself)
 
-		gself.name = name
+		gself.label = name
 		gself.map = map
 		gself.map.camera = camera
 		gself.context = context:new(gself.map)

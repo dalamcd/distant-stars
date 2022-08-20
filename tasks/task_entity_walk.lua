@@ -37,6 +37,9 @@ local function abandonFunc(self)
 		for i=1, count do self.entity.route[i]=nil end
 		table.insert(self.entity.route, nextRoute)
 	end
+	if self:isChild() then
+		self.parent:abandon()
+	end
 end
 
 local function contextFunc(self)

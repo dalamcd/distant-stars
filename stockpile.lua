@@ -5,7 +5,7 @@ local room = require('room')
 
 local stockpile = class('stockpile', room)
 
-function stockpile:initialize(map, tiles, name)
+function stockpile:initialize(map, tiles, label)
 
 	if not map then
 		error("stockpike initialized with no map")
@@ -17,7 +17,7 @@ function stockpile:initialize(map, tiles, name)
 
 	self.uid = getUID()
 	self.tiles = tiles
-	self.name = name
+	self.label = label
 	self.contents = {}
 	self.color = {r=1.0, g=0.0, b=0.0, a=0.3}
 	self.map = map
@@ -26,12 +26,15 @@ function stockpile:initialize(map, tiles, name)
 	self.walls = {}
 
 	self:detectEdgeTiles()
+	self:updateContents()
 end
 
 function stockpile:update(dt)
-	-- We do not want to update the base class and start sharing atmo
+	-- We do not want to update the base class and start sharing attributes
 end
 
+-- REMINDER: This is being drawn in map:draw() as well, and is probably the cause of the
+--			 doubling effected I noticed earlier
 function stockpile:draw()
 	for _, tile in ipairs(self.tiles) do
 		local r, g, b, a = love.graphics.getColor()
@@ -51,11 +54,9 @@ function stockpile:updateContents()
 	self.contents = {}
 	for _, tile in ipairs(self.tiles) do
 		for _, item in ipairs(self.map:getItemsInTile(tile)) do
-			print(item, #self.contents)
 			if not self:inStockpile(item) then
 				self:addToStockpile(item)
 			end
-			print(item, #self.contents)
 		end
 	end
 end
@@ -71,7 +72,7 @@ end
 -- TODO: Make this check if there is an already available stack to merge with
 function stockpile:getAvailableTileFor(it)
 	for _, tile in ipairs(self.tiles) do
-		if #self.map:getItemsInTile(tile) == 0 and self.map:isWalkable(tile.x, tile.y) then
+		if #self.map:getItemsInTile(tile) == 0 and self.map:isWalkable(tile.x, tile.y) and not tile:isReserved() then
 			return tile
 		end
 	end
@@ -86,7 +87,6 @@ function stockpile:removeFromStockpile(itemToRemove)
 end
 
 function stockpile:addToStockpile(item)
-	print("added to sp: ", item)
 	table.insert(self.contents, item)
 end
 

@@ -3,7 +3,7 @@ local tile = require('tile')
 local game = require('game')
 local camera = require('camera')
 local debugtext = require('debugtext')
-local entity = require('entity')
+local entity = require('entities.entity')
 local item = require('items.item')
 local food = require('items.food')
 local corpse = require('items.corpse')
@@ -16,6 +16,7 @@ local door = require('furniture.door')
 local drawable = require('drawable')
 local stockpile = require('stockpile')
 local gamestate = require('gamestate.gamestate')
+local playerstate = require('gamestate.gamestate_player')
 local fadein = require('gamestate.gamestate_fade')
 local inventory = require('gamestate.gamestate_inventory')
 local mapstate = require('gamestate.gamestate_map')
@@ -48,8 +49,9 @@ function love.load()
 	d:addTextField("MouseTest", "")
 	d:addTextField("Tile under mouse", "")
 	d:addTextField("Objects under mouse", "")
+	d:addTextField("Map under mouse", "")
 
-	local m = map:new("main map", 0, 0)
+	local m = map:new("main map", 1, 1)
 	m:load('newmap.txt')
 
 	local rando = entity:new("pawn", gdata:getRandomFullName(), m, 3, 7)
@@ -62,15 +64,15 @@ function love.load()
 	--m:addEntity(dio)
 	--m:addEntity(gus)
 
-	local chicken = food:new("yummy chicken", m, 2, 7)
-	local pizza = food:new("yummy pizza", m, 3, 8)
-	local pizza2 = food:new("yummy pizza", m, 3, 8)
+	local chicken = food:new("yummy chicken", m, 3, 2)
+	local pizza = food:new("yummy pizza", m, 3, 7)
+	local pizza2 = food:new("yummy pizza", m, 4, 2)
 
 	pizza.amount = 10
 	pizza2.amount = pizza2.maxStack - 5
-	--m:addItem(chicken)
+	m:addItem(chicken)
 	m:addItem(pizza)
-	--m:addItem(pizza2)
+	m:addItem(pizza2)
 
 	local dresser = furniture:new("dresser", m, 7, 2)
 	local o2gen = generator:new("o2gen", m, 2, 2, "oxygen", 15/60)
@@ -92,13 +94,16 @@ function love.load()
 	local sp = stockpile:new(m, spTiles, "new stockpile")
 	m:addStockpile(sp)
 
-	local c = camera:new()
-	local bg = background:new(300)
-	local gs = gamestate:getMapState("main map", m, c, true)
-	gs.camera = c
+	--local c = camera:new()
+	local bg = background:new(450)
+	--local gs = gamestate:getMapState("main map", m, c, true)
+	--gs.camera = c
+	local ps = playerstate:new(m)
+	ps:addMap(m)
+	ps:setCurrentMap(m)
 
 	gamestate:push(bg)
-	gamestate:push(gs)
+	gamestate:push(ps)
 
 	previousTime = love.timer.getTime()
 	print(gdata:getRandomFullName('male'))
@@ -158,7 +163,7 @@ function love.draw()
 end
 
 function love.keypressed(key)
-	gamestate:input("keypressed", {key=key})
+	gamestate:addInput("keypressed", {key=key})
 
 	if key == 'space' then
 		paused = not paused
@@ -184,22 +189,17 @@ function love.keypressed(key)
 
 	if key == '1' then
 		local top = gamestate:peek()
+		print(top.label)
 		local newMap = map:new("testmap", -10, -10)
 		local p = entity:new("tallpawn", "Dylan", newMap, 6, 7)
-		local cam = camera:new()
-		cam.scale = top.map.camera.scale
-		cam.xOffset = top.map.camera.xOffset
-		cam.yOffset = top.map.camera.yOffset
 		newMap:load("map.txt")
 		newMap:addEntity(p)
-		local gs = gamestate:getMapState("testmap", newMap, cam, true)
-		gamestate:push(gs)
-		--gamestate:push(top)
+		top:addMap(newMap)
 	end
 
 	if key == '3' then
 		local gs = gamestate:peek()
-		gs.map:addAlert("HULL BREACH")
+		gs.currentMap:addAlert("HULL BREACH")
 	end
 
 	if key == '-' then
@@ -226,9 +226,9 @@ function love.keypressed(key)
 end
 
 function love.wheelmoved(x, y)
-	gamestate:input("wheelmoved", {x=x, y=y})
+	gamestate:addInput("wheelmoved", {x=x, y=y})
 end
 
 function love.mousereleased(x, y, button)
-	gamestate:input("mousereleased", {x=x, y=y, button=button})
+	gamestate:addInput("mousereleased", {x=x, y=y, button=button})
 end

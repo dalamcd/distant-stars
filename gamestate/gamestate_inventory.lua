@@ -9,10 +9,10 @@ function gamestate.static:getInventoryState(source, destination)
 			error("inventory state loaded with no source")
 		end
 
-		local str = "Viewing the contents of " .. source.name
+		local str = "Viewing the contents of " .. source.label
 
 		if destination then
-			str = destination.name .. " is viewing the contents of " .. source.name
+			str = destination.label .. " is viewing the contents of " .. source.label
 		end
 
 		gself.topMargin = love.graphics.getHeight()*0.15
@@ -42,10 +42,10 @@ function gamestate.static:getInventoryState(source, destination)
 		drawRect(gself.leftMargin, gself.topMargin, gself.width, gself.height)
 		love.graphics.print(gself.headerText, gself.headerPos, gself.topMargin + 20)
 		for i, item in ipairs(gself.items) do
-			love.graphics.print(item.name.."("..item.amount..")", gself.leftMargin + 20, gself.topMargin + 20 + (gself.textHeight + 5)*i)
+			love.graphics.print(item.label.."("..item.amount..")", gself.leftMargin + 20, gself.topMargin + 20 + (gself.textHeight + 5)*i)
 		end
 	end
 
-	local gs = gamestate:new("inventory for " .. source.name, loadFunc, nil, drawFunc, nil, inputFunc, false, true)
+	local gs = gamestate:new("inventory for " .. source.label, loadFunc, nil, drawFunc, nil, inputFunc, false, true)
 	return gs
 end
