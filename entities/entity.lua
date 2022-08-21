@@ -460,6 +460,7 @@ end
 
 function entity:getUp(furniture)
 	if self.seat and self.seat.uid == furniture.uid then
+		furniture:beUnnocupiedBy(self)
 		self.seat = nil
 		self.sitting = false
 	end

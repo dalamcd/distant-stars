@@ -100,6 +100,10 @@ function mapObject:isReserved()
 	return self.reserved
 end
 
+function mapObject:isOccupied()
+	return false
+end
+
 function mapObject:select()
 	self.selected = true
 end

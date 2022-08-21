@@ -212,7 +212,7 @@ function map:getNearbyUnreservedObject(objType, x, y)
 		for _, obj in ipairs(self:getObjectsInTile(t)) do
 			if obj:isType(objType) then
 				local dist = (x - obj.x)^2 + (y - obj.y)^2
-				if dist < nearest and not obj:isReserved() then
+				if dist < nearest and not obj:isReserved() and not obj:isOccupied() then
 					nearest = dist
 					found = obj
 				end

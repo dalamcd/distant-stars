@@ -99,7 +99,7 @@ local map_utils = {
 	inRoom = function(self, x, y)
 		local t = self:getTile(x, y)
 		for _, room in ipairs(self.rooms) do
-			if room:inRoom(t) then
+			if t and room:inRoom(t) then
 				return room
 			end
 		end
@@ -235,7 +235,7 @@ local map_utils = {
 	end,
 
 	getCentermostTile = function(self)
-		return self:getTile(math.floor(self.width/2), math.floor(self.height/2))
+		return self:getTile(math.ceil(self.width/2)+self.xOffset, math.ceil(self.height/2)+self.yOffset)
 	end,
 
 	getRandomWalkableTile = function(self)

@@ -168,10 +168,6 @@ function room:setAttribute(attr, amt)
 	self.attributes[attr] = amt
 end
 
-function room:getAllAttributes()
-	return self.attributes or {}
-end
-
 function room:adjustAttribute(attribute, amount, min, max)
 	min = min or -math.huge
 	max = max or math.huge
@@ -185,6 +181,10 @@ function room:adjustAttribute(attribute, amount, min, max)
 	else
 		self.attributes[attribute] = clamp(amount, min, max)
 	end
+end
+
+function room:getAllAttributes()
+	return self.attributes or {}
 end
 
 function room:getCentermostTile()

@@ -28,8 +28,20 @@ function comfortFurniture:beOccupiedBy(entity)
 	return false
 end
 
+function comfortFurniture:beUnnocupiedBy(entity)
+	if self.occupant and self.occupant.uid == entity.uid then
+		self.occupant = nil
+		return true
+	end
+	return false
+end
+
 function comfortFurniture:isWalkable()
 	return true
+end
+
+function comfortFurniture:isOccupied()
+	return self.occupant
 end
 
 function comfortFurniture:getType()
