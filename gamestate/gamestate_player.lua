@@ -62,7 +62,8 @@ function playerstate:update(dt)
 		self.background:update(dt)
 	end
 
-	self.context:update()
+	self.context:update(dt)
+	self.camera:update(dt)
 
 	for _, map in ipairs(self.maps) do
 		map:update(dt)
@@ -84,6 +85,7 @@ function playerstate:draw()
 	self:drawRoomDetails()
 
 	self.context:draw()
+	self.camera:draw()
 end
 
 function playerstate:input(input)
@@ -262,6 +264,13 @@ function playerstate:mousereleased(x, y, button)
 		end
 	end
 
+	if button == 4 then
+		for i, r in ipairs(self.currentMap.rooms) do
+			print(i, #r.tiles)
+			r:listAttributes()
+		end
+	end
+
 end
 
 function playerstate:keysdown()
@@ -287,8 +296,9 @@ end
 function playerstate:setCurrentMap(map)
 	if self.currentMap then self.currentMap:unselect() end
 	self.currentMap = map
-	self.currentMap.camera = self.camera
 	self.currentMap:select()
+	local t = self.currentMap:getCentermostTile()
+	self.camera:translate(t:getWorldCenterX(), t:getWorldCenterY())
 end
 
 function playerstate:setSelection(obj)

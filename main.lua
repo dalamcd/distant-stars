@@ -51,7 +51,7 @@ function love.load()
 	d:addTextField("Objects under mouse", "")
 	d:addTextField("Map under mouse", "")
 
-	local m = map:new("main map", 1, 1)
+	local m = map:new("main map", 2, 2)
 	m:load('newmap.txt')
 
 	local rando = entity:new("pawn", gdata:getRandomFullName(), m, 3, 7)
@@ -83,6 +83,8 @@ function love.load()
 	dresser:addToInventory(pizza)
 	m:addFurniture(dresser)
 	m:addFurniture(console)
+	m:addFurniture(stool)
+	stool = comfort:new("stool", m, 8, 3)
 	m:addFurniture(stool)
 	m:addFurniture(o2gen)
 	m:addFurniture(n2gen)
@@ -189,7 +191,6 @@ function love.keypressed(key)
 
 	if key == '1' then
 		local top = gamestate:peek()
-		print(top.label)
 		local newMap = map:new("testmap", -10, -10)
 		local p = entity:new("tallpawn", "Dylan", newMap, 6, 7)
 		newMap:load("map.txt")
@@ -208,19 +209,24 @@ function love.keypressed(key)
 
 	local gs = gamestate:peek()
 
-	if key == 'e' and gs.map:getMouseSelection() then
-		local e = gs.map:getMouseSelection()
-		local t = gs.map:getTileAtWorld(getMousePos())
+	if key == 'e' and gs:getSelection() then
+		local e = gs:getSelection()
+		local t = gs.currentMap:getTileAtWorld(getMousePos())
 		local dist = math.sqrt((t.x - e.x)^2 + (t.y - e.y)^2)
 		local function moveFunc(eself, x)
 			local p = eself.moveFuncParams
 			p.smoothstep = true
-			
+
 			local y = -math.sin(math.pi*(1-p.percentComplete))*math.abs(p.tileDistance*5)
 			--local y = 0
 			return y
 		end
-		gs.map:getMouseSelection():translate(t.x, t.y, 30*math.sqrt(dist), moveFunc)
+		gs:getSelection():translate(t.x, t.y, 30*math.sqrt(dist), moveFunc)
+	end
+
+	if key == '4' then
+		local t = gs.currentMap:getCentermostTile()
+		gs.camera:translate(t:getWorldCenterX(), t:getWorldCenterY())
 	end
 
 end

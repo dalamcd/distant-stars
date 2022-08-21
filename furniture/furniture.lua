@@ -136,7 +136,7 @@ function furniture:getAvailableInteractionTile()
 end
 
 function furniture:getTiles()
-	return self.map:getTilesInRectangle(self.x + self.map.xOffset, self.y + self.map.yOffset, self.width, self.height, true)
+	return self.map:getTilesInRectangle(self.x, self.y, self.width, self.height, true)
 end
 
 function furniture:getType()

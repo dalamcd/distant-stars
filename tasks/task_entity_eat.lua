@@ -48,8 +48,8 @@ local function runFunc(self)
 				self.item = singleItem
 				self.entity.map:addItem(singleItem)
 				self.entity:addToInventory(singleItem)
-				local seat = self.entity.map:getNearbyObject('comfort', self.entity.x, self.entity.y)
-				if seat and not seat:isReserved() then
+				local seat = self.entity.map:getNearbyUnreservedObject('comfort', self.entity.x, self.entity.y)
+				if seat then
 					self.gettingSeated = seat
 					local st = sitTask:new(seat, self)
 					self.entity:pushTask(st)
