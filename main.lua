@@ -23,6 +23,7 @@ local mapstate = require('gamestate.gamestate_map')
 local background = require('gamestate.gamestate_background')
 local station = require('furniture.station')
 local data = require('data')
+local attribute = require('rooms.attribute')
 
 TILE_SIZE = 32
 
@@ -32,9 +33,9 @@ local paused = false
 local gameSpeed = 1
 local gdata
 
+
+---@diagnostic disable-next-line: lowercase-global
 d = debugtext:new()
-tmpTiles = {}
-local oTmpTiles = {}
 function love.load()
 
 	--love.window.setMode(1025,768, {vsync=true})
@@ -53,6 +54,9 @@ function love.load()
 
 	local m = map:new("main map", 2, 2)
 	m:load('newmap.txt')
+
+	local oxygen = attribute:new("base_oxygen")
+	local nitrogen = attribute:new("base_nitrogen")
 
 	local rando = entity:new("pawn", gdata:getRandomFullName(), m, 3, 7)
 	local barnaby = entity:new("pawn", "Barnaby", m, 4, 5)
@@ -75,8 +79,8 @@ function love.load()
 	m:addItem(pizza2)
 
 	local dresser = furniture:new("dresser", m, 7, 2)
-	local o2gen = generator:new("o2gen", m, 2, 2, "oxygen", 15/60)
-	local n2gen = generator:new("o2gen", m, 7, 7, "nitrogen", 2/60)
+	local o2gen = generator:new("o2gen", m, 2, 2, oxygen, 15/60)
+	local n2gen = generator:new("o2gen", m, 7, 7, nitrogen, 2/60)
 	local stool = comfort:new("stool", m, 7, 3)
 	local def = require('furniture/station_default')
 	local console = station:new("station", m, 3, 3, def.loadFunc, def.updateFunc, def.drawFunc, nil, def.inputFunc)
@@ -144,20 +148,6 @@ function love.draw()
 	-- 	end
 	-- 	drawSelectionDetails()
 	-- end
-
-	if oTmpTiles ~= tmpTiles then
-		oTmpTiles = tmpTiles
-		nr = math.random(50, 100)/100
-		ng = math.random(50, 100)/100
-		nb = math.random(50, 100)/100
-	end
-
-	for _, t in ipairs(tmpTiles) do
-		local br, bg, bb, ba = love.graphics.getColor() 
-		love.graphics.setColor(nr, ng, nb, 1)
-		circ("fill", (t.x-1/2)*TILE_SIZE, (t.y-1/2)*TILE_SIZE, 2)
-		love.graphics.setColor(br, bg, bb, ba)
-	end
 
 	d:draw()
 

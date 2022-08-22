@@ -1,7 +1,7 @@
 local class = require('lib.middleclass')
 local game = require('game')
 local utils = require('utils')
-local room = require('room')
+local room = require('rooms.room')
 
 local stockpile = class('stockpile', room)
 

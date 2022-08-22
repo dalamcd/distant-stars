@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 ---Draw an opaque box on screen with a white outline 
 ---@param x integer x position on screen
 ---@param y integer y position on screen

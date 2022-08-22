@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 local gameCamera
 local gameMap
 local gameContext

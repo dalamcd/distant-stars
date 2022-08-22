@@ -170,6 +170,10 @@ function entity:drawRoute()
 	end
 end
 
+function entity:adjustOffset(x, y)
+	self.x = self.x + x
+	self.y = self.y + y
+end
 function entity:isIdle()
 	return self.idleTime > 0
 end
@@ -289,8 +293,7 @@ function entity:handleWalking()
 
 	if not self.walking and #self.route > 0 then
 		local t = self.route[#self.route]
-		local tile = self.map:getTile(t.x, t.y)
-		local furniture = self.map:getFurnitureInTile(tile)
+		local furniture = self.map:getFurnitureInTile(t)
 		local blocked = false
 
 		for _, f in ipairs(furniture) do
@@ -316,17 +319,17 @@ function entity:breathe()
 		local r = self.map:inRoom(self.x, self.y)
 		if r then
 			-- Adjust oxygen down, allowing it to go below zero
-			r:adjustAttribute("oxygen", -5, -5)
-			if r:getAttribute("oxygen") < 0 then
+			r:adjustAttribute("base_oxygen", -5)
+			if r:getAttribute("base_oxygen") < 0 then
 				-- If it is below zero, increase our oxygen starvation (subtracting a negative value)
-				self.oxygenStarvation = self.oxygenStarvation - r:getAttribute("oxygen")*r:getTileCount()
+				self.oxygenStarvation = self.oxygenStarvation - r:getAttribute("base_oxygen")*r:getTileCount()
 				if self.oxygenStarvation >= 100 then
 					self:die()
 				elseif self.oxygenStarvation < 0.01 then
 					self.oxygenStarvation = 0
 				end
 				-- Reset oxygen back to 0 because negative attributes don't make sense
-				r:setAttribute('oxygen', 0)
+				r:setAttribute('base_oxygen', 0)
 			elseif self.oxygenStarvation > 0 then
 				self.oxygenStarvation = clamp(self.oxygenStarvation - 10, 0, math.huge)
 			end
@@ -425,7 +428,7 @@ function entity:walkToAdjacentTile(x, y, speed)
 	local dy = y - self.y
 
 	if math.abs(dx) > 1 or math.abs(dy) > 1 then
-		error("pawn '".. self.label .."' attempted to walk a distance longer than 1 tile: " .. dx .. ", " .. dy)
+		print("ERR: pawn '".. self.label .."' attempted to walk a distance longer than 1 tile: " .. dx .. ", " .. dy)
 	end
 
 	if dy < 0 then

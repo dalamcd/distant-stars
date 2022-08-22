@@ -1,6 +1,6 @@
 local class = require('lib.middleclass')
 
-debugtext = class('debugtext')
+local debugtext = class('debugtext')
 
 function debugtext:initialize()
 

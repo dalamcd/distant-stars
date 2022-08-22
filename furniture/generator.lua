@@ -3,11 +3,9 @@ local furniture = require('furniture.furniture')
 
 local generator = class('generator', furniture)
 
-function generator:initialize(name, map, posX, posY, outputType, outputAmount)
+function generator:initialize(name, map, posX, posY, attribute, outputAmount)
 	furniture.initialize(self, name, map, posX, posY)
-	outputType = outputType or "unknown"
-	outputAmount = outputAmount or 0
-	self.outputType = outputType
+	self.attr = attribute
 	self.outputAmount = outputAmount
 	self.room = nil
 	self.paused = false
@@ -28,7 +26,7 @@ function generator:update(dt)
 	furniture.update(self, dt)
 
 	if self.room and not self.paused then
-		self.room:adjustAttribute(self.outputType, self.outputAmount, nil, 100)
+		self.room:adjustAttribute(self.attr.name, self.outputAmount)
 	end
 end
 

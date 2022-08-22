@@ -117,7 +117,7 @@ function playerstate:drawRoomDetails()
 				y = y + love.graphics.getFont():getHeight() + 2
 				if r.attributes then
 					for k, v in pairs(r.attributes) do
-						love.graphics.print(k..": "..fstr(v), x + 10, y)
+						love.graphics.print(v.name..": "..fstr(v:getAmount()), x + 10, y)
 						y = y + love.graphics.getFont():getHeight() + 2
 					end
 				end
@@ -207,6 +207,19 @@ function playerstate:keypressed(key)
 	if key == 'f' and t then
 		local ent = entity:new("pawn", data:getBase():getRandomFullName(), self.currentMap, t.x - self.currentMap.xOffset, t.y - self.currentMap.yOffset)
 		self.currentMap:addEntity(ent)
+	end
+
+	if key == 'up' then
+		self.currentMap:setOffset(self.currentMap.xOffset, self.currentMap.yOffset - 1)
+	end
+	if key == 'down' then
+		self.currentMap:setOffset(self.currentMap.xOffset, self.currentMap.yOffset + 1)
+	end
+	if key == 'left' then
+		self.currentMap:setOffset(self.currentMap.xOffset - 1, self.currentMap.yOffset)
+	end
+	if key == 'right' then
+		self.currentMap:setOffset(self.currentMap.xOffset + 1, self.currentMap.yOffset)
 	end
 end
 

@@ -5,6 +5,7 @@ local item = require('items.item')
 local entity = require('entities.entity')
 local furniture = require('furniture.furniture')
 local tile = require('tile')
+local attribute = require('rooms.attribute')
 
 local data = class('data')
 
@@ -27,6 +28,7 @@ function data:initialize()
 	self:loadBaseItemData("data/base_items.lua")
 	self:loadBaseEntityData("data/base_entities.lua")
 	self:loadBaseFurnitureData("data/base_furniture.lua")
+	self:loadBaseAttributeData("data/base_attributes.lua")
 end
 
 function data:loadBaseTileData(fname)
@@ -72,6 +74,17 @@ function data:loadBaseFurnitureData(fname)
 			furniture:load(newFurniture.name, newFurniture.tileset, newFurniture.spriteX, newFurniture.spriteY,
 						newFurniture.spriteWidth, newFurniture.spriteHeight, newFurniture.tileWidth, newFurniture.tileHeight,
 						newFurniture.interactTiles)
+		end
+	end
+end
+
+function data:loadBaseAttributeData(fname)
+	local status, attributeData = pcall(love.filesystem.load, fname)
+	if not status then
+		error(tostring(attributeData))
+	else
+		for _, newAttribute in ipairs(attributeData()) do
+			attribute:load(newAttribute.name, newAttribute.label, newAttribute.min, newAttribute.max)
 		end
 	end
 end

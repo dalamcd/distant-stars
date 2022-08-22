@@ -4,7 +4,7 @@ local utils = require('utils')
 local tile = require('tile')
 local door = require('furniture.door')
 local hull = require('furniture.hull')
-local room = require('room')
+local room = require('rooms.room')
 local furniture = require('furniture.furniture')
 local wall = require('furniture.wall')
 local map_utils = require('map.map_utils')
@@ -127,6 +127,28 @@ function map:draw()
 	end
 	--]]
 
+end
+
+function map:setOffset(x, y)
+	local dx = x - self.xOffset
+	local dy = y - self.yOffset
+	for _, obj in ipairs(self.tiles) do
+		obj.x = obj.x + dx
+		obj.y = obj.y + dy
+	end
+	for _, obj in ipairs(self.furniture) do
+		obj.x = obj.x + dx
+		obj.y = obj.y + dy
+	end
+	for _, obj in ipairs(self.entities) do
+		obj:adjustOffset(dx, dy)
+	end
+	for _, obj in ipairs(self.items) do
+		obj.x = obj.x + dx
+		obj.y = obj.y + dy
+	end
+	self.xOffset = x
+	self.yOffset = y
 end
 
 function map:select()

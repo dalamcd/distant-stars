@@ -1,5 +1,6 @@
 local class = require('lib.middleclass')
 local utils = require('utils')
+local attribute = require('rooms.attribute')
 
 local room = class('room')
 
@@ -126,9 +127,9 @@ end
 
 function room:disperseAttributes()
 	for _, con in ipairs(self.connections) do
-		for attr, value in pairs(self:getAllAttributes()) do
-			local conAmt = con:getAttribute(attr)
-			local selfAmt = value
+		for name, attr in pairs(self:getAllAttributes()) do
+			local conAmt = con:getAttribute(name)
+			local selfAmt = attr:getAmount()
 			local transfer
 
 			if conAmt then
@@ -140,58 +141,65 @@ function room:disperseAttributes()
 			else
 				transfer = selfAmt/self:getTileCount()
 			end
-			self:adjustAttribute(attr, -transfer)
-			con:adjustAttribute(attr, transfer)
+			self:adjustAttribute(name, -transfer)
+			con:adjustAttribute(name, transfer)
 		end
 	end
 end
 
 function room:listAttributes()
-	if self.attributes then
-		for k, v in pairs(self.attributes) do
-			print(self.uid, k, v)
-		end
+	for _, attr in pairs(self.attributes) do
+		print(self.uid, attr.label, attr.amount)
 	end
+end
+
+function room:addAttribute(attr)
+	self.attributes[attr.name] = attr
 end
 
 function room:getAttribute(attr)
-	if self.attributes then
-		if self.attributes[attr] then
-			return self.attributes[attr]
-		else
-			return nil
-		end
+	if self.attributes[attr] then
+		return self.attributes[attr].amount
+	else
+		return 0
 	end
 end
 
-function room:setAttribute(attr, amt)
-	self.attributes[attr] = amt
+function room:setAttribute(attr, newAmt)
+	local rmattr = self.attributes[attr]
+
+	if not rmattr then
+		rmattr = attribute:new(attr)
+		self:addAttribute(rmattr)
+	end
+
+	if rmattr then
+		rmattr:setAmount(newAmt)
+	end
 end
 
-function room:adjustAttribute(attribute, amount, min, max)
-	min = min or -math.huge
-	max = max or math.huge
-	amount = amount / #self.tiles
+function room:adjustAttribute(attr, newAmt)
+	local rmattr = self.attributes[attr]
+	newAmt = newAmt / #self.tiles
 
-	if self.attributes[attribute] then
-		-- Do nothing if the current value is arleady greater than the max or less than the min
-		if self.attributes[attribute] > max or self.attributes[attribute] < min then return end
+	if not rmattr then
+		rmattr = attribute:new(attr)
+		self:addAttribute(rmattr)
+	end
 
-		self.attributes[attribute] = clamp(self.attributes[attribute] + amount, min, max)
-	else
-		self.attributes[attribute] = clamp(amount, min, max)
+	if rmattr then
+		rmattr:adjustAmount(newAmt)
 	end
 end
 
 function room:getAllAttributes()
-	return self.attributes or {}
+	return self.attributes
 end
 
 function room:getCentermostTile()
 	local x = self.rightMost - math.floor(self.width/2)
 	local y = self.bottomMost - math.floor(self.height/2)
 	local t = self.map:getTile(x, y)
-	--local t = self.map:getTile(self.xAvg, self.yAvg)
 
 	if t and self:inTile(t.x, t.y) then
 		return t
@@ -271,7 +279,6 @@ function room:detectEdgeTiles()
 			if t then table.insert(self.walls, t) end
 		end
 	end
-
 
 	self.rightMost = maxX
 	self.leftMost = minX
