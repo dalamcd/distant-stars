@@ -65,7 +65,7 @@ function drawable:update(dt)
 		local p = self.moveFuncParams
 		if p.stepCount >= p.steps then
 			self.moveFunc = function (_, _) return 0 end -- dummy parameters to quiet an erroneous Intellisense warning
-			self.moveFuncParams = {}
+			self.moveFuncParams = nil
 			self.translationXOffset = 0
 			self.translationYOffset = 0
 			self.x = p.destX

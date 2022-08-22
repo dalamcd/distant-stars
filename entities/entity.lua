@@ -173,6 +173,10 @@ end
 function entity:adjustOffset(x, y)
 	self.x = self.x + x
 	self.y = self.y + y
+	if self.moveFuncParams then
+		self.moveFuncParams.destX = self.moveFuncParams.destX + x
+		self.moveFuncParams.destY = self.moveFuncParams.destY + y
+	end
 end
 function entity:isIdle()
 	return self.idleTime > 0
