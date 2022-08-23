@@ -7,8 +7,8 @@ local walkTask = require('tasks.task_entity_walk')
 
 local station = class('station', furniture)
 
-function station:initialize(name, map, posX, posY, loadFunc, updateFunc, drawFunc, exitFunc, inputFunc)
-	furniture.initialize(self, name, map, posX, posY)
+function station:initialize(name, label, map, posX, posY, loadFunc, updateFunc, drawFunc, exitFunc, inputFunc)
+	furniture.initialize(self, name, label, map, posX, posY)
 	loadFunc = loadFunc or function () return end
 	updateFunc = updateFunc or function () return end
 	drawFunc = drawFunc or function () return end
@@ -46,7 +46,7 @@ function station:getViewStationTask(parentTask)
 				break
 			end
 		end
-
+	
 		if not inRange then
 			local tile = self:getAvailableInteractionTile()
 			if tile then

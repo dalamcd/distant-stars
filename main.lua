@@ -44,7 +44,6 @@ function love.load()
 	math.randomseed(love.timer.getTime())
 
 	gdata = data:new()
-	data:setBase(gdata)
 
 	d:addTextField("MousePos", "(" .. love.mouse.getX() .. ", " .. love.mouse.getY() .. ")")
 	d:addTextField("MouseTest", "")
@@ -52,64 +51,69 @@ function love.load()
 	d:addTextField("Objects under mouse", "")
 	d:addTextField("Map under mouse", "")
 
-	local m = map:new("main map", 2, 2)
-	m:load('newmap.txt')
+	-- local m = map:new("main map", 2, 2)
+	-- m:load('newmap.txt')
 
-	local oxygen = attribute:new("base_oxygen")
-	local nitrogen = attribute:new("base_nitrogen")
+	-- local oxygen = attribute:new("base_oxygen")
+	-- local nitrogen = attribute:new("base_nitrogen")
 
-	local rando = entity:new("pawn", gdata:getRandomFullName(), m, 3, 7)
-	local barnaby = entity:new("pawn", "Barnaby", m, 4, 5)
-	local dio = entity:new("tallpawn", "Diocletian", m, 6, 3)
-	--local cow = entity:new("cow", "cow", m, 8, 5)
-	--local gus = entity:new("pawn", "Gustav", m, 6, 4)
-	m:addEntity(rando)
-	--m:addEntity(barnaby)
-	--m:addEntity(dio)
-	--m:addEntity(gus)
+	-- local rando = entity:new("pawn", gdata:getRandomFullName(), m, 3, 7)
+	-- local barnaby = entity:new("pawn", "Barnaby", m, 4, 5)
+	-- local dio = entity:new("tallpawn", "Diocletian", m, 6, 3)
+	-- local cow = entity:new("cow", "cow", m, 8, 5)
+	-- local gus = entity:new("pawn", "Gustav", m, 6, 4)
+	-- m:addEntity(rando)
+	-- m:addEntity(barnaby)
+	-- m:addEntity(dio)
+	-- m:addEntity(gus)
 
-	local chicken = food:new("yummy chicken", m, 3, 2)
-	local pizza = food:new("yummy pizza", m, 3, 7)
-	local pizza2 = food:new("yummy pizza", m, 4, 2)
+	-- local chicken = food:new("yummy chicken", m, 3, 2)
+	-- local pizza = food:new("yummy pizza", m, 3, 7)
+	-- local pizza2 = food:new("yummy pizza", m, 4, 2)
 
-	pizza.amount = 10
-	pizza2.amount = pizza2.maxStack - 5
-	m:addItem(chicken)
-	m:addItem(pizza)
-	m:addItem(pizza2)
+	-- pizza.amount = 10
+	-- pizza2.amount = pizza2.maxStack - 5
+	-- m:addItem(chicken)
+	-- m:addItem(pizza)
+	-- m:addItem(pizza2)
 
-	local dresser = furniture:new("dresser", m, 7, 2)
-	local o2gen = generator:new("o2gen", m, 2, 2, oxygen, 15/60)
-	local n2gen = generator:new("o2gen", m, 7, 7, nitrogen, 2/60)
-	local stool = comfort:new("stool", m, 7, 3)
-	local def = require('furniture/station_default')
-	local console = station:new("station", m, 3, 3, def.loadFunc, def.updateFunc, def.drawFunc, nil, def.inputFunc)
-	dresser:addToInventory(pizza)
-	m:addFurniture(dresser)
-	m:addFurniture(console)
-	m:addFurniture(stool)
-	stool = comfort:new("stool", m, 8, 3)
-	m:addFurniture(stool)
-	m:addFurniture(o2gen)
-	m:addFurniture(n2gen)
+	-- local dresser = furniture:new("dresser", m, 7, 2)
+	-- local o2gen = generator:new("o2gen", "Oxygen Generator", m, 2, 2, oxygen, 15/60)
+	-- local n2gen = generator:new("o2gen", "Nitrogen Generator", m, 7, 7, nitrogen, 2/60)
+	-- local stool = comfort:new("stool", "stool", m, 7, 3)
+	-- local def = require('furniture/station_default')
+	-- local console = station:new("station", "station", m, 3, 3, def.loadFunc, def.updateFunc, def.drawFunc, nil, def.inputFunc)
+	-- dresser:addToInventory(pizza)
+	-- m:addFurniture(dresser)
+	-- m:addFurniture(console)
+	-- m:addFurniture(stool)
+	-- stool = comfort:new("stool", m, 8, 3)
+	-- m:addFurniture(stool)
+	-- m:addFurniture(o2gen)
+	-- m:addFurniture(n2gen)
 
-	local spTiles = m:getTilesFromPoints({{x=2, y=2}, {x=3, y=2}, {x=4, y=2}, {x=5, y=2}, 
-											{x=2, y=3}, {x=3, y=3}, {x=4, y=3}, {x=5, y=3},
-											{x=2, y=4}, {x=3, y=4}, {x=4, y=4}, {x=5, y=4},
-											{x=2, y=5}, {x=3, y=5}, {x=4, y=5}, {x=5, y=5},})
-	local sp = stockpile:new(m, spTiles, "new stockpile")
-	m:addStockpile(sp)
+	-- local spTiles = m:getTilesFromPoints({{x=2, y=2}, {x=3, y=2}, {x=4, y=2}, {x=5, y=2}, 
+	-- 										{x=2, y=3}, {x=3, y=3}, {x=4, y=3}, {x=5, y=3},
+	-- 										{x=2, y=4}, {x=3, y=4}, {x=4, y=4}, {x=5, y=4},
+	-- 										{x=2, y=5}, {x=3, y=5}, {x=4, y=5}, {x=5, y=5},})
+	-- local sp = stockpile:new(m, spTiles, "new stockpile")
+	-- m:addStockpile(sp)
 
 	--local c = camera:new()
 	local bg = background:new(450)
 	--local gs = gamestate:getMapState("main map", m, c, true)
 	--gs.camera = c
-	local ps = playerstate:new(m)
-	ps:addMap(m)
-	ps:setCurrentMap(m)
+	local ps = playerstate:new()
+	--ps:addMap(m)
+	--ps:setCurrentMap(m)
 
 	gamestate:push(bg)
 	gamestate:push(ps)
+
+	local loadedMap = map:retrieve("base_shuttlecraft")
+	loadedMap:setOffset(0, 0)
+	ps:addMap(loadedMap)
+	ps:setCurrentMap(loadedMap)
 
 	previousTime = love.timer.getTime()
 	print(gdata:getRandomFullName('male'))

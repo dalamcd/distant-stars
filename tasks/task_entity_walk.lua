@@ -8,6 +8,7 @@ local function strFunc(self)
 end
 
 local function startFunc(self)
+	
 	local p = self:getParams()
 	local route = self.entity.map:pathfind({x=self.entity.x, y=self.entity.y}, self.destination)
 	if route then

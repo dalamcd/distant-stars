@@ -13,6 +13,130 @@ local alert = require('alert')
 local map = class('map')
 map:include(map_utils)
 
+map.static._loaded_maps = {}
+
+function map.static:load(name, map, label, width, height, entities, furniture)
+	local internalItem = self._loaded_maps[name]
+
+	if internalItem then
+		return internalItem
+	else
+		self._loaded_maps[name] = {
+			map = map,
+			label = label,
+			width = width,
+			height = height,
+			entities = entities,
+			furniture = furniture
+		}
+	end
+end
+
+function map.static:retrieve(name)
+	local mobj = self._loaded_maps[name]
+	if not mobj then error("attempted to retrieve " .. name .. " but no map with that name was found") end
+
+	io.input("data/ships/" .. mobj.map)
+	local grid = {}
+	local m = self:new(mobj.label, 0, 0)
+
+    m.width = mobj.width
+	m.height = mobj.height
+
+	local line = io.read("*line")
+	while line ~= nil do
+		for i = 1, string.len(line) do
+			local c = line:sub(i,i)
+			if c == "#" then
+        -- Insert wall
+				table.insert(grid, 1)
+			end
+        -- Insert floor tile
+			if c == "." then
+				table.insert(grid, 2)
+			end
+        -- Insert void tile
+			if c == "*" then
+				table.insert(grid, 3)
+			end
+        -- Insert hull
+			if c == "@" then
+				table.insert(grid, 5)
+			end
+		-- Insert door
+			if c == "D" then
+				table.insert(grid, 4)
+			end
+
+		end
+		line = io.read("*line")
+	end
+
+	-- Load tiles
+	for r = 1, m.height do
+		for c = 1, m.width do
+			local x = c + m.xOffset
+			local y = r + m.yOffset
+			local index = ((r - 1) * m.width) + c
+			local t
+			if grid[index] == 1 then
+				t = tile:new("metal floor", m, x, y, index, true)
+				local f = wall:new("wall", m, c, r)
+				m:addFurniture(f)
+			elseif grid[index] == 2 then
+				t = tile:new("metal floor", m, x, y, index, true)
+			elseif grid[index] == 3 then
+				t = tile:new("void", m, x, y, index, false)
+			elseif grid[index] == 4 then
+				t = tile:new("metal floor", m, x, y, index, true)
+				local newDoor = door:new("door", "door", m, c, r)
+				m:addFurniture(newDoor)
+			elseif grid[index] == 5 then
+				t = tile:new("metal floor", m, x, y, index, true)
+				local h = hull:new("hull", "hull", m, c, r)
+				m:addFurniture(h)
+			end
+			m.tiles[index] = t
+		end
+	end
+
+	-- Finding all rooms in a loaded map
+	for _, mapTile in ipairs(m.tiles) do
+		local roomList = m.rooms
+		local inRoom = false
+		for _, r in ipairs(roomList) do
+			if r:inRoom(mapTile) then
+				inRoom = true
+				break
+			end
+		end
+
+		if not inRoom then
+			local roomTiles = room:detectRoom(m, mapTile)
+			if #roomTiles > 0 then
+				local newRoom = room:new(m, roomTiles)
+				table.insert(m.rooms, newRoom)
+			end
+		end
+	end
+
+	-- Load entities
+	for _, ent in ipairs(mobj.entities) do
+		local args = ent.args or {}
+		local newEnt = ent.class:new(ent.name, ent.label, m, ent.x, ent.y, unpack(args))
+		m:addEntity(newEnt)
+	end
+
+	-- Load furniture
+	for _, furn in ipairs(mobj.furniture) do
+		local args = furn.args or {}
+		local newFurn = furn.class:new(furn.name, furn.label, m, furn.x, furn.y, unpack(args))
+		m:addFurniture(newFurn)
+	end
+
+	return m
+end
+
 function map:initialize(label, xOffset, yOffset)
 
 	label = label or "new map"
@@ -367,95 +491,6 @@ function map:getAvailableJobs()
 	-- end
 
 	return tasks
-end
-
-function map:load(fname)
-
-	io.input(fname)
-	local grid = {}
-  -- Read format "N,M" where N and M are numbers specifying width and height, resepectively, discarding the comma
-	local numOne, _, numTwo = io.read("*number", 1, "*number")
-
-	if numOne and numTwo then
-    	self.width = numOne
-		self.height = numTwo
-	end
-
-	local line = io.read("*line")
-	while line ~= nil do
-		for i = 1, string.len(line) do
-			local c = line:sub(i,i)
-			if c == "#" then
-        -- Insert wall tile
-				table.insert(grid, 1)
-			end
-        -- Insert floor tile
-			if c == "." then
-				table.insert(grid, 2)
-			end
-        -- Insert void tile
-			if c == "*" then
-				table.insert(grid, 3)
-			end
-        -- Insert hull tile
-			if c == "@" then
-				table.insert(grid, 5)
-			end
-		-- Insert door
-			if c == "D" then
-				table.insert(grid, 4)
-			end
-
-		end
-		line = io.read("*line")
-	end
-
-	for r = 1, self.height do
-		for c = 1, self.width do
-			local x = c + self.xOffset
-			local y = r + self.yOffset
-			local index = ((r - 1) * self.width) + c
-			local t
-			if grid[index] == 1 then
-				t = tile:new("metal floor", self, x, y, index, true)
-				local f = wall:new("wall", self, c, r)
-				self:addFurniture(f)
-			elseif grid[index] == 2 then
-				t = tile:new("metal floor", self, x, y, index, true)
-			elseif grid[index] == 3 then
-				t = tile:new("void", self, x, y, index, false)
-			elseif grid[index] == 4 then
-				t = tile:new("metal floor", self, x, y, index, true)
-				local newDoor = door:new("door", self, c, r)
-				self:addFurniture(newDoor)
-			elseif grid[index] == 5 then
-				t = tile:new("metal floor", self, x, y, index, true)
-				local h = hull:new("hull", self, c, r)
-				self:addFurniture(h)
-			end
-			self.tiles[index] = t
-		end
-	end
-
-	-- Finding all rooms in a loaded map
-	for _, mapTile in ipairs(self.tiles) do
-		local roomList = self.rooms
-		local inRoom = false
-		for _, r in ipairs(roomList) do
-			if r:inRoom(mapTile) then
-				inRoom = true
-				break
-			end
-		end
-
-		if not inRoom then
-			local roomTiles = room:detectRoom(self, mapTile)
-			if #roomTiles > 0 then
-				local newRoom = room:new(self, roomTiles)
-				table.insert(self.rooms, newRoom)
-			end
-		end
-	end
 end
 
 return map

@@ -1,11 +1,13 @@
 local class = require('lib.middleclass')
 local furniture = require('furniture.furniture')
+local attribute = require('rooms.attribute')
 
 local generator = class('generator', furniture)
 
-function generator:initialize(name, map, posX, posY, attribute, outputAmount)
-	furniture.initialize(self, name, map, posX, posY)
-	self.attr = attribute
+function generator:initialize(name, label, map, posX, posY, attr, outputAmount)
+	print(attr)
+	furniture.initialize(self, name, label, map, posX, posY)
+	self.attr = attribute:new(attr)
 	self.outputAmount = outputAmount
 	self.room = nil
 	self.paused = false

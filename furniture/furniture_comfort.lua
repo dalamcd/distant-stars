@@ -4,8 +4,8 @@ local sitTask = require('tasks.task_entity_sit')
 
 local comfortFurniture = class('comfortFurniture', furniture)
 
-function comfortFurniture:initialize(name, map, posX, posY)
-	furniture.initialize(self, name, map, posX, posY)
+function comfortFurniture:initialize(name, label, map, posX, posY)
+	furniture.initialize(self, name, label, map, posX, posY)
 
 	self.sittable = true
 	self.sleepable = true

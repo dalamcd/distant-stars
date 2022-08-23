@@ -6,6 +6,7 @@ local entity = require('entities.entity')
 local furniture = require('furniture.furniture')
 local tile = require('tile')
 local attribute = require('rooms.attribute')
+local map = require('map.map')
 
 local data = class('data')
 
@@ -18,17 +19,19 @@ function data.static:getBase()
 end
 
 function data:initialize()
+	data:setBase(self)
 
 	drawable:addTileset("entity", "sprites/tilesheets/entities.png")
 	drawable:addTileset("item", "sprites/tilesheets/items.png")
 	drawable:addTileset("furniture", "sprites/tilesheets/furniture.png")
 	drawable:addTileset("floorTile", "sprites/tilesheets/tiles.png")
 
+	self:loadBaseAttributeData("data/base_attributes.lua")
 	self:loadBaseTileData("data/base_tiles.lua")
 	self:loadBaseItemData("data/base_items.lua")
 	self:loadBaseEntityData("data/base_entities.lua")
 	self:loadBaseFurnitureData("data/base_furniture.lua")
-	self:loadBaseAttributeData("data/base_attributes.lua")
+	self:loadBaseShipData("data/base_ships.lua")
 end
 
 function data:loadBaseTileData(fname)
@@ -85,6 +88,17 @@ function data:loadBaseAttributeData(fname)
 	else
 		for _, newAttribute in ipairs(attributeData()) do
 			attribute:load(newAttribute.name, newAttribute.label, newAttribute.min, newAttribute.max)
+		end
+	end
+end
+
+function data:loadBaseShipData(fname)
+	local status, shipData = pcall(love.filesystem.load, fname)
+	if not status then
+		error(tostring(shipData))
+	else
+		for _, newMap in ipairs(shipData()) do
+			map:load(newMap.name, newMap.map, newMap.label, newMap.width, newMap.height, newMap.entities, newMap.furniture)
 		end
 	end
 end

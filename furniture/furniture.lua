@@ -37,7 +37,7 @@ function furniture.static:retrieve(name)
 end
 
 -- Interaction points are calculated as offsets from the furniture's base position
-function furniture:initialize(name, map, posX, posY)
+function furniture:initialize(name, label, map, posX, posY)
 	local obj = furniture:retrieve(name)
 	if obj then
 		mapObject.initialize(self, obj, name, map, posX, posY, obj.width, obj.height, true)
@@ -62,7 +62,7 @@ function furniture:initialize(name, map, posX, posY)
 		end
 	end
 
-	self.label = name
+	self.label = label
 	self.inventory = {}
 	self.output = {}
 	self.interactTiles = interactTiles
@@ -126,7 +126,8 @@ end
 function furniture:getAvailableInteractionTile()
 	local foundTile = false
 	for _, t in ipairs(self:getInteractionTiles()) do
-		if t:isWalkable() and not t:isOccupied() then
+		if self.map:isWalkable(t.x, t.y) and not t:isOccupied() then
+			print(t)
 			foundTile = t
 			break
 		end

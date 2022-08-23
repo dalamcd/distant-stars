@@ -7,8 +7,8 @@ local door = class("door", furniture)
 
 door.static.base_open_speed = 50
 
-function door:initialize(name, map, posX, posY)
-	furniture.initialize(self, name, map, posX, posY)
+function door:initialize(name, label, map, posX, posY)
+	furniture.initialize(self, name, label, map, posX, posY)
 	self.open = false
 	self.opening = false
 	self.closing = false

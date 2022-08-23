@@ -39,7 +39,7 @@ return {
 		spriteX = TILE_SIZE*13,
 		spriteY = 0,
 		spriteWidth = TILE_SIZE,
-		spriteHeight = TILE_SIZE,
+		spriteHeight = TILE_SIZE+11,
 		tileWidth = 1,
 		tileHeight = 1
 	},

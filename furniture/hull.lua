@@ -3,8 +3,8 @@ local furniture = require('furniture.furniture')
 
 local hull = class('hull', furniture)
 
-function hull:initialize(name, map, posX, posY)
-	furniture.initialize(self, name, map, posX, posY)
+function hull:initialize(name, label, map, posX, posY)
+	furniture.initialize(self, name, label, map, posX, posY)
 
 	self.health = 100
 end
