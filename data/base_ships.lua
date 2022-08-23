@@ -4,6 +4,7 @@ local station = require('furniture.station')
 local comfort = require('furniture.furniture_comfort')
 local generator = require('furniture.generator')
 local defstation = require('furniture.station_default')
+local food = require('items.food')
 return {
 	{
 		name = "base_shuttlecraft",
@@ -20,29 +21,18 @@ return {
 				y = 3
 			},
 			{
-				name = "station",
-				label = "station",
-				class = station,
-				x = 3,
-				y = 2,
-				args = {
-					defstation.loadFunc,
-					defstation.updateFunc,
-					defstation.drawFunc,
-					nil,
-					defstation.inputFunc
-				}
-			},
-			{
 				name = "o2gen",
-				label = "Oxygen Generator",
 				class = generator,
+				label = "Oxygen Generator",
 				x = 2,
 				y = 6,
-				args = {
-					"base_oxygen",
-					15/60
-				}
+			},
+			{
+				name = "station",
+				class = station,
+				label = "Cockpit",
+				x = 3,
+				y = 2,
 			}
 		},
 		entities = {
@@ -52,6 +42,15 @@ return {
 				label = data:getBase():getRandomFullName(),
 				x = 3,
 				y = 4,
+			}
+		},
+		items = {
+			{
+				name = "yummy chicken",
+				class = food,
+				label = "yummy chicken",
+				x = 3,
+				y = 6
 			}
 		}
 	},

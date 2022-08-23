@@ -1,9 +1,18 @@
+local furniture = require('furniture.furniture')
+local comfort = require('furniture.furniture_comfort')
+local station = require('furniture.station')
+local defstation = require('furniture.station_default')
+local wall = require('furniture.wall')
+local hull = require('furniture.hull')
+local generator = require('furniture.generator')
+
 return {
 	{
 		name = "dresser",
+		class = furniture,
 		tileset = "furniture",
-		spriteX = 0,
-		spriteY = 0,
+		tilesetX = 0,
+		tilesetY = 0,
 		spriteWidth = TILE_SIZE*2,
 		spriteHeight = TILE_SIZE+14,
 		tileWidth = 2,
@@ -11,23 +20,28 @@ return {
 		interactTiles =  {
 			{x=0, y=1},
 			{x=1, y=1}
-		}
+		},
 	},
 	{
 		name = "station",
+		class = station,
 		tileset = "furniture",
-		spriteX = TILE_SIZE*7,
-		spriteY = 0,
+		tilesetX = TILE_SIZE*7,
+		tilesetY = 0,
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE+13,
 		tileWidth = 1,
-		tileHeight = 1
+		tileHeight = 1,
+		loadFunc = defstation.loadFunc,
+		updateFunc = defstation.updateFunc,
+		drawFunc = defstation.drawFunc,
+		inputFunc = defstation.inputFunc,
 	},
 	{
 		name = "bigthing",
 		tileset = "furniture",
-		spriteX = TILE_SIZE*9,
-		spriteY = 0,
+		tilesetX = TILE_SIZE*9,
+		tilesetY = 0,
 		spriteWidth = TILE_SIZE*2,
 		spriteHeight = TILE_SIZE*4,
 		tileWidth = 2,
@@ -35,19 +49,22 @@ return {
 	},
 	{
 		name = "o2gen",
+		class = generator,
 		tileset = "furniture",
-		spriteX = TILE_SIZE*13,
-		spriteY = 0,
+		tilesetX = TILE_SIZE*13,
+		tilesetY = 0,
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE+11,
 		tileWidth = 1,
-		tileHeight = 1
+		tileHeight = 1,
+		attribute = "base_oxygen",
+		outputAmount = 14/60
 	},
 	{
 		name = "door",
 		tileset = "furniture",
-		spriteX = TILE_SIZE*5,
-		spriteY = 0,
+		tilesetX = TILE_SIZE*5,
+		tilesetY = 0,
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE,
 		tileWidth = 1,
@@ -55,20 +72,24 @@ return {
 	},
 	{
 		name = "stool",
+		class = comfort,
 		tileset = "furniture",
-		spriteX = TILE_SIZE*5,
-		spriteY = TILE_SIZE*2,
+		tilesetX = TILE_SIZE*5,
+		tilesetY = TILE_SIZE*2,
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE,
 		tileWidth = 1,
 		tileHeight = 1,
-		interactTiles = {{x=0, y=0}}
+		interactPoints = {{x=0, y=0}},
+		sittable = true,
+		maxComfort = 50,
+		comfortFactor = 15
 	},
 	{
 		name = "hull",
 		tileset = "floorTile",
-		spriteX = TILE_SIZE*2,
-		spriteY = 0,
+		tilesetX = TILE_SIZE*2,
+		tilesetY = 0,
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE,
 		tileWidth = 1,
@@ -77,8 +98,8 @@ return {
 	{
 		name = "wall",
 		tileset = "floorTile",
-		spriteX = TILE_SIZE,
-		spriteY = 0,
+		tilesetX = TILE_SIZE,
+		tilesetY = 0,
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE,
 		tileWidth = 1,

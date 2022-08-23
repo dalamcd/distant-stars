@@ -3,8 +3,8 @@ local furniture = require('furniture.furniture')
 
 local wall = class('wall', furniture)
 
-function wall:initialize(name, map, posX, posY)
-	furniture.initialize(self, name, map, posX, posY)
+function wall:initialize(name, label, map, posX, posY)
+	furniture.initialize(self, name, label, map, posX, posY)
 
 	self.health = 100
 end

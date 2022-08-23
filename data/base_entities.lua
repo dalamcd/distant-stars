@@ -1,29 +1,30 @@
+local entity = require('entities.entity')
 return {
 	{
 		name = "pawn",
+		class = entity,
 		tileset = "entity",
-		spriteX = 0,
-		spriteY = 0,
+		tilesetX = 0,
+		tilesetY = 0,
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE
 	},
 	{
 		name = "cow",
+		class = entity,
 		tileset = "entity",
-		spriteX = TILE_SIZE*4,
-		spriteY = 0,
+		tilesetX = TILE_SIZE*4,
+		tilesetY = 0,
 		spriteWidth = TILE_SIZE*2,
 		spriteHeight = TILE_SIZE+10
 	},
 	{
 		name = "tallpawn",
+		class = entity,
 		tileset = "entity",
-		spriteX = TILE_SIZE*2,
-		spriteY = 0,
+		tilesetX = TILE_SIZE*2,
+		tilesetY = 0,
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE+9,
-		attributes = {
-			speed = 1.1
-		}
 	},
 }

@@ -17,20 +17,13 @@ entity.static.base_tile_walk_distance = 30
 
 entity.static._loaded_entities = {}
 
-function entity.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, attributes)
-	local internalItem = self._loaded_entities[name]
+function entity.static:load(obj)
+	local internalItem = self._loaded_entities[obj.name]
 
 	if internalItem then
 		return internalItem
 	else
-		self._loaded_entities[name] = {
-			tileset = tileset,
-			tilesetX = tilesetX,
-			tilesetY = tilesetY,
-			spriteWidth = spriteWidth,
-			spriteHeight = spriteHeight,
-			attributes = attributes
-		}
+		self._loaded_entities[obj.name] = obj
 	end
 end
 
@@ -42,7 +35,7 @@ function entity:initialize(name, label, map, posX, posY)
 	local obj = entity:retrieve(name)
 	if label == "" then label = name end
 	if obj then
-		mapObject.initialize(self, obj, label, map, posX, posY, 1, 1, false)
+		mapObject.initialize(self, obj, name, label, map, posX, posY, 1, 1, false)
 	else
 		error("attempted to initialize " .. name .. " but no item with that name was found")
 	end
@@ -56,17 +49,15 @@ function entity:initialize(name, label, map, posX, posY)
 	self.inventory = {}
 	self.priorities = priorities:new()
 	self.schedule = schedule:new()
-	self.name = name
-	self.label = label
 
 	self.oneSecondTimer = 0
 
 	self.dead = false
-	self.health = obj.attributes.health or 100
-	self.satiation = obj.attributes.satiation or 100
-	self.comfort = obj.attributes.comfort or 0
-	self.oxygenStarvation = obj.attributes.oxygenStarvation or 0
-	self.speed = obj.attributes.speed or 1
+	self.health = obj.health or 100
+	self.satiation = obj.satiation or 100
+	self.comfort = obj.comfort or 0
+	self.oxygenStarvation = obj.oxygenStarvation or 0
+	self.speed = obj.speed or 1
 	self.idleTime = 0
 
 	self.sitting = false
@@ -183,13 +174,12 @@ function entity:isIdle()
 end
 
 function entity:die()
-	local c = corpse:new(self:getClass(), self.name, self.map, self.x - self.map.xOffset, self.y - self.map.yOffset)
+	local c = corpse:new(entity, self.name, "corpse of " .. self.label, self.map, self.x - self.map.xOffset, self.y - self.map.yOffset)
 	local t = self.tasks[#self.tasks]
 	if t then
 		t:abandon()
 	end
 
-	c.label = "corpse of " .. self.label
 	self.dead = true
 	self.map:addItem(c)
 	self.map:removeEntity(self)

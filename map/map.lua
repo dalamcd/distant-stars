@@ -15,19 +15,20 @@ map:include(map_utils)
 
 map.static._loaded_maps = {}
 
-function map.static:load(name, map, label, width, height, entities, furniture)
+function map.static:load(name, m, label, width, height, entities, furn, items)
 	local internalItem = self._loaded_maps[name]
 
 	if internalItem then
 		return internalItem
 	else
 		self._loaded_maps[name] = {
-			map = map,
+			map = m,
 			label = label,
 			width = width,
 			height = height,
 			entities = entities,
-			furniture = furniture
+			furniture = furn,
+			items = items
 		}
 	end
 end
@@ -122,16 +123,21 @@ function map.static:retrieve(name)
 
 	-- Load entities
 	for _, ent in ipairs(mobj.entities) do
-		local args = ent.args or {}
-		local newEnt = ent.class:new(ent.name, ent.label, m, ent.x, ent.y, unpack(args))
+		local newEnt = ent.class:new(ent.name, ent.label, m, ent.x, ent.y)
 		m:addEntity(newEnt)
 	end
 
 	-- Load furniture
 	for _, furn in ipairs(mobj.furniture) do
-		local args = furn.args or {}
-		local newFurn = furn.class:new(furn.name, furn.label, m, furn.x, furn.y, unpack(args))
+		local newFurn = furn.class:new(furn.name, furn.label, m, furn.x, furn.y)
 		m:addFurniture(newFurn)
+	end
+
+	-- Load items
+	for _, it in ipairs(mobj.items) do
+		local args = it.args or {}
+		local newIt = it.class:new(it.name, it.label, m, it.x, it.y)
+		m:addItem(newIt)
 	end
 
 	return m

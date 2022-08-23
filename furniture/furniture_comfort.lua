@@ -5,12 +5,12 @@ local sitTask = require('tasks.task_entity_sit')
 local comfortFurniture = class('comfortFurniture', furniture)
 
 function comfortFurniture:initialize(name, label, map, posX, posY)
-	furniture.initialize(self, name, label, map, posX, posY)
+	local mobj = furniture.initialize(self, name, label, map, posX, posY)
 
-	self.sittable = true
-	self.sleepable = true
-	self.maxComfort = 20
-	self.comfortFactor = 1
+	self.sittable = mobj.sittable or false
+	self.sleepable = mobj.sleepable or false
+	self.maxComfort = mobj.maxComfort or 0
+	self.comfortFactor = mobj.comfortFactor or 0
 	self.occupant = nil
 end
 

@@ -4,11 +4,12 @@ local drawable = require('drawable')
 
 local mapObject = class('mapObject', drawable)
 
-function mapObject:initialize(mobj, label, map, posX, posY, width, height, invertDimensions)
+function mapObject:initialize(mobj, name, label, map, posX, posY, width, height, invertDimensions)
 
 	drawable.initialize(self, mobj.tileset, mobj.tilesetX, mobj.tilesetY, mobj.spriteWidth, mobj.spriteHeight, width, height, invertDimensions)
 
 	self.map = map
+	self.name = name
 	self.label = label
 
 	self.x = posX

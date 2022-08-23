@@ -4,11 +4,10 @@ local attribute = require('rooms.attribute')
 
 local generator = class('generator', furniture)
 
-function generator:initialize(name, label, map, posX, posY, attr, outputAmount)
-	print(attr)
-	furniture.initialize(self, name, label, map, posX, posY)
-	self.attr = attribute:new(attr)
-	self.outputAmount = outputAmount
+function generator:initialize(name, label, map, posX, posY)
+	local mobj = furniture.initialize(self, name, label, map, posX, posY)
+	self.attr = attribute:new(mobj.attribute) or nil
+	self.outputAmount = mobj.outputAmount or 0
 	self.room = nil
 	self.paused = false
 	for _, t in ipairs(self:getTiles()) do

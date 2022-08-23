@@ -5,18 +5,16 @@ local mapObject = require('mapObject')
 
 local corpse = class('corpse', item)
 
-function corpse:initialize(objClass, name, map, posX, posY)
-	local obj = objClass:retrieve(name)
+function corpse:initialize(classObj, name, label, map, posX, posY)
+	local obj = classObj:retrieve(name)
 	if obj then
-		mapObject.initialize(self, obj, name, map, posX, posY, 1, 1, false)
+		mapObject.initialize(self, obj, name, label, map, posX, posY, 1, 1, false)
 	else
 		error("attempted to initialize " .. name .. " but no object with that name was found")
 	end
 
-	self.maxStack = 1
-	self.amount = 1
-	self.label = name
 	self.map = map
+	self.amount = 1
 
 	self.originTileWidth = self.width
 	self.originTileHeight = self.height

@@ -111,12 +111,11 @@ function love.load()
 	gamestate:push(ps)
 
 	local loadedMap = map:retrieve("base_shuttlecraft")
-	loadedMap:setOffset(0, 0)
+	loadedMap:setOffset(5, 5)
 	ps:addMap(loadedMap)
 	ps:setCurrentMap(loadedMap)
 
 	previousTime = love.timer.getTime()
-	print(gdata:getRandomFullName('male'))
 end
 
 function love.update(dt)
@@ -145,14 +144,6 @@ local nr, nb, ng = 1, 1, 1
 function love.draw()
 
 	gamestate:draw()
-
-	-- if getMouseSelection() then
-	-- 	if not getMouseSelection():isType("stockpile") then
-	-- 		drawSelectionBox()
-	-- 	end
-	-- 	drawSelectionDetails()
-	-- end
-
 	d:draw()
 
 	love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
@@ -161,44 +152,29 @@ end
 function love.keypressed(key)
 	gamestate:addInput("keypressed", {key=key})
 
-	if key == 'space' then
-		paused = not paused
-	end
-
 	if key == '=' then
 		gameSpeed = clamp(gameSpeed + 1, 1, 3)
+	end
+
+	if key == '-' then
+		gameSpeed = clamp(gameSpeed - 1, 1, 3)
 	end
 
 	if key == 'p' then
 		gamestate:pop()
 	end
 
-	-- if key == 'q' then
-	-- 	local gs = gamestate:peek()
-	-- 	local furniture = gs.map:getFurnitureAtWorld(getMousePos(gs.map.camera))
-	-- 	for _, f in ipairs(furniture) do
-	-- 		if f:isType("door") then
-	-- 			f:openDoor()
-	-- 		end
-	-- 	end
-	-- end
-
 	if key == '1' then
 		local top = gamestate:peek()
-		local newMap = map:new("testmap", -10, -10)
-		local p = entity:new("tallpawn", "Dylan", newMap, 6, 7)
-		newMap:load("map.txt")
-		newMap:addEntity(p)
-		top:addMap(newMap)
+		local loadedMap = map:retrieve("base_shuttlecraft")
+		loadedMap:setOffset(-5, -5)
+		top:addMap(loadedMap)
+		top:setCurrentMap(loadedMap)
 	end
 
 	if key == '3' then
 		local gs = gamestate:peek()
 		gs.currentMap:addAlert("HULL BREACH")
-	end
-
-	if key == '-' then
-		gameSpeed = clamp(gameSpeed - 1, 1, 3)
 	end
 
 	local gs = gamestate:peek()

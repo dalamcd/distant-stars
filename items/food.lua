@@ -4,10 +4,10 @@ local eatTask = require('tasks.task_entity_eat')
 
 local food = class('food', item)
 
-function food:initialize(name, map, posX, posY, amount, maxStack)
-	item.initialize(self, name, map, posX, posY, amount, maxStack)
+function food:initialize(name, label, map, posX, posY)
+	local obj = item.initialize(self, name, label, map, posX, posY)
 
-	self.satiety = 50
+	self.nourishment = obj.nourishment or 0
 end
 
 function food:getPossibleTasks()

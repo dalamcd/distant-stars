@@ -31,7 +31,7 @@ end
 function tile:initialize(name, map, posX, posY, index, walkable)
 	local obj = tile:retrieve(name)
 	if obj then
-		mapObject.initialize(self, obj, name, map, posX, posY, 1, 1, false)
+		mapObject.initialize(self, obj, name, name, map, posX, posY, 1, 1, false)
 	else
 		error("attempted to initialize " .. name .. " but no item with that name was found")
 	end

@@ -11,19 +11,13 @@ local item = class('item', mapObject)
 
 item.static._loaded_items = {}
 
-function item.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight)
-	local internalItem = self._loaded_items[name]
+function item.static:load(obj)
+	local internalItem = self._loaded_items[obj.name]
 
 	if internalItem then
 		return internalItem
 	else
-		self._loaded_items[name] = {
-			tileset = tileset,
-			tilesetX = tilesetX,
-			tilesetY = tilesetY,
-			spriteWidth = spriteWidth,
-			spriteHeight = spriteHeight
-		}
+		self._loaded_items[obj.name] = obj
 	end
 end
 
@@ -31,21 +25,19 @@ function item.static:retrieve(name)
 	return self._loaded_items[name] or false
 end
 
-function item:initialize(name, map, posX, posY, amount, maxStack)
+function item:initialize(name, label, map, posX, posY)
 	local obj = item:retrieve(name)
 	if obj then
-		mapObject.initialize(self, obj, name, map, posX, posY, 1, 1, false)
+		mapObject.initialize(self, obj, name, label, map, posX, posY, 1, 1, false)
 	else
 		error("attempted to initialize " .. name .. " but no item with that name was found")
 	end
 
-	amount = amount or 1
-	maxStack = maxStack or 50
 
-	self.label = name
 	self.map = map
-	self.amount = amount
-	self.maxStack = maxStack
+	self.amount = 1
+	self.maxStack = obj.maxStack or 1
+	return obj
 end
 
 function item:draw(ent)
@@ -120,7 +112,7 @@ end
 
 function item:split(amt)
 	if self.amount >= amt then
-		local tmp = self:getClass():new(self.label, self.map, self.x, self.y, amt, self.maxStack)
+		local tmp = self:getClass():new(self.name, self.label, self.map, self.x, self.y, amt)
 		self:adjustAmount(-amt)
 		return tmp
 	else

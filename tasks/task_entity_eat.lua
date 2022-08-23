@@ -68,7 +68,7 @@ end
 local function endFunc(self)
 	self.item:unreserve(self.entity)
 	if not self.abandoned then
-		self.entity:adjustSatiation(self.item.satiety)
+		self.entity:adjustSatiation(self.item.nourishment)
 		self.item:adjustAmount(-1)
 	end
 end

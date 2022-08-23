@@ -7,19 +7,15 @@ local walkTask = require('tasks.task_entity_walk')
 
 local station = class('station', furniture)
 
-function station:initialize(name, label, map, posX, posY, loadFunc, updateFunc, drawFunc, exitFunc, inputFunc)
-	furniture.initialize(self, name, label, map, posX, posY)
-	loadFunc = loadFunc or function () return end
-	updateFunc = updateFunc or function () return end
-	drawFunc = drawFunc or function () return end
-	exitFunc = exitFunc or function () return end
-	inputFunc = inputFunc or function () return end
+function station:initialize(name, label, map, posX, posY)
+	local obj = furniture.initialize(self, name, label, map, posX, posY)
 
-	self.loadFunc = loadFunc
-	self.updateFunc = updateFunc
-	self.drawFunc = drawFunc
-	self.exitFunc = exitFunc
-	self.inputFunc = inputFunc
+	self.loadFunc = obj.loadFunc or function () end
+	self.updateFunc = obj.updateFunc or function () end
+	self.drawFunc = obj.drawFunc or function () end
+	self.exitFunc = obj.exitFunc or function () end
+	self.inputFunc = obj.inputFunc or function () end
+	return obj
 end
 
 function station:update(dt)

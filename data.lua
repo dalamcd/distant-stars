@@ -51,7 +51,7 @@ function data:loadBaseItemData(fname)
 		error(tostring(itemData))
 	else
 		for _, newItem in ipairs(itemData()) do
-			item:load(newItem.name, newItem.tileset, newItem.spriteX, newItem.spriteY, newItem.spriteWidth, newItem.spriteHeight)
+			item:load(newItem)
 		end
 	end
 end
@@ -63,7 +63,7 @@ function data:loadBaseEntityData(fname)
 	else
 		for _, newEntity in ipairs(entityData()) do
 			newEntity.attributes = newEntity.attributes or {}
-			entity:load(newEntity.name, newEntity.tileset, newEntity.spriteX, newEntity.spriteY, newEntity.spriteWidth, newEntity.spriteHeight, newEntity.attributes)
+			entity:load(newEntity)
 		end
 	end
 end
@@ -73,10 +73,8 @@ function data:loadBaseFurnitureData(fname)
 	if not status then
 		error(tostring(furnitureData))
 	else
-		for _, newFurniture in ipairs(furnitureData()) do
-			furniture:load(newFurniture.name, newFurniture.tileset, newFurniture.spriteX, newFurniture.spriteY,
-						newFurniture.spriteWidth, newFurniture.spriteHeight, newFurniture.tileWidth, newFurniture.tileHeight,
-						newFurniture.interactTiles)
+		for _, newFurn in ipairs(furnitureData()) do
+			furniture:load(newFurn)
 		end
 	end
 end
@@ -98,7 +96,7 @@ function data:loadBaseShipData(fname)
 		error(tostring(shipData))
 	else
 		for _, newMap in ipairs(shipData()) do
-			map:load(newMap.name, newMap.map, newMap.label, newMap.width, newMap.height, newMap.entities, newMap.furniture)
+			map:load(newMap.name, newMap.map, newMap.label, newMap.width, newMap.height, newMap.entities, newMap.furniture, newMap.items)
 		end
 	end
 end

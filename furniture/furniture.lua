@@ -13,22 +13,13 @@ local furniture = class('furniture', mapObject)
 
 furniture.static._loaded_furniture = {}
 
-function furniture.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, tileWidth, tileHeight, interactPoints)
-	local internalItem = self._loaded_furniture[name]
+function furniture.static:load(obj)
+	local internalItem = self._loaded_furniture[obj.name]
 
 	if internalItem then
 		return internalItem
 	else
-		self._loaded_furniture[name] = {
-			tileset = tileset,
-			tilesetX = tilesetX,
-			tilesetY = tilesetY,
-			spriteWidth = spriteWidth,
-			spriteHeight = spriteHeight,
-			width = tileWidth,
-			height = tileHeight,
-			interactPoints = interactPoints
-		}
+		self._loaded_furniture[obj.name] = obj
 	end
 end
 
@@ -40,7 +31,7 @@ end
 function furniture:initialize(name, label, map, posX, posY)
 	local obj = furniture:retrieve(name)
 	if obj then
-		mapObject.initialize(self, obj, name, map, posX, posY, obj.width, obj.height, true)
+		mapObject.initialize(self, obj, name, label, map, posX, posY, obj.tileWidth, obj.tileHeight, true)
 	else
 		error("attempted to initialize " .. name .. " but no item with that name was found")
 	end
@@ -62,7 +53,6 @@ function furniture:initialize(name, label, map, posX, posY)
 		end
 	end
 
-	self.label = label
 	self.inventory = {}
 	self.output = {}
 	self.interactTiles = interactTiles
@@ -71,6 +61,7 @@ function furniture:initialize(name, label, map, posX, posY)
 	self.originTileHeight = obj.height
 	self.originSpriteWidth = obj.spriteWidth
 	self.originSpriteHeight = obj.spriteHeight
+	return obj
 end
 
 function furniture:draw()
@@ -127,7 +118,6 @@ function furniture:getAvailableInteractionTile()
 	local foundTile = false
 	for _, t in ipairs(self:getInteractionTiles()) do
 		if self.map:isWalkable(t.x, t.y) and not t:isOccupied() then
-			print(t)
 			foundTile = t
 			break
 		end

@@ -117,7 +117,7 @@ function playerstate:drawRoomDetails()
 				y = y + love.graphics.getFont():getHeight() + 2
 				if r.attributes then
 					for k, v in pairs(r.attributes) do
-						love.graphics.print(v.name..": "..fstr(v:getAmount()), x + 10, y)
+						love.graphics.print(v.name..": "..fstr(v:getAmount(), 0), x + 10, y)
 						y = y + love.graphics.getFont():getHeight() + 2
 					end
 				end
