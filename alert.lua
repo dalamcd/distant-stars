@@ -40,8 +40,8 @@ function alert:initialize(map)
 	self.messages = {}
 end
 
-function alert:addAlert(str)
-	local b = button:new(self.x, self.y - (self.height+10)*#self.messages, self.width, self.height, str)
+function alert:addMessage(msg, priority)
+	local b = button:new(self.x, self.y - (self.height+10)*#self.messages, self.width, self.height, msg)
 	b.xOffset = 0
 	b.xStep = 0
 	b.steps = 0

@@ -54,7 +54,7 @@ function love.load()
 	local bg = background:new(450)
 	local ps = playerstate:new()
 
-	local loadedMap = map:retrieve("base_shuttlecraft")
+	local loadedMap = map:retrieve("base_destroyer")
 	loadedMap:setOffset(5, 5)
 	ps:addMap(loadedMap)
 	ps:setCurrentMap(loadedMap)

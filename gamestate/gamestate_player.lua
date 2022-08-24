@@ -7,6 +7,7 @@ local ghost = require('furniture.ghost')
 local hull = require('furniture.hull')
 local entity = require('entities.entity')
 local data = require('data')
+local graphicButton = require('graphicButton')
 
 local playerstate = class('playerstate', gamestate)
 
@@ -17,6 +18,7 @@ function playerstate:initialize()
 	self.label = "base playerstate"
 	self.camera = c
 	self.maps = {}
+	self.mapButtons = {}
 	self.context = context:new(self)
 	self.currentMap = nil
 	self.ghost = nil
@@ -77,6 +79,9 @@ function playerstate:draw()
 	for _, map in ipairs(self.maps) do
 		map:draw()
 	end
+	for _, mapButton in ipairs(self.mapButtons) do
+		mapButton:draw()
+	end
 
 	if self.selection then
 		self:drawSelectionBox()
@@ -117,7 +122,7 @@ function playerstate:drawRoomDetails()
 				y = y + love.graphics.getFont():getHeight() + 2
 				if r.attributes then
 					for k, v in pairs(r.attributes) do
-						love.graphics.print(v.name..": "..fstr(v:getAmount(), 0), x + 10, y)
+						love.graphics.print(v.label..": "..fstr(v:getAmount(), 0), x + 10, y)
 						y = y + love.graphics.getFont():getHeight() + 2
 					end
 				end
@@ -234,10 +239,16 @@ function playerstate:mousereleased(x, y, button)
 
 	if button == 1 then
 		local thisMap = self.currentMap
+		for _, mb in ipairs(self.mapButtons) do
+			if mb:inBounds(getMousePos()) then
+				mb:clickFunc()
+			end
+		end
+
 		for _, m in ipairs(self.maps) do
 			if m:inBounds(getMousePos()) and (not thisMap or m.uid ~= thisMap.uid) then
-				self:setCurrentMap(m)
 				self:clearSelection()
+				self:setCurrentMap(m)
 				thisMap = false
 				break
 			end
@@ -304,6 +315,28 @@ end
 function playerstate:addMap(map)
 	map.camera = self.camera
 	table.insert(self.maps, map)
+	self:addMapButton(map)
+end
+
+function playerstate:removeMap(map)
+	for idx, m in ipairs(self.maps) do
+		if m.uid == map.uid then
+			table.remove(self.maps, idx)
+			break
+		end
+	end
+end
+
+function playerstate:addMapButton(map)
+
+	local function clickFunc()
+		self:setCurrentMap(map)
+	end
+
+	local width, height = 150, 90
+	local x, y = 20, 30 + (height + 10)*#self.mapButtons
+	local button = graphicButton:new(x, y, width, height, map.label, map.tileset, map.sprite, clickFunc)
+	table.insert(self.mapButtons, button)
 end
 
 function playerstate:setCurrentMap(map)

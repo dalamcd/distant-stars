@@ -35,7 +35,7 @@ function item:initialize(name, label, map, posX, posY)
 
 
 	self.map = map
-	self.amount = 1
+	self.amount = obj.amount or 1
 	self.maxStack = obj.maxStack or 1
 	return obj
 end
@@ -73,10 +73,19 @@ function item:addedToInventory(entity)
 end
 
 function item:adjustAmount(amt)
-	self.amount = self.amount + amt
+	self.amount = clamp(self.amount + amt, -math.huge, self.maxStack)
 	if self.amount <= 0 then
 		self:delete()
 	end
+	return self.amount
+end
+
+function item:setAmount(amt)
+	self.amount = clamp(amt, -math.huge, self.maxStack)
+	if self.amount <= 0 then
+		self:delete()
+	end
+	return self.amount
 end
 
 function item:addedToTile()

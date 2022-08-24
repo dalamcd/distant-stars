@@ -41,8 +41,7 @@ function map.static:retrieve(name)
 
 	local ts = drawable:getTileset(mobj.roof.tileset)
 	self.tileset = ts
-	self.sprite = love.graphics.newQuad(mobj.roof.tilesetX, mobj.roof.tilesetY, mobj.roof.width, mobj.roof.height, ts:getWidth(), ts:getHeight())
-
+	self.sprite = love.graphics.newQuad(mobj.roof.tilesetX, mobj.roof.tilesetY, mobj.roof.spriteWidth, mobj.roof.spriteHeight, ts:getWidth(), ts:getHeight())
 	io.input("data/ships/" .. mobj.map)
 	local grid = {}
 	local m = self:new(mobj.label, 0, 0)
@@ -88,7 +87,7 @@ function map.static:retrieve(name)
 			local t
 			if grid[index] == 1 then
 				t = tile:new("metal floor", m, x, y, index, true)
-				local f = wall:new("wall", m, c, r)
+				local f = wall:new("wall", "wall", m, c, r)
 				m:addFurniture(f)
 			elseif grid[index] == 2 then
 				t = tile:new("metal floor", m, x, y, index, true)
@@ -141,8 +140,10 @@ function map.static:retrieve(name)
 
 	-- Load items
 	for _, it in ipairs(mobj.items) do
-		local args = it.args or {}
 		local newIt = it.class:new(it.name, it.label, m, it.x, it.y)
+		if it.amount then
+			newIt:setAmount(it.amount)
+		end
 		m:addItem(newIt)
 	end
 
@@ -415,7 +416,7 @@ function map:inBounds(worldX, worldY)
 end
 
 function map:addAlert(str)
-	self.alert:addAlert(str)
+	self.alert:addMessage(str, 1)
 end
 
 function map:getAlerts()

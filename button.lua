@@ -5,7 +5,7 @@ local button = class('button')
 
 function button:initialize(x, y, width, height, text, clickFunc)
 
-	clickFunc = clickFunc or function () return end
+	clickFunc = clickFunc or function () end
 	text = text or ""
 
 	self.uid = getUID()

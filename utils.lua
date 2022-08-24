@@ -15,6 +15,11 @@ function fstr(str, precision)
     return string.format('%.' .. precision .. 'f', str)
 end
 
+function convertQuadToScale(sprite, newWidth, newHeight)
+    local _, _, currentWidth, currentHeight = sprite:getViewport()
+    return (newWidth/currentWidth ), (newHeight/currentHeight)
+end
+
 function midpointCircle(centerX, centerY, radius)
     local points = {}
     for y=-radius, radius do
