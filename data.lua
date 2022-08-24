@@ -25,6 +25,7 @@ function data:initialize()
 	drawable:addTileset("item", "sprites/tilesheets/items.png")
 	drawable:addTileset("furniture", "sprites/tilesheets/furniture.png")
 	drawable:addTileset("floorTile", "sprites/tilesheets/tiles.png")
+	drawable:addTileset("ships", "sprites/tilesheets/ships.png")
 
 	self:loadBaseAttributeData("data/base_attributes.lua")
 	self:loadBaseTileData("data/base_tiles.lua")
@@ -96,7 +97,7 @@ function data:loadBaseShipData(fname)
 		error(tostring(shipData))
 	else
 		for _, newMap in ipairs(shipData()) do
-			map:load(newMap.name, newMap.map, newMap.label, newMap.width, newMap.height, newMap.entities, newMap.furniture, newMap.items)
+			map:load(newMap.name, newMap.map, newMap.label, newMap.width, newMap.height, newMap.roof, newMap.entities, newMap.furniture, newMap.items)
 		end
 	end
 end

@@ -9,13 +9,14 @@ local furniture = require('furniture.furniture')
 local wall = require('furniture.wall')
 local map_utils = require('map.map_utils')
 local alert = require('alert')
+local drawable = require('drawable')
 
 local map = class('map')
 map:include(map_utils)
 
 map.static._loaded_maps = {}
 
-function map.static:load(name, m, label, width, height, entities, furn, items)
+function map.static:load(name, m, label, width, height, roof, entities, furn, items)
 	local internalItem = self._loaded_maps[name]
 
 	if internalItem then
@@ -26,6 +27,7 @@ function map.static:load(name, m, label, width, height, entities, furn, items)
 			label = label,
 			width = width,
 			height = height,
+			roof = roof,
 			entities = entities,
 			furniture = furn,
 			items = items
@@ -36,6 +38,10 @@ end
 function map.static:retrieve(name)
 	local mobj = self._loaded_maps[name]
 	if not mobj then error("attempted to retrieve " .. name .. " but no map with that name was found") end
+
+	local ts = drawable:getTileset(mobj.roof.tileset)
+	self.tileset = ts
+	self.sprite = love.graphics.newQuad(mobj.roof.tilesetX, mobj.roof.tilesetY, mobj.roof.width, mobj.roof.height, ts:getWidth(), ts:getHeight())
 
 	io.input("data/ships/" .. mobj.map)
 	local grid = {}
@@ -204,12 +210,13 @@ function map:update(dt)
 end
 
 function map:draw()
-	for _, t in ipairs(self.tiles) do
-		t.mapTranslationXOffset = self.mapTranslationXOffset
-		t.mapTranslationYOffset = self.mapTranslationYOffset
-		t:draw()
-	end
 	if self.selected then
+		for _, t in ipairs(self.tiles) do
+			t.mapTranslationXOffset = self.mapTranslationXOffset
+			t.mapTranslationYOffset = self.mapTranslationYOffset
+			t:draw()
+		end
+
 		for _, s in ipairs(self.stockpiles) do
 			s:draw()
 		end
@@ -239,6 +246,10 @@ function map:draw()
 		end
 
 		self.alert:draw()
+	else
+		local x = self.camera:getRelativeX(self.tiles[1]:getWorldX())
+		local y = self.camera:getRelativeY(self.tiles[1]:getWorldY())
+		love.graphics.draw(self.tileset, self.sprite, x, y, 0, self.camera.scale)
 	end
 	--[[
 	for _, r in ipairs(self.rooms) do

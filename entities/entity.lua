@@ -173,9 +173,10 @@ function entity:isIdle()
 	return self.idleTime > 0
 end
 
-function entity:die()
+function entity:die(cause)
 	local c = corpse:new(entity, self.name, "corpse of " .. self.label, self.map, self.x - self.map.xOffset, self.y - self.map.yOffset)
 	local t = self.tasks[#self.tasks]
+	if cause then print(string.format("entity %s died from cause: %s", self.label, cause)) end
 	if t then
 		t:abandon()
 	end
@@ -253,17 +254,19 @@ function entity:handleNeeds()
 
 	self:breathe()
 
-	if self.satiation < 80 then
+	if self.idleTime > 0 and self.satiation < 80 then
 		local edible = self.map:getNearbyUnreservedObject('food', self.x, self.y)
 		if edible and self.idleTime > 0 and not self.walking then
 			local et = eatTask:new(edible)
 			self:pushTask(et)
 		end
-		if self.satiation < 10 then
-			self:adjustHealth(-1)
-			if self.satiation == 0 then
-				self:adjustHealth(-5)
-			end
+	end
+
+	if self.satiation < 10 then
+		if self.satiation == 0 then
+			self:adjustHealth(-5, "starvation")
+		else
+			self:adjustHealth(-1, "malnutrition")
 		end
 	end
 
@@ -318,7 +321,7 @@ function entity:breathe()
 				-- If it is below zero, increase our oxygen starvation (subtracting a negative value)
 				self.oxygenStarvation = self.oxygenStarvation - r:getAttribute("base_oxygen")*r:getTileCount()
 				if self.oxygenStarvation >= 100 then
-					self:die()
+					self:die("suffocated")
 				elseif self.oxygenStarvation < 0.01 then
 					self.oxygenStarvation = 0
 				end
@@ -331,10 +334,12 @@ function entity:breathe()
 	end
 end
 
-function entity:adjustHealth(amt)
+function entity:adjustHealth(amt, cause)
 	self.health = clamp(self.health + amt, 0, 100)
 	if self.health == 0 then
-		self:die()
+		if cause then
+			self:die(cause)
+		end
 	end
 end
 

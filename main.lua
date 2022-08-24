@@ -51,69 +51,16 @@ function love.load()
 	d:addTextField("Objects under mouse", "")
 	d:addTextField("Map under mouse", "")
 
-	-- local m = map:new("main map", 2, 2)
-	-- m:load('newmap.txt')
-
-	-- local oxygen = attribute:new("base_oxygen")
-	-- local nitrogen = attribute:new("base_nitrogen")
-
-	-- local rando = entity:new("pawn", gdata:getRandomFullName(), m, 3, 7)
-	-- local barnaby = entity:new("pawn", "Barnaby", m, 4, 5)
-	-- local dio = entity:new("tallpawn", "Diocletian", m, 6, 3)
-	-- local cow = entity:new("cow", "cow", m, 8, 5)
-	-- local gus = entity:new("pawn", "Gustav", m, 6, 4)
-	-- m:addEntity(rando)
-	-- m:addEntity(barnaby)
-	-- m:addEntity(dio)
-	-- m:addEntity(gus)
-
-	-- local chicken = food:new("yummy chicken", m, 3, 2)
-	-- local pizza = food:new("yummy pizza", m, 3, 7)
-	-- local pizza2 = food:new("yummy pizza", m, 4, 2)
-
-	-- pizza.amount = 10
-	-- pizza2.amount = pizza2.maxStack - 5
-	-- m:addItem(chicken)
-	-- m:addItem(pizza)
-	-- m:addItem(pizza2)
-
-	-- local dresser = furniture:new("dresser", m, 7, 2)
-	-- local o2gen = generator:new("o2gen", "Oxygen Generator", m, 2, 2, oxygen, 15/60)
-	-- local n2gen = generator:new("o2gen", "Nitrogen Generator", m, 7, 7, nitrogen, 2/60)
-	-- local stool = comfort:new("stool", "stool", m, 7, 3)
-	-- local def = require('furniture/station_default')
-	-- local console = station:new("station", "station", m, 3, 3, def.loadFunc, def.updateFunc, def.drawFunc, nil, def.inputFunc)
-	-- dresser:addToInventory(pizza)
-	-- m:addFurniture(dresser)
-	-- m:addFurniture(console)
-	-- m:addFurniture(stool)
-	-- stool = comfort:new("stool", m, 8, 3)
-	-- m:addFurniture(stool)
-	-- m:addFurniture(o2gen)
-	-- m:addFurniture(n2gen)
-
-	-- local spTiles = m:getTilesFromPoints({{x=2, y=2}, {x=3, y=2}, {x=4, y=2}, {x=5, y=2}, 
-	-- 										{x=2, y=3}, {x=3, y=3}, {x=4, y=3}, {x=5, y=3},
-	-- 										{x=2, y=4}, {x=3, y=4}, {x=4, y=4}, {x=5, y=4},
-	-- 										{x=2, y=5}, {x=3, y=5}, {x=4, y=5}, {x=5, y=5},})
-	-- local sp = stockpile:new(m, spTiles, "new stockpile")
-	-- m:addStockpile(sp)
-
-	--local c = camera:new()
 	local bg = background:new(450)
-	--local gs = gamestate:getMapState("main map", m, c, true)
-	--gs.camera = c
 	local ps = playerstate:new()
-	--ps:addMap(m)
-	--ps:setCurrentMap(m)
-
-	gamestate:push(bg)
-	gamestate:push(ps)
 
 	local loadedMap = map:retrieve("base_shuttlecraft")
 	loadedMap:setOffset(5, 5)
 	ps:addMap(loadedMap)
 	ps:setCurrentMap(loadedMap)
+
+	gamestate:push(bg)
+	gamestate:push(ps)
 
 	previousTime = love.timer.getTime()
 end
@@ -169,19 +116,18 @@ function love.keypressed(key)
 		local loadedMap = map:retrieve("base_shuttlecraft")
 		loadedMap:setOffset(-5, -5)
 		top:addMap(loadedMap)
-		top:setCurrentMap(loadedMap)
-	end
-
-	if key == '3' then
-		local gs = gamestate:peek()
-		gs.currentMap:addAlert("HULL BREACH")
+		-- top:setCurrentMap(loadedMap)
 	end
 
 	local gs = gamestate:peek()
 
-	if key == 'e' and gs:getSelection() then
-		local e = gs:getSelection()
-		local t = gs.currentMap:getTileAtWorld(getMousePos())
+	if key == '3' then
+		gs.currentMap:addAlert("HULL BREACH")
+	end
+
+	local e = gs:getSelection()
+	local t = gs.currentMap:getTileAtWorld(getMousePos())
+	if key == 'e' and e and t then
 		local dist = math.sqrt((t.x - e.x)^2 + (t.y - e.y)^2)
 		local function moveFunc(eself, x)
 			local p = eself.moveFuncParams

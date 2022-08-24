@@ -10,6 +10,13 @@ return {
 		name = "base_shuttlecraft",
 		map = "shuttlecraft.txt",
 		label = "Shuttlecraft",
+		roof = {
+			tileset = "ships",
+			tilesetX = 0,
+			tilesetY = 0,
+			width = TILE_SIZE*5,
+			height = TILE_SIZE*7
+		},
 		width = 5,
 		height = 7,
 		furniture = {
