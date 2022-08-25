@@ -8,6 +8,7 @@ local hull = require('furniture.hull')
 local entity = require('entities.entity')
 local data = require('data')
 local graphicButton = require('graphicButton')
+local transTask = require('tasks.task_entity_map_trans')
 
 local playerstate = class('playerstate', gamestate)
 
@@ -206,12 +207,21 @@ function playerstate:keypressed(key)
 		s = self.currentMap:getStockpileAtWorld(getMousePos())
 	end
 	if key =='g' and e then
-		e:die()
+		e:die("removed with extreme prejudice")
 	end
 
 	if key == 'f' and t then
 		local ent = entity:new("pawn", data:getBase():getRandomFullName(), self.currentMap, t.x - self.currentMap.xOffset, t.y - self.currentMap.yOffset)
 		self.currentMap:addEntity(ent)
+	end
+
+	if key == '/' and e and #self.maps > 1 then
+		-- (5, 11), (6,11)
+		local thisShip, thatShip = self.maps[2], self.maps[1]
+		local thisTile = thisShip:getTile(5, 11)
+		local thatTile = thatShip:getTile(6, 11)
+		local tt = transTask:new(thatShip, thisTile, thatTile)
+		e:setTask(tt)
 	end
 
 	if key == 'up' then
@@ -285,6 +295,18 @@ function playerstate:mousereleased(x, y, button)
 		if selection and t and selection:isType("entity") and selection.map.uid == self.currentMap.uid then
 			local tlist = self.currentMap:getPossibleTasks(t, selection)
 			self.context:set(x, y, tlist)
+		end
+	end
+
+	if button == 3 then
+		local t = self.currentMap:getTileAtWorld(getMousePos())
+		if t then
+			local r = self.currentMap:inRoom(t.x, t.y)
+			if r then
+				for _, ent in ipairs(r:listEntities()) do
+					print(ent.label)
+				end
+			end
 		end
 	end
 

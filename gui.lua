@@ -9,7 +9,10 @@
 function drawRect(x, y, width, height, color, outline)
 
 	color = color or {r=0.0, g=0.0, b=0.0, a=1.0}
-	outline = outline or true
+
+	if outline == nil then
+		outline = true
+	end
 
 	love.graphics.push("all")
 	if outline then

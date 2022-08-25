@@ -15,6 +15,14 @@ function fstr(str, precision)
     return string.format('%.' .. precision .. 'f', str)
 end
 
+function concatTables(t1, t2)
+    nt = {}
+    n = 0
+    for _,v in ipairs(t1) do n=n+1; nt[n]=v end
+    for _,v in ipairs(t2) do n=n+1; nt[n]=v end
+    return nt
+end
+
 function convertQuadToScale(sprite, newWidth, newHeight)
     local _, _, currentWidth, currentHeight = sprite:getViewport()
     return (newWidth/currentWidth ), (newHeight/currentHeight)

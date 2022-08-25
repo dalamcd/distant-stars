@@ -32,7 +32,9 @@ function mapObject:update(dt)
 end
 
 function mapObject:draw(x, y, s, r, nx, ny, nw, nh)
-	drawable.draw(self, x, y, s, r, nx, ny, nw, nh)
+	-- TODO: modify mapObject to pass a scaleX and a scaleY
+	local sx, sy = s, s
+	drawable.draw(self, x, y, sx, sy, r, nx, ny, nw, nh)
 end
 
 function mapObject:inBounds(worldX, worldY)

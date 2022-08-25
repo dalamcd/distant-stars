@@ -40,11 +40,11 @@ function map.static:retrieve(name)
 	if not mobj then error("attempted to retrieve " .. name .. " but no map with that name was found") end
 
 	local ts = drawable:getTileset(mobj.roof.tileset)
-	self.tileset = ts
-	self.sprite = love.graphics.newQuad(mobj.roof.tilesetX, mobj.roof.tilesetY, mobj.roof.spriteWidth, mobj.roof.spriteHeight, ts:getWidth(), ts:getHeight())
+	local m = self:new(mobj.label, 0, 0)
+	m.tileset = ts
+	m.sprite = love.graphics.newQuad(mobj.roof.tilesetX, mobj.roof.tilesetY, mobj.roof.spriteWidth, mobj.roof.spriteHeight, ts:getWidth(), ts:getHeight())
 	io.input("data/ships/" .. mobj.map)
 	local grid = {}
-	local m = self:new(mobj.label, 0, 0)
 
     m.width = mobj.width
 	m.height = mobj.height
@@ -191,7 +191,8 @@ function map:update(dt)
 	for _, r in ipairs(self.rooms) do
 		r:update(dt)
 	end
-
+	
+	self:detectEntitiesInRooms()
 	self.alert:update()
 
 	if self.velX ~= 0 then
@@ -491,6 +492,12 @@ function map:pollForJobs()
 	end
 
 	self.jobs = jobs
+end
+
+function map:detectEntitiesInRooms()
+	for _, r in ipairs(self.rooms) do
+		r:detectEntities()
+	end
 end
 
 function map:getAvailableJobs()

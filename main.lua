@@ -114,7 +114,7 @@ function love.keypressed(key)
 	if key == '1' then
 		local top = gamestate:peek()
 		local loadedMap = map:retrieve("base_shuttlecraft")
-		loadedMap:setOffset(-5, -5)
+		loadedMap:setOffset(0, 7)
 		top:addMap(loadedMap)
 		-- top:setCurrentMap(loadedMap)
 	end

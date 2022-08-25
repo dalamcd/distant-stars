@@ -67,10 +67,10 @@ return {
 		label = "Destroyer",
 		roof = {
 			tileset = "ships",
-			tilesetX = 0,
+			tilesetX = TILE_SIZE*6,
 			tilesetY = 0,
-			spriteWidth = TILE_SIZE*5,
-			spriteHeight = TILE_SIZE*7,
+			spriteWidth = TILE_SIZE*15,
+			spriteHeight = TILE_SIZE*16,
 		},
 		width = 15,
 		height = 16,
@@ -99,10 +99,17 @@ return {
 		},
 		entities = {
 			{
-				name = "pawn",
+				name = "tallpawn",
 				class = entity,
 				label = data:getBase():getRandomFullName(),
 				x = 3,
+				y = 4,
+			},
+			{
+				name = "pawn",
+				class = entity,
+				label = data:getBase():getRandomFullName(),
+				x = 6,
 				y = 4,
 			}
 		},

@@ -28,7 +28,7 @@ function task:initialize(params, contextFunc, strFunc, initFunc, startFunc, runF
 		self.finished = false
 		self.abandoned = false
 		self:initFunc()
-end
+	end
 
 function task:start()
 	self.started = true

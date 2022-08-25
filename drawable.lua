@@ -92,21 +92,19 @@ function drawable:update(dt)
 	end
 end
 
-function drawable:draw(x, y, s, r, nx, ny, nw, nh)
+function drawable:draw(x, y, sx, sy, r, nx, ny, nw, nh)
 	r = r or 0
+	sy = sy or 1
 	if nx and ny and nw and nh then
 		local ox, oy, ow, oh = self.sprite:getViewport()
 		self.sprite:setViewport(nx, ny, nw, nh, self.tileset:getWidth(), self.tileset:getHeight())
 		--love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
-		love.graphics.draw(self.tileset, self.sprite, math.floor(x), math.floor(y), r, s)
+		love.graphics.draw(self.tileset, self.sprite, math.floor(x), math.floor(y), r, sx)
 		self.sprite:setViewport(ox, oy, ow, oh, self.tileset:getWidth(), self.tileset:getHeight())
 	else
-		if r == 0 then
-			love.graphics.draw(self.tileset, self.sprite, math.floor(x), math.floor(y), r, s)
-		elseif r == math.pi/2 then
-			local ox = self.spriteWidth
-			love.graphics.draw(self.tileset, self.sprite, math.floor(x), math.floor(y), r, s, s, 0, ox)
-		end
+		x = x + self.spriteWidth/2*sx
+		y = y + self.spriteHeight/2*sy
+		love.graphics.draw(self.tileset, self.sprite, math.floor(x), math.floor(y), r, sx, sy, self.spriteWidth/2, self.spriteHeight/2)
 	end
 end
 

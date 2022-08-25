@@ -16,31 +16,28 @@ function corpse:initialize(classObj, name, label, map, posX, posY)
 	self.map = map
 	self.amount = 1
 
-	self.originTileWidth = self.width
-	self.originTileHeight = self.height
-	self.originSpriteWidth = self.spriteWidth
-	self.originSpriteHeight = self.spriteHeight
-	self.originXOffset = self.xOffset
-	self.originYOffset = self.yOffset
+	-- self.originTileWidth = self.width
+	-- self.originTileHeight = self.height
+	-- self.originSpriteWidth = self.spriteWidth
+	-- self.originSpriteHeight = self.spriteHeight
+	-- self.originXOffset = self.xOffset
+	-- self.originYOffset = self.yOffset
 
-	self.tileWidth = self.originTileHeight
-	self.tileHeight = self.originTileWidth
-	self.width = self.originTileHeight
-	self.height = self.originTileWidth
-	self.spriteWidth = self.originSpriteHeight
-	self.spriteHeight = self.originSpriteWidth
+	-- self.tileWidth = self.originTileHeight
+	-- self.tileHeight = self.originTileWidth
+	-- self.width = self.originTileHeight
+	-- self.height = self.originTileWidth
+	-- self.spriteWidth = self.originSpriteHeight
+	-- self.spriteHeight = self.originSpriteWidth
 end
 
 function corpse:draw(ent)
 	local c = self.map.camera
 	local x, y
-	if ent then
-		x = c:getRelativeX(ent:getWorldX())
-		y = c:getRelativeY(ent:getWorldY())
-	else
-		x = c:getRelativeX(self:getWorldX())
-		y = c:getRelativeY(self:getWorldY())
-	end
+
+	x = c:getRelativeX(self:getWorldX())
+	y = c:getRelativeY(self:getWorldY() + self.spriteHeight - TILE_SIZE)
+	
 	mapObject.draw(self, x, y, c.scale, math.pi/2)
 end
 

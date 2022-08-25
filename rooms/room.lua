@@ -42,6 +42,7 @@ function room:initialize(map, tiles)
 	self.edges = {}
 	self.walls = {}
 	self.doors = {}
+	self.entities = {}
 	self.connections = {}
 	self.attributes = {}
 	self.roomConnections = false
@@ -72,8 +73,8 @@ function room:draw()
 --[[
 
 	-- This variable stands in for (amount-min)/(max-min) where min is 0
-	local oxy = self:getAttribute('oxygen') or 0
 	local interpolate = oxy/100
+	local oxy = self:getAttribute('oxygen') or 0
 	-- The 0 terms are pointless but left in for clarity
 	local gr = interpolate*0 + (1-interpolate)*255
 	local gg = interpolate*255 + (1-interpolate)*0
@@ -96,6 +97,14 @@ function room:draw()
 		end
 	end
 	]]
+	if #self.entities == 0 then
+		for _, t in ipairs(self.tiles) do
+			local x = self.map.camera:getRelativeX(t:getWorldX())
+			local y = self.map.camera:getRelativeY(t:getWorldY())
+			local color = {r=0.2, g=0.2, b=0.2, a=0.7}
+			drawRect(x, y, TILE_SIZE*self.map.camera.scale, TILE_SIZE*self.map.camera.scale, color, false)
+		end
+	end
 end
 
 function room:inRoom(tile)
@@ -212,12 +221,24 @@ function room:getTileCount()
 	return #self.tiles
 end
 
+function room:detectEntities()
+	self.entities = {}
+	for _, t in ipairs(self.tiles) do
+		local ents = self.map:getEntitiesInTile(t)
+		self.entities = concatTables(self.entities, ents)
+	end
+end
+
+function room:listEntities()
+	return self.entities
+end
+
 function room:detectEdgeTiles()
 
 	local minX, minY = math.huge, math.huge
 	local maxX, maxY = -math.huge, -math.huge
 	local xSum, ySum = 0, 0
-	local vertices = {}
+	local doorTiles = {}
 
 	for _, tile in ipairs(self.tiles) do
 		local right = self.map:getTile(tile.x + 1, tile.y) 
@@ -232,6 +253,9 @@ function room:detectEdgeTiles()
 				table.insert(self.walls, right)
 			elseif right:isDoor() then
 				table.insert(self.doors, {door=right:isDoor(), x=1, y=0})
+				if not self.map:inRoom(right.x, right.y) then
+					table.insert(doorTiles, right)
+				end
 			end
 		end
 		if bottom and not self:inRoom(bottom) then
@@ -241,6 +265,9 @@ function room:detectEdgeTiles()
 				table.insert(self.walls, bottom)
 			elseif bottom:isDoor() then
 				table.insert(self.doors, {door=bottom:isDoor(), x=0, y=1})
+				if not self.map:inRoom(bottom.x, bottom.y) then
+					table.insert(doorTiles, bottom)
+				end
 			end
 		end
 		if left and not self:inRoom(left) then
@@ -250,6 +277,9 @@ function room:detectEdgeTiles()
 				table.insert(self.walls, left)
 			elseif left:isDoor() then
 				table.insert(self.doors, {door=left:isDoor(), x=-1, y=0})
+				if not self.map:inRoom(left.x, left.y) then
+					table.insert(doorTiles, left)
+				end
 			end
 		end
 		if top and not self:inRoom(top) then
@@ -259,8 +289,12 @@ function room:detectEdgeTiles()
 				table.insert(self.walls, top)
 			elseif top:isDoor() then
 				table.insert(self.doors, {door=top:isDoor(), x=0, y=-1})
+				if not self.map:inRoom(top.x, top.y) then
+					table.insert(doorTiles, top)
+				end
 			end
 		end
+
 
 		if left and top and not self:inRoom(left) and not self:inRoom(top) then
 			local t = self.map:getTile(tile.x - 1, tile.y - 1)
@@ -280,6 +314,7 @@ function room:detectEdgeTiles()
 		end
 	end
 
+	self.tiles = concatTables(self.tiles, doorTiles)
 	self.rightMost = maxX
 	self.leftMost = minX
 	self.bottomMost = maxY
@@ -310,6 +345,7 @@ function room:addRoomConnection(newCon)
 	for _, con in ipairs(self.connections) do
 		if con.uid == newCon.uid then
 			dupe = true
+			break
 		end
 	end
 	if not dupe then
