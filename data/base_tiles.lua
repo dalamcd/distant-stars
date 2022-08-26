@@ -18,8 +18,8 @@ return {
 	{
 		name = "void",
 		tileset = "floorTile",
-		spriteX = 0,
-		spriteY = TILE_SIZE,
+		spriteX = TILE_SIZE*3,
+		spriteY = TILE_SIZE*2,
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE
 	},

@@ -7,6 +7,7 @@ local walkTask = require('tasks.task_entity_walk')
 local dropTask = require('tasks.task_item_drop')
 local eatTask = require('tasks.task_entity_eat')
 local depositTask = require('tasks.task_furniture_deposit')
+local vacTask = require('tasks.task_entity_vacuum')
 local corpse = require('items.corpse')
 local priorities = require('entities.priorities')
 local schedule = require('entities.schedule')
@@ -51,6 +52,7 @@ function entity:initialize(name, label, map, posX, posY)
 	self.schedule = schedule:new()
 
 	self.oneSecondTimer = 0
+	self.rotation = 0
 
 	self.dead = false
 	self.health = obj.health or 100
@@ -59,6 +61,7 @@ function entity:initialize(name, label, map, posX, posY)
 	self.oxygenStarvation = obj.oxygenStarvation or 0
 	self.speed = obj.speed or 1
 	self.idleTime = 0
+	self.inVacuum = false
 
 	self.sitting = false
 	self.seat = nil
@@ -69,6 +72,12 @@ function entity:update(dt)
 	if self.dead then
 		mapObject.update(self, dt)
 		return
+	end
+
+	if self.map:isVoid(self.x, self.y) and not self.inVacuum then
+		self.inVacuum = true
+		local vt = vacTask:new()
+		self:setTask(vt)
 	end
 
 	self:handleWalking()
@@ -117,7 +126,7 @@ function entity:update(dt)
 	if self:isIdle() and (self.idleTime / 60) % 10 == 0 then
 			self:wanderAimlessly()
 	end
-	drawable.update(self, dt)
+	mapObject.update(self, dt)
 
 	if self.oneSecondTimer >= 60 then
 		self.oneSecondTimer = 0
@@ -131,7 +140,7 @@ function entity:draw()
 	local c = self.map.camera
 	local x = self:getWorldX()
 	local y = self:getWorldY()
-	mapObject.draw(self, c:getRelativeX(x), c:getRelativeY(y), c.scale)
+	mapObject.draw(self, c:getRelativeX(x), c:getRelativeY(y), c.scale, self.rotation)
 
 	if #self.inventory > 0 then
 		for _, item in ipairs(self.inventory) do
@@ -311,6 +320,31 @@ function entity:handleWalking()
 	end
 end
 
+function entity:wiggle(angle, speed)
+	angle = angle or math.pi/4
+	speed = speed or 10
+	if not self.wiggleRot then
+		self.wiggleOrigRot = self.rotation
+		self.wiggleRot = 0
+		self.wiggleMax = self.rotation + angle
+		self.wiggleMin = self.rotation - angle
+		self.wiggleDir = 0
+		self.wiggleFactor = speed/100
+	end
+	if self.wiggleDir == 0 then
+		if self.wiggleRot < self.wiggleMax then
+			self.wiggleRot = self.wiggleRot + self.wiggleFactor
+		else
+			self.wiggleDir = 1
+		end
+	elseif self.wiggleRot > self.wiggleMin then
+		self.wiggleRot = self.wiggleRot - self.wiggleFactor
+	else
+		self.wiggleDir = 0
+	end
+	self.rotation = self.wiggleRot
+end
+
 function entity:breathe()
 	if not self.dead then 
 		local r = self.map:inRoom(self.x, self.y)
@@ -339,6 +373,8 @@ function entity:adjustHealth(amt, cause)
 	if self.health == 0 then
 		if cause then
 			self:die(cause)
+		else
+			self:die("lost " .. amt .. " health and died without cause")
 		end
 	end
 end

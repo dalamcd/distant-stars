@@ -124,4 +124,21 @@ return {
 			}
 		}
 	},
+	{
+		name = "base_moonmoon",
+		map = "moonmoon.txt",
+		label = "Moon ship =D",
+		roof = {
+			tileset = "ships",
+			tilesetX = TILE_SIZE*6,
+			tilesetY = 0,
+			spriteWidth = TILE_SIZE*15,
+			spriteHeight = TILE_SIZE*16,
+		},
+		width = 33,
+		height = 11,
+		furniture = {},
+		entities = {},
+		items = {}
+	},
 }

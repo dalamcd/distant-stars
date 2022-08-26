@@ -96,6 +96,46 @@ return {
 		tileHeight = 1
 	},
 	{
+		name = "hullBotLeft",
+		tileset = "floorTile",
+		tilesetX = 0,
+		tilesetY = TILE_SIZE,
+		spriteWidth = TILE_SIZE,
+		spriteHeight = TILE_SIZE,
+		tileWidth = 1,
+		tileHeight = 1
+	},
+	{
+		name = "hullTopRight",
+		tileset = "floorTile",
+		tilesetX = TILE_SIZE,
+		tilesetY = TILE_SIZE,
+		spriteWidth = TILE_SIZE,
+		spriteHeight = TILE_SIZE,
+		tileWidth = 1,
+		tileHeight = 1
+	},
+	{
+		name = "hullTopLeft",
+		tileset = "floorTile",
+		tilesetX = 0,
+		tilesetY = TILE_SIZE*2,
+		spriteWidth = TILE_SIZE,
+		spriteHeight = TILE_SIZE,
+		tileWidth = 1,
+		tileHeight = 1
+	},
+	{
+		name = "hullBotRight",
+		tileset = "floorTile",
+		tilesetX = TILE_SIZE,
+		tilesetY = TILE_SIZE*2,
+		spriteWidth = TILE_SIZE,
+		spriteHeight = TILE_SIZE,
+		tileWidth = 1,
+		tileHeight = 1
+	},
+	{
 		name = "wall",
 		tileset = "floorTile",
 		tilesetX = TILE_SIZE,

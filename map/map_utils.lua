@@ -74,6 +74,12 @@ local map_utils = {
 		return false
 	end,
 
+	isVoid = function(self, x, y)
+		local t = self:getTile(x, y)
+		if not t or t.label == "void" then return true end
+		return false
+	end,
+
 	inStockpile = function(self, x, y)
 		for _, s in ipairs(self.stockpiles) do
 			if s:inTile(x, y) then
@@ -124,7 +130,16 @@ local map_utils = {
 			end
 		end
 
-		return nil
+		local tile = require('tile')
+		-- local x = math.floor((worldX - self.camera.xOffset + TILE_SIZE*self.camera.scale)/TILE_SIZE/self.camera.scale)
+		-- local y = math.floor((worldY - self.camera.yOffset + TILE_SIZE*self.camera.scale)/TILE_SIZE/self.camera.scale)
+		-- Funky math to translate a mouse position into a grid coordinate, essentially tile:getWorldX/Y() in reverse
+		-- The below is equivalent to the above, just cleaned up
+		-- TODO: playerstate needs to have a sort of virtual void map that stores void tiles, separate from
+		--		 any other maps
+		local x = math.floor((worldX - self.camera.xOffset)/TILE_SIZE/self.camera.scale) + 1
+		local y = math.floor((worldY - self.camera.yOffset)/TILE_SIZE/self.camera.scale) + 1
+		return tile:new("void", self, x, y, -1)
 	end,
 
 	getEntitiesAtWorld = function(self, worldX, worldY)

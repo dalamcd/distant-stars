@@ -19,7 +19,7 @@ function room.static:detectRoom(map, tile)
 				break
 			end
 		end
-		if not alreadyFound and not map:isWall(v.x, v.y) and not map:isHull(v.x, v.y) and not map:isDoor(v.x, v.y) then
+		if not alreadyFound and not map:isWall(v.x, v.y) and not map:isHull(v.x, v.y) and not map:isDoor(v.x, v.y) and not map:isVoid(v.x, v.y) then
 			table.insert(discovered, v)
 			local neighbor = map:getTile(v.x+1, v.y)
 			if neighbor then table.insert(toSearch, neighbor) end
@@ -32,6 +32,41 @@ function room.static:detectRoom(map, tile)
 		end
 	end
 	return discovered
+end
+
+function room.static:detectCycle(tiles)
+
+	local function dfs(tile, previous)
+		if tile.finished == true then
+			return
+		end
+		if tile.visited == true then
+			print("cycle found", tile.x, tile.y)
+			return
+		end
+		tile.visited = true
+		for _, neighbor in ipairs(tile:getNeighbors()) do
+			local isPart = false
+			for _, t in ipairs(tiles) do
+				if neighbor.uid == t.uid and (not previous or t.uid ~= previous.uid) then
+					isPart = true
+					break
+				end
+			end
+			if isPart then
+				dfs(neighbor, tile)
+			end
+		end
+		tile.finished = true
+	end
+
+	-- for idx, t in ipairs(tiles) do
+	-- 	print(idx)
+	-- 	dfs(t)
+	-- 	if cycleFound then print("cycle found") end
+	-- end
+	dfs(tiles[1])
+
 end
 
 function room:initialize(map, tiles)

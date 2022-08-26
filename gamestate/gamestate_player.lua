@@ -35,6 +35,7 @@ function playerstate:initialize()
 end
 
 function playerstate:update(dt)
+	-- Update debug text area
 	if self.currentMap then
 		local rx, ry = getMousePos()
 		d:updateTextField("Tile under mouse", "")
@@ -301,11 +302,8 @@ function playerstate:mousereleased(x, y, button)
 	if button == 3 then
 		local t = self.currentMap:getTileAtWorld(getMousePos())
 		if t then
-			local r = self.currentMap:inRoom(t.x, t.y)
-			if r then
-				for _, ent in ipairs(r:listEntities()) do
-					print(ent.label)
-				end
+			for _, tile in ipairs(t:getNeighbors()) do
+				print(tile.x, tile.y)
 			end
 		end
 	end
@@ -366,7 +364,7 @@ function playerstate:setCurrentMap(map)
 	self.currentMap = map
 	self.currentMap:select()
 	local t = self.currentMap:getCentermostTile()
-	self.camera:translate(t:getWorldCenterX(), t:getWorldCenterY())
+	--self.camera:translate(t:getWorldCenterX(), t:getWorldCenterY())
 end
 
 function playerstate:setSelection(obj)

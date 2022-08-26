@@ -80,16 +80,20 @@ function tile:isDoor()
 	return self.map:isDoor(self.x, self.y)
 end
 
+function tile:isVoid()
+	return self.map:isVoid(self.x, self.y)
+end
+
 function tile:isBuildable()
 	return self.map:isBuildable(self.x, self.y)
 end
 
 function tile:getNeighbors()
 	local points = {
-		{x=self.x+1, y=self.y},
-		{x=self.x-1, y=self.y},
-		{x=self.x, y=self.y+1},
-		{x=self.x, y=self.y-1}
+		{x=self.x+1 - self.map.xOffset, y=self.y - self.map.yOffset},
+		{x=self.x-1 - self.map.xOffset, y=self.y - self.map.yOffset},
+		{x=self.x - self.map.xOffset, y=self.y+1 - self.map.yOffset},
+		{x=self.x - self.map.xOffset, y=self.y-1 - self.map.yOffset}
 	}
 	local tiles = self.map:getTilesFromPoints(points)
 

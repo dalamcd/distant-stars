@@ -73,6 +73,14 @@ function map.static:retrieve(name)
 			if c == "D" then
 				table.insert(grid, 4)
 			end
+		-- Insert hullBotLeft tile
+			if c == "\\" then
+				table.insert(grid, 6)
+			end
+		-- Insert hullBotRight tile
+			if c == "/" then
+				table.insert(grid, 7)
+			end
 
 		end
 		line = io.read("*line")
@@ -98,13 +106,27 @@ function map.static:retrieve(name)
 				local newDoor = door:new("door", "door", m, c, r)
 				m:addFurniture(newDoor)
 			elseif grid[index] == 5 then
-				t = tile:new("metal floor", m, x, y, index, true)
+				t = tile:new("void", m, x, y, index, true)
 				local h = hull:new("hull", "hull", m, c, r)
 				m:addFurniture(h)
+				table.insert(m.hullTiles, t)
+			elseif grid[index] == 6 then
+				t = tile:new("void", m, x, y, index, true)
+				local h = hull:new("hullBotLeft", "hull", m, c, r)
+				m:addFurniture(h)
+				table.insert(m.hullTiles, t)
+			elseif grid[index] == 7 then
+				t = tile:new("void", m, x, y, index, true)
+				local h = hull:new("hullBotRight", "hull", m, c, r)
+				m:addFurniture(h)
+				table.insert(m.hullTiles, t)
 			end
 			m.tiles[index] = t
 		end
 	end
+
+	print(#m.hullTiles)
+	room:detectCycle(m.hullTiles)
 
 	-- Finding all rooms in a loaded map
 	for _, mapTile in ipairs(m.tiles) do
@@ -161,6 +183,7 @@ function map:initialize(label, xOffset, yOffset)
 	self.stockpiles = {}
 	self.jobs = {}
 	self.rooms = {}
+	self.hullTiles = {}
 	self.alert = alert:new(self)
 
 	self.label = label
@@ -191,7 +214,7 @@ function map:update(dt)
 	for _, r in ipairs(self.rooms) do
 		r:update(dt)
 	end
-	
+
 	self:detectEntitiesInRooms()
 	self.alert:update()
 
@@ -447,7 +470,7 @@ end
 function map:getPossibleTasks(theTile, entity)
 
 	local tasks = {}
-	
+
 	for _, task in ipairs(theTile:getPossibleTasks(self, entity)) do
 		task.params.map = self
 		tasks[#tasks+1] = task
