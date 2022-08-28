@@ -18,6 +18,9 @@ function drawable:initialize(tileset, tilesetX, tilesetY, spriteWidth, spriteHei
 
 	local ts = drawable:getTileset(tileset)
 
+	tileWidth = tileWidth or 1
+	tileHeight = tileHeight or 1
+
 	if ts then
 		local distanceRight = math.ceil(spriteWidth / TILE_SIZE) * TILE_SIZE
 		local distanceDown = math.ceil(spriteHeight / TILE_SIZE) * TILE_SIZE

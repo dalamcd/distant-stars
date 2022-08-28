@@ -41,7 +41,7 @@ function data:loadBaseTileData(fname)
 		error(tostring(tileData))
 	else
 		for _, newTile in ipairs(tileData()) do
-			tile:load(newTile.name, newTile.tileset, newTile.spriteX, newTile.spriteY, newTile.spriteWidth, newTile.spriteHeight)
+			tile:load(newTile.name, newTile.tileset, newTile.spriteX, newTile.spriteY, newTile.spriteWidth, newTile.spriteHeight, newTile.walkable)
 		end
 	end
 end

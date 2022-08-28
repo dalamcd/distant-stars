@@ -128,7 +128,7 @@ function mapObject:getPos()
 end
 
 function mapObject:getType()
-	return "[[mapObject]]"
+	return drawable.getType(self) .. "[[mapObject]]"
 end
 
 return mapObject

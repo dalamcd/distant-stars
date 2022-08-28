@@ -368,7 +368,7 @@ function playerstate:setCurrentMap(map)
 	self.currentMap = map
 	self.currentMap:select()
 	local t = self.currentMap:getCentermostTile()
-	--self.camera:translate(t:getWorldCenterX(), t:getWorldCenterY())
+	self.camera:translate(t:getWorldCenterX(), t:getWorldCenterY(), 1.25)
 end
 
 function playerstate:setSelection(obj)

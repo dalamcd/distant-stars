@@ -21,6 +21,7 @@ local fadein = require('gamestate.gamestate_fade')
 local inventory = require('gamestate.gamestate_inventory')
 local mapstate = require('gamestate.gamestate_map')
 local background = require('gamestate.gamestate_background')
+local builder = require('gamestate.gamestate_builder')
 local station = require('furniture.station')
 local data = require('data')
 local attribute = require('rooms.attribute')
@@ -50,6 +51,7 @@ function love.load()
 	d:addTextField("Tile under mouse", "")
 	d:addTextField("Objects under mouse", "")
 	d:addTextField("Map under mouse", "")
+	d:addTextField("topEdge", "")
 
 	local bg = background:new(450)
 	local ps = playerstate:new()
@@ -95,7 +97,11 @@ function love.draw()
 	gamestate:draw()
 	d:draw()
 
-	love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
+	--love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
+end
+
+function love.textinput(text)
+	gamestate:addInput("textinput", {text=text})
 end
 
 local popped = nil
@@ -125,6 +131,11 @@ function love.keypressed(key)
 		loadedMap:setOffset(0, 0)
 		top:addMap(loadedMap)
 		-- top:setCurrentMap(loadedMap)
+	end
+
+	if key == 'b' then
+		local build = builder:new()
+		gamestate:push(build)
 	end
 
 	local gs = gamestate:peek()

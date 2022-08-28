@@ -5,6 +5,7 @@ local defstation = require('furniture.station_default')
 local wall = require('furniture.wall')
 local hull = require('furniture.hull')
 local generator = require('furniture.generator')
+local door      = require('furniture.door')
 
 return {
 	{
@@ -39,6 +40,7 @@ return {
 	},
 	{
 		name = "bigthing",
+		class = furniture,
 		tileset = "furniture",
 		tilesetX = TILE_SIZE*9,
 		tilesetY = 0,
@@ -62,6 +64,7 @@ return {
 	},
 	{
 		name = "door",
+		class = door,
 		tileset = "furniture",
 		tilesetX = TILE_SIZE*5,
 		tilesetY = 0,
@@ -87,6 +90,7 @@ return {
 	},
 	{
 		name = "hull",
+		class = hull,
 		tileset = "floorTile",
 		tilesetX = TILE_SIZE*2,
 		tilesetY = 0,
@@ -97,6 +101,7 @@ return {
 	},
 	{
 		name = "hullBotLeft",
+		class = hull,
 		tileset = "floorTile",
 		tilesetX = 0,
 		tilesetY = TILE_SIZE,
@@ -107,6 +112,7 @@ return {
 	},
 	{
 		name = "hullTopRight",
+		class = hull,
 		tileset = "floorTile",
 		tilesetX = TILE_SIZE,
 		tilesetY = TILE_SIZE,
@@ -117,6 +123,7 @@ return {
 	},
 	{
 		name = "hullTopLeft",
+		class = hull,
 		tileset = "floorTile",
 		tilesetX = 0,
 		tilesetY = TILE_SIZE*2,
@@ -127,6 +134,7 @@ return {
 	},
 	{
 		name = "hullBotRight",
+		class = hull,
 		tileset = "floorTile",
 		tilesetX = TILE_SIZE,
 		tilesetY = TILE_SIZE*2,
@@ -137,6 +145,7 @@ return {
 	},
 	{
 		name = "wall",
+		class = wall,
 		tileset = "floorTile",
 		tilesetX = TILE_SIZE,
 		tilesetY = 0,

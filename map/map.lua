@@ -81,6 +81,14 @@ function map.static:retrieve(name)
 			if c == "/" then
 				table.insert(grid, 7)
 			end
+		-- Insert hullTopRight tile
+			if c == ">" then
+				table.insert(grid, 8)
+			end
+		-- Insert hullTopLeft tile
+			if c == "<" then
+				table.insert(grid, 9)
+			end
 
 		end
 		line = io.read("*line")
@@ -94,30 +102,40 @@ function map.static:retrieve(name)
 			local index = ((r - 1) * m.width) + c
 			local t
 			if grid[index] == 1 then
-				t = tile:new("metal floor", m, x, y, index, true)
+				t = tile:new("metal floor", "metal floor", m, x, y)
 				local f = wall:new("wall", "wall", m, c, r)
 				m:addFurniture(f)
 			elseif grid[index] == 2 then
-				t = tile:new("metal floor", m, x, y, index, true)
+				t = tile:new("metal floor", "metal floor", m, x, y)
 			elseif grid[index] == 3 then
-				t = tile:new("void", m, x, y, index, false)
+				t = tile:new("void", "void", m, x, y, index, false)
 			elseif grid[index] == 4 then
-				t = tile:new("metal floor", m, x, y, index, true)
+				t = tile:new("metal floor", "metal floor", m, x, y)
 				local newDoor = door:new("door", "door", m, c, r)
 				m:addFurniture(newDoor)
 			elseif grid[index] == 5 then
-				t = tile:new("void", m, x, y, index, true)
+				t = tile:new("void", "void", m, x, y)
 				local h = hull:new("hull", "hull", m, c, r)
 				m:addFurniture(h)
 				table.insert(m.hullTiles, t)
 			elseif grid[index] == 6 then
-				t = tile:new("void", m, x, y, index, true)
+				t = tile:new("void", "void", m, x, y)
 				local h = hull:new("hullBotLeft", "hull", m, c, r)
 				m:addFurniture(h)
 				table.insert(m.hullTiles, t)
 			elseif grid[index] == 7 then
-				t = tile:new("void", m, x, y, index, true)
+				t = tile:new("void", "void", m, x, y)
 				local h = hull:new("hullBotRight", "hull", m, c, r)
+				m:addFurniture(h)
+				table.insert(m.hullTiles, t)
+			elseif grid[index] == 8 then
+				t = tile:new("metal floor", "metal floor", m, x, y)
+				local h = hull:new("hullTopRight", "hull", m, c, r)
+				m:addFurniture(h)
+				table.insert(m.hullTiles, t)
+			elseif grid[index] == 9 then
+				t = tile:new("metal floor", "metal floor", m, x, y)
+				local h = hull:new("hullTopLeft", "hull", m, c, r)
 				m:addFurniture(h)
 				table.insert(m.hullTiles, t)
 			end
@@ -125,7 +143,6 @@ function map.static:retrieve(name)
 		end
 	end
 
-	print(#m.hullTiles)
 	room:detectCycle(m.hullTiles)
 
 	-- Finding all rooms in a loaded map
@@ -295,6 +312,44 @@ function map:draw()
 
 end
 
+function map:serialize()
+	local fmt = "hhh"
+	local serializedData = love.data.pack("string", "h", self.width)
+	serializedData = serializedData .. love.data.pack("string", "h", self.height)
+	serializedData = serializedData .. love.data.pack("string", "h", #self.tiles)
+	for _, t in ipairs(self.tiles) do
+		local tData, fmtString = t:serialize()
+		serializedData = serializedData .. tData
+		fmt = fmt .. fmtString
+	end
+	return serializedData, fmt
+end
+
+function map:deserialize(data)
+	local deserializedData, idx = love.data.unpack("s", data)
+	print(deserializedData)
+	local dataTable = {love.data.unpack(tostring(deserializedData), data, tonumber(idx))}
+	self:generateVoid(dataTable[1], dataTable[2])
+	for i=4, dataTable[3]*4 + 1, 4 do
+		local t = tile:new(dataTable[i+2], dataTable[i+3], self, dataTable[i], dataTable[i+1])
+		self:addTile(t, t.index)
+	end
+end
+
+function map:generateVoid(width, height)
+	self.width = width
+	self.height = height
+	for r = 1, height do
+		for c = 1, width do
+			local x = c + self.xOffset
+			local y = r + self.yOffset
+			local index = ((r - 1) * width) + c
+			local t = tile:new("metal floor", "metal floor", self, x, y, index, true)
+			self.tiles[index] = t
+		end
+	end
+end
+
 function map:setOffset(x, y)
 	local dx = x - self.xOffset
 	local dy = y - self.yOffset
@@ -341,6 +396,15 @@ function map:addItem(i)
 	i.mapTranslationXOffset = self.mapTranslationXOffset
 	i.mapTranslationYOffset = self.mapTranslationYOffset
 	table.insert(self.items, i)
+end
+
+function map:addTile(t, idx)
+	t.map = self
+	t.x = t.x + self.xOffset
+	t.y = t.y + self.yOffset
+	t.mapTranslationXOffset = self.mapTranslationXOffset
+	t.mapTranslationYOffset = self.mapTranslationYOffset
+	self.tiles[idx] = t
 end
 
 function map:removeItem(i)

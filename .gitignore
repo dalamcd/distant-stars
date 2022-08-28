@@ -48,3 +48,6 @@ luac.out
 
 # Love stuff
 *.love
+
+# Misc
+shipdata.bin

@@ -94,9 +94,12 @@ function camera:zoomOut()
 end
 
 function camera:translate(x, y, speed)
+	speed = speed or 1
 	local dx = self:getRelativeX(x) - love.graphics:getWidth()/2
 	local dy = self:getRelativeY(y) - love.graphics:getHeight()/2
-	local moveCf = (dx^2 + dy^2)^(1/4)
+	--local moveCf = (dx^2 + dy^2)^(1/4)
+	local moveCf = (dx^2 + dy^2)^(speed/4)
+	
 	local angle = math.atan(-dy/dx)
 	if dx < 0 then
 		angle = angle + math.pi
