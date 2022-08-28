@@ -134,7 +134,6 @@ function gamestate:initialize(label, loadFunc, updateFunc, drawFunc, exitFunc, i
 	self.inputFunc = inputFunc
 	self.updateBelow = updateBelow
 	self.drawBelow = drawBelow
-	self:loadFunc()
 end
 
 function gamestate:update(dt)

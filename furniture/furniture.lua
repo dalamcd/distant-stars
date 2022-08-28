@@ -27,6 +27,10 @@ function furniture.static:retrieve(name)
 	return self._loaded_furniture[name] or false
 end
 
+function furniture.static:retrieveAll()
+	return self._loaded_furniture
+end
+
 -- Interaction points are calculated as offsets from the furniture's base position
 function furniture:initialize(name, label, map, posX, posY)
 	local obj = furniture:retrieve(name)

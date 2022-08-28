@@ -8,7 +8,7 @@ local tile = class('tile', mapObject)
 
 tile.static._loaded_tiles = {}
 
-function tile.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight)
+function tile.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, spriteHeight, walkable)
 	local internalItem = self._loaded_tiles[name]
 
 	if internalItem then
@@ -19,7 +19,9 @@ function tile.static:load(name, tileset, tilesetX, tilesetY, spriteWidth, sprite
 			tilesetX = tilesetX,
 			tilesetY = tilesetY,
 			spriteWidth = spriteWidth,
-			spriteHeight = spriteHeight
+			spriteHeight = spriteHeight,
+			class = tile,
+			walkable = walkable
 		}
 	end
 end
@@ -28,19 +30,22 @@ function tile.static:retrieve(name)
 	return self._loaded_tiles[name] or false
 end
 
-function tile:initialize(name, map, posX, posY, index, walkable)
+function tile.static:retrieveAll()
+	return self._loaded_tiles
+end
+
+function tile:initialize(name, label, map, posX, posY)
 	local obj = tile:retrieve(name)
 	if obj then
-		mapObject.initialize(self, obj, name, name, map, posX, posY, 1, 1, false)
+		mapObject.initialize(self, obj, name, label, map, posX, posY, 1, 1, false)
 	else
 		error("attempted to initialize " .. name .. " but no item with that name was found")
 	end
-	if not index then error("tile initialized without index") end
 	if not map then error("tile initialized without map") end
 
 	self.map = map
-	self.index = index
-	self.walkable = walkable or false
+	self.index = ((posY - 1) * self.map.width) + posX
+	self.walkable = obj.walkable or false
 	self.name = name
 end
 
@@ -59,6 +64,11 @@ end
 -- 	end
 -- 	return false
 -- end
+
+function tile:serialize()
+	local fmt = fmtValues(self.x, self.y, self.name, self.label)
+	return love.data.pack("string", fmt, self.x, self.y, self.name, self.label), fmt
+end
 
 function tile:isWalkable()
 	return self.walkable
@@ -108,12 +118,16 @@ function tile:getPossibleTasks(map, entity)
 			table.insert(tasks, wt)
 		end
 	end
-	
+
 	return tasks
 end
 
+function tile:getType()
+	return mapObject.getType(self) .. "[[tile]]"
+end
+
 function tile:__tostring()
-	return "Tile(" .. tostring(self.x) .. ", " .. tostring(self.y) .. ", " .. tostring(self.index) .. ")"
+	return "Tile(" .. self.label .. ": " .. tostring(self.x) .. ", " .. tostring(self.y) .. ", " .. tostring(self.index) .. ")"
 end
 
 return tile

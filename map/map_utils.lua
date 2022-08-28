@@ -139,7 +139,7 @@ local map_utils = {
 		--		 any other maps
 		local x = math.floor((worldX - self.camera.xOffset)/TILE_SIZE/self.camera.scale) + 1
 		local y = math.floor((worldY - self.camera.yOffset)/TILE_SIZE/self.camera.scale) + 1
-		return tile:new("void", self, x, y, -1)
+		return tile:new("truevoid", "void", self, x, y, -1)
 	end,
 
 	getEntitiesAtWorld = function(self, worldX, worldY)

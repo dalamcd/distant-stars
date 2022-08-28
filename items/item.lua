@@ -25,6 +25,10 @@ function item.static:retrieve(name)
 	return self._loaded_items[name] or false
 end
 
+function item.static:retrieveAll()
+	return self._loaded_items
+end
+
 function item:initialize(name, label, map, posX, posY)
 	local obj = item:retrieve(name)
 	if obj then
@@ -217,7 +221,7 @@ function item:getPossibleTasks()
 end
 
 function item:getType()
-	return drawable.getType(self) .. "[[item]][[" .. self.label .. "]]"
+	return mapObject.getType(self) .. "[[item]][[" .. self.label .. "]]"
 end
 
 function item:getClass()

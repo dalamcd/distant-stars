@@ -32,6 +32,10 @@ function entity.static:retrieve(name)
 	return self._loaded_entities[name] or false
 end
 
+function entity.static:retrieveAll()
+	return self._loaded_entities
+end
+
 function entity:initialize(name, label, map, posX, posY)
 	local obj = entity:retrieve(name)
 	if label == "" then label = name end

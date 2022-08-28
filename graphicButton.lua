@@ -14,19 +14,21 @@ function graphicButton:initialize(x, y, width, height, text, tileset, sprite, cl
 	self.angle = 0
 	if sheight > swidth then
 		self.xScale, self.yScale = convertQuadToScale(self.sprite, self.imageHeight, self.imageWidth)
+		self.yScale = self.xScale
 		self.angle = math.pi/2
 		self.xs = swidth*math.cos(self.angle)
 		self.ys = sheight*math.sin(self.angle)
 		self.imageX = x + (width - sheight*self.yScale)/2 + 1
 	else
 		self.xScale, self.yScale = convertQuadToScale(self.sprite, self.imageWidth, self.imageHeight)
+		self.xScale = self.yScale
 		self.imageX = x + (width - swidth*self.xScale)/2
 	end
-	self.imageY = y + height - self.imageHeight - 5
+	self.imageY = y + 2--+ self.imageHeight
 	self.tileset = tileset
 	self.sprite = sprite
 	self.textX = x + (width - love.graphics.getFont():getWidth(text))/2 - 1
-	self.textY = y + 2
+	self.textY = y + height - love.graphics.getFont():getHeight() - 2
 end
 
 function graphicButton:draw()
