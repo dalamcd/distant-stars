@@ -232,6 +232,14 @@ function item:getPluralName()
 	return self.label + "s"
 end
 
+function item:getClassName()
+	return 'item'
+end
+
+function item:getClassPath()
+	return 'items.item'
+end
+
 function item:__tostring()
 	return "Item(".. self.amount .. " of " .. self.label .."["..self.uid.."], "..self.x..", "..self.y..")"
 end

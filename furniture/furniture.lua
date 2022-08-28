@@ -142,6 +142,14 @@ function furniture:isWalkable()
 	return false
 end
 
+function furniture:getClassName()
+	return 'furniture'
+end
+
+function furniture:getClassPath()
+	return 'furniture.furniture'
+end
+
 function furniture:__tostring()
 	return "Furniture(".. self.label .."["..self.uid.."], "..self.x..", "..self.y..")"
 end

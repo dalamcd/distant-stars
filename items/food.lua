@@ -21,6 +21,14 @@ function food:getPossibleTasks()
 	return tasks
 end
 
+function food:getClassName()
+	return 'food'
+end
+
+function food:getClassPath()
+	return 'items.food'
+end
+
 function food:getType()
 	return item.getType(self) .. "[[food]]"
 end

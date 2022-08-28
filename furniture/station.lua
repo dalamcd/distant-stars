@@ -89,6 +89,14 @@ function station:getViewStationTask(parentTask)
 	return viewTask
 end
 
+function station:getClassName()
+	return 'station'
+end
+
+function station:getClassPath()
+	return 'furniture.station'
+end
+
 function station:getType()
 	return furniture.getType(self) .. "[[station]]"
 end

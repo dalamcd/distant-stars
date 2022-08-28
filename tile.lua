@@ -132,6 +132,14 @@ function tile:getAllValues()
 	end
 end
 
+function tile:getClassName()
+	return 'tile'
+end
+
+function tile:getClassPath()
+	return 'tile'
+end
+
 function tile:__tostring()
 	return "Tile(" .. self.label .. ": " .. tostring(self.x) .. ", " .. tostring(self.y) .. ", " .. tostring(self.index) .. ")"
 end

@@ -19,6 +19,14 @@ function hull:damage(amt)
 	self.health = self.health - amt
 end
 
+function hull:getClassName()
+	return 'hull'
+end
+
+function hull:getClassPath()
+	return 'furniture.hull'
+end
+
 function hull:getType()
 	return furniture.getType(self) .. "[[hull]]"
 end

@@ -9,6 +9,7 @@ local entity = require('entities.entity')
 local data = require('data')
 local graphicButton = require('graphicButton')
 local transTask = require('tasks.task_entity_map_trans')
+local map = require('map.map')
 
 local playerstate = class('playerstate', gamestate)
 
@@ -219,6 +220,12 @@ function playerstate:keypressed(key)
 	if key == 'n' and t then
 		t:getAllValues()
 	end
+	
+	if key == 'r' then
+		local m = map:new("loaded map", 0, 0)
+		m:loadMapTable("shipdata.lua")
+		self:addMap(m)
+	end
 
 	if key == '/' and e and #self.maps > 1 then
 		-- (5, 11), (6,11)
@@ -368,7 +375,7 @@ function playerstate:setCurrentMap(map)
 	self.currentMap = map
 	self.currentMap:select()
 	local t = self.currentMap:getCentermostTile()
-	self.camera:translate(t:getWorldCenterX(), t:getWorldCenterY(), 1.25)
+	--self.camera:translate(t:getWorldCenterX(), t:getWorldCenterY(), 1.25)
 end
 
 function playerstate:setSelection(obj)

@@ -159,6 +159,14 @@ function door:getType()
 	return furniture.getType(self) .. "[[door]]"
 end
 
+function door:getClassName()
+	return 'door'
+end
+
+function door:getClassPath()
+	return 'furniture.door'
+end
+
 function door:__tostring()
 	if self.open then
 		return "Door(".. self.label .."["..self.uid.."], " .. self.x .. ", " .. self.y .. ") (open)"

@@ -521,6 +521,14 @@ function entity:getClass()
 	return entity
 end
 
+function entity:getClassName()
+	return 'entity'
+end
+
+function entity:getClassPath()
+	return 'entities.entity'
+end
+
 function entity:__tostring()
 	return "Entity(".. self.label .."["..self.uid.."], "..self.x..", "..self.y..")"
 end

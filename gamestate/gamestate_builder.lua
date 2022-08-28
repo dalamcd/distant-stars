@@ -62,10 +62,10 @@ local function inputFunc(self, input)
 		end
 
 		if input.keypressed.key == 'e' then
-			self:saveMap()
+			self:saveMapTable()
 		end
 		if input.keypressed.key == 'r' then
-			self:loadMap()
+			self:loadMapTable("shipdata.lua")
 		end
 	end
 
@@ -287,6 +287,95 @@ function builder:generateVoid(width, height)
 	self.map.camera = self.camera
 	self.map.selected = true
 	self.map:generateVoid(self.mapWidth, self.mapHeight)
+end
+
+function builder:saveMapTable()
+	local file = io.output("shipdata.lua")
+	local classNames = {}
+	local mapStr = "return {\n"
+	mapStr = mapStr .. "\twidth = " .. self.map.width .. ",\n"
+	mapStr = mapStr .. "\theight = " .. self.map.height .. ",\n"
+	mapStr = mapStr .. "\ttiles = {\n"
+	for _, obj in ipairs(self.map.tiles) do
+		classNames[obj:getClassName()] = obj:getClassPath()
+		mapStr = mapStr .. "\t\t{\n"
+		mapStr = mapStr .. "\t\t\tx = " .. obj.x .. ",\n"
+		mapStr = mapStr .. "\t\t\ty = " .. obj.y .. ",\n"
+		mapStr = mapStr .. "\t\t\tclass = " .. obj:getClassName() .. ",\n"
+		mapStr = mapStr .. "\t\t\tname = '" .. obj.name .. "',\n"
+		mapStr = mapStr .. "\t\t\tlabel = '" .. obj.label .. "',\n"
+		mapStr = mapStr .. "\t\t},\n"
+	end
+	mapStr = mapStr .. "\t},\n"
+	mapStr = mapStr .. "\tfurniture = {\n"
+	for _, obj in ipairs(self.map.furniture) do
+		classNames[obj:getClassName()] = obj:getClassPath()
+		mapStr = mapStr .. "\t\t{\n"
+		mapStr = mapStr .. "\t\t\tx = " .. obj.x .. ",\n"
+		mapStr = mapStr .. "\t\t\ty = " .. obj.y .. ",\n"
+		mapStr = mapStr .. "\t\t\tclass = " .. obj:getClassName() .. ",\n"
+		mapStr = mapStr .. "\t\t\tname = '" .. obj.name .. "',\n"
+		mapStr = mapStr .. "\t\t\tlabel = '" .. obj.label .. "',\n"
+		mapStr = mapStr .. "\t\t},\n"
+	end
+	mapStr = mapStr .. "\t},\n"
+	mapStr = mapStr .. "\titems = {\n"
+	for _, obj in ipairs(self.map.items) do
+		classNames[obj:getClassName()] = obj:getClassPath()
+		mapStr = mapStr .. "\t\t{\n"
+		mapStr = mapStr .. "\t\t\tx = " .. obj.x .. ",\n"
+		mapStr = mapStr .. "\t\t\ty = " .. obj.y .. ",\n"
+		mapStr = mapStr .. "\t\t\tclass = " .. obj:getClassName() .. ",\n"
+		mapStr = mapStr .. "\t\t\tname = '" .. obj.name .. "',\n"
+		mapStr = mapStr .. "\t\t\tlabel = '" .. obj.label .. "',\n"
+		mapStr = mapStr .. "\t\t},\n"
+	end
+	mapStr = mapStr .. "\t},\n"
+	mapStr = mapStr .. "\tentities = {\n"
+	for _, obj in ipairs(self.map.entities) do
+		classNames[obj:getClassName()] = obj:getClassPath()
+		mapStr = mapStr .. "\t\t{\n"
+		mapStr = mapStr .. "\t\t\tx = " .. obj.x .. ",\n"
+		mapStr = mapStr .. "\t\t\ty = " .. obj.y .. ",\n"
+		mapStr = mapStr .. "\t\t\tclass = " .. obj:getClassName() .. ",\n"
+		mapStr = mapStr .. "\t\t\tname = '" .. obj.name .. "',\n"
+		mapStr = mapStr .. "\t\t\tlabel = '" .. obj.label .. "',\n"
+		mapStr = mapStr .. "\t\t},\n"
+	end
+	mapStr = mapStr .. "\t},\n"
+	mapStr = mapStr .. "}"
+
+	local str = ""
+	for k, v in pairs(classNames) do
+		str = str .. string.format("local %s = require('%s')\n", k, v)
+	end
+	mapStr = str .. "\n" .. mapStr
+
+	io.write(mapStr)
+end
+
+function builder:loadMapTable(fname)
+	local status, mapRaw = pcall(love.filesystem.load, fname)
+	if not status then
+		error(tostring(mapRaw))
+	else
+		local mapData = mapRaw()
+		assert(mapData.width and mapData.height, "Map table missing either width or height")
+		self:generateVoid(mapData.width, mapData.height)
+		for _, obj in ipairs(mapData.tiles) do
+			local t = obj.class:new(obj.name, obj.label, self.map, obj.x, obj.y)
+			self.map:addTile(t, t.index)
+		end
+		for _, obj in ipairs(mapData.entities) do
+			self.map:addEntity(obj.class:new(obj.name, obj.label, self.map, obj.x, obj.y))
+		end
+		for _, obj in ipairs(mapData.furniture) do
+			self.map:addFurniture(obj.class:new(obj.name, obj.label, self.map, obj.x, obj.y))
+		end
+		for _, obj in ipairs(mapData.items) do
+			self.map:addItem(obj.class:new(obj.name, obj.label, self.map, obj.x, obj.y))
+		end
+	end
 end
 
 function builder:saveMap()

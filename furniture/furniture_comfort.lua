@@ -44,6 +44,14 @@ function comfortFurniture:isOccupied()
 	return self.occupant
 end
 
+function comfortFurniture:getClassName()
+	return 'comfort'
+end
+
+function comfortFurniture:getClassPath()
+	return 'furniture.furniture_comfort'
+end
+
 function comfortFurniture:getType()
 	return furniture.getType(self) .. "[[comfort]]"
 end

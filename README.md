@@ -4,11 +4,11 @@ Distant Stars is a spaceship crew simulation.
 
 ### Installation for Windows
 
-Download respository as ZIP
+Download respository as ZIP archive
 Download and install LOVE: https://love2d.org/
-Rename .zip to .love
-In a terminal, concatenate the ZIP file onto the LOVE exe:
->copy /b love.exe+SuperGame.love SuperGame.exe
+Rename archive.zip to archive.love
+In a DOS terminal, concatenate the ZIP file onto the LOVE exe:
+>copy /b love.exe+archive.love DS.exe
 
 ### Installation for Mac/Linux
 

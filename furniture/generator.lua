@@ -26,9 +26,27 @@ end
 function generator:update(dt)
 	furniture.update(self, dt)
 
+	if not self.room then
+		for _, t in ipairs(self:getTiles()) do
+			local room = self.map:inRoom(t.x, t.y)
+			if room then
+				self.room = room
+				break
+			end
+		end
+	end
+
 	if self.room and not self.paused then
 		self.room:adjustAttribute(self.attr.name, self.outputAmount)
 	end
+end
+
+function generator:getClassName()
+	return 'generator'
+end
+
+function generator:getClassPath()
+	return 'furniture.generator'
 end
 
 function generator:getType()

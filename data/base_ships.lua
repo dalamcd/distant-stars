@@ -127,7 +127,7 @@ return {
 	{
 		name = "base_moonmoon",
 		map = "moonmoon.txt",
-		label = "Moon ship =D",
+		label = "Moonmoon",
 		roof = {
 			tileset = "ships",
 			tilesetX = TILE_SIZE*6,

@@ -215,6 +215,11 @@ function map:initialize(label, xOffset, yOffset)
 	self.mouseSelection = nil
 
 	self.oneSecondTimer = 0
+
+	local ts = drawable:getTileset("ships")
+	self.tileset = ts
+	self.sprite = love.graphics.newQuad(TILE_SIZE*6, 0, TILE_SIZE*15, TILE_SIZE*16, ts:getWidth(), ts:getHeight())
+
 end
 
 function map:update(dt)
@@ -336,6 +341,35 @@ function map:deserialize(data)
 	end
 end
 
+function map:loadMapTable(fname)
+	local status, mapRaw = pcall(love.filesystem.load, fname)
+	if not status then
+		error(tostring(mapRaw))
+	else
+		local mapData = mapRaw()
+		assert(mapData.width and mapData.height, "Map table missing either width or height")
+		self:generateVoid(mapData.width, mapData.height)
+		for _, obj in ipairs(mapData.tiles) do
+			local t = obj.class:new(obj.name, obj.label, self, obj.x, obj.y)
+			self:addTile(t, t.index)
+		end
+		for _, obj in ipairs(mapData.entities) do
+			self:addEntity(obj.class:new(obj.name, obj.label, self, obj.x, obj.y))
+		end
+		for _, obj in ipairs(mapData.furniture) do
+			local f = obj.class:new(obj.name, obj.label, self, obj.x, obj.y)
+			self:addFurniture(f)
+			if obj.label == "o2gen" then
+				print(f.outputAmount)
+			end
+		end
+		for _, obj in ipairs(mapData.items) do
+			self:addItem(obj.class:new(obj.name, obj.label, self, obj.x, obj.y))
+		end
+		self:detectRooms()
+	end
+end
+
 function map:generateVoid(width, height)
 	self.width = width
 	self.height = height
@@ -378,6 +412,29 @@ end
 
 function map:unselect()
 	self.selected = false
+end
+
+function map:detectRooms()
+
+	for _, mapTile in ipairs(self.tiles) do
+		local roomList = self.rooms
+		local inRoom = false
+		for _, r in ipairs(roomList) do
+			if r:inRoom(mapTile) then
+				inRoom = true
+				break
+			end
+		end
+
+		if not inRoom then
+			local roomTiles = room:detectRoom(self, mapTile)
+			if #roomTiles > 0 then
+				local newRoom = room:new(self, roomTiles)
+				table.insert(self.rooms, newRoom)
+			end
+		end
+	end
+
 end
 
 function map:addEntity(e)

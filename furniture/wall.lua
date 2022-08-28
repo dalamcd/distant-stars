@@ -17,6 +17,14 @@ function wall:isWall()
 	return true
 end
 
+function wall:getClassName()
+	return 'wall'
+end
+
+function wall:getClassPath()
+	return 'furniture.wall'
+end
+
 function wall:getType()
 	return furniture.getType(self) .. "[[wall]][[" .. self.label .. "]]"
 end

@@ -45,4 +45,12 @@ function corpse:removedFromInventory(entity)
 	item.removedFromInventory(self, entity)
 end
 
+function corpse:getClassName()
+	return 'corpse'
+end
+
+function corpse:getClassPath()
+	return 'items.corpse'
+end
+
 return corpse
