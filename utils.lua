@@ -25,9 +25,32 @@ end
 
 function convertQuadToScale(sprite, newWidth, newHeight)
     local _, _, currentWidth, currentHeight = sprite:getViewport()
-    return (newWidth/currentWidth ), (newHeight/currentHeight)
+    return (newWidth/currentWidth), (newHeight/currentHeight)
 end
 
+function tableValues(t)
+    local rt = {}
+    for k, v in pairs(t) do
+        table.insert(rt, v)
+    end
+    return unpack(rt)
+end
+
+function fmtValues(...)
+    local fmtStr = ""
+    local arg = {...}
+    for _, v in ipairs(arg) do
+        if type(v) == "string" then
+            fmtStr = fmtStr .. "c" .. v:len()
+        elseif type(v) == "number" then
+            fmtStr = fmtStr .. "n"
+        elseif type(v) == "table" then
+            fmtStr = fmtStr .. fmtValues(tableValues(v))
+        end
+    end
+    return fmtStr
+end
+-- I think this is not a great implementation of this alogorithm
 function midpointCircle(centerX, centerY, radius)
     local points = {}
     for y=-radius, radius do
@@ -40,7 +63,8 @@ function midpointCircle(centerX, centerY, radius)
     return points
 end
 
-function smoothstep(x) 
+-- Need to look into how this works 
+function smoothstep(x)
     return ((x) * (x) * (3 - 2 * (x)))
 end
 

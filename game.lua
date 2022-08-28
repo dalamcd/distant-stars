@@ -36,14 +36,6 @@ function drawRouteLine(startPoint, endPoint, camera)
 	love.graphics.reset()
 end
 
-function setGameContext(ctx)
-	gameContext = ctx
-end
-
-function getGameContext()
-	return gameContext
-end
-
 function addFont(font, name)
 	table.insert(fonts, {font=font, name=name})
 end

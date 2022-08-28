@@ -23,13 +23,17 @@ end
 
 function button:draw(color)
 	local r, g, b, a = love.graphics.getColor()
-	color = color or {r=1.0, g=1.0, b=1.0, a=1.0}
+	color = color or {r=0.0, g=0.0, b=0.0, a=1.0}
 	--love.graphics.setColor(color.r, color.g, color.b, color.a)
 	drawRect(self.x, self.y, self.width, self.height, color)
 	local tx = self.x + (self.width - love.graphics.getFont():getWidth(self.text))/2 - 1
 	local ty = self.y + (self.height - love.graphics.getFont():getHeight())/2 - 1
 	love.graphics.print(self.text, tx, ty)
 	love.graphics.setColor(r, g, b, a)
+end
+
+function button:click(p)
+	self:clickFunc(p)
 end
 
 function button:inBounds(x, y)
