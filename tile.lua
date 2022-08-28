@@ -112,6 +112,16 @@ function tile:getPossibleTasks(map, entity)
 	return tasks
 end
 
+function tile:getType()
+	return mapObject.getType(self) .. "[[tile]]"
+end
+
+function tile:getAllValues()
+	for k, v in pairs(self) do
+		print(tostring(k) .. ": " .. tostring(v))
+	end
+end
+
 function tile:__tostring()
 	return "Tile(" .. tostring(self.x) .. ", " .. tostring(self.y) .. ", " .. tostring(self.index) .. ")"
 end

@@ -216,6 +216,10 @@ function playerstate:keypressed(key)
 		self.currentMap:addEntity(ent)
 	end
 
+	if key == 'n' and t then
+		t:getAllValues()
+	end
+
 	if key == '/' and e and #self.maps > 1 then
 		-- (5, 11), (6,11)
 		local thisShip, thatShip = self.maps[2], self.maps[1]
