@@ -1,6 +1,6 @@
 local class = require('lib.middleclass')
 local gamestate = require('gamestate.gamestate')
-local context = require('context')
+local context = require('contextNew')
 local camera = require('camera')
 local furniture = require('furniture.furniture')
 local ghost = require('furniture.ghost')
@@ -12,6 +12,7 @@ local graphicButton = require('gui.graphicButton')
 local transTask = require('tasks.task_entity_map_trans')
 local map = require('map.map')
 local gui = require('gui.gui')
+local dropdown = require('gui.dropdown')
 
 local playerstate = class('playerstate', gamestate)
 
@@ -23,7 +24,7 @@ function playerstate:initialize()
 	self.camera = c
 	self.maps = {}
 	self.mapButtons = {}
-	self.context = context:new(self)
+	self.context = nil
 	self.currentMap = nil
 	self.ghost = nil
 	self.selection = nil
@@ -69,7 +70,13 @@ function playerstate:update(dt)
 		self.background:update(dt)
 	end
 
-	self.context:update(dt)
+	if self.context then
+		if self.context.selected then
+			self.context:update(dt)
+		else
+			self.context = nil
+		end
+	end
 	self.camera:update(dt)
 
 	for _, map in ipairs(self.maps) do
@@ -94,7 +101,9 @@ function playerstate:draw()
 	end
 	self:drawRoomDetails()
 
-	self.context:draw()
+	if self.context then
+		self.context:draw()
+	end
 	self.camera:draw()
 end
 
@@ -264,9 +273,16 @@ function playerstate:mousereleased(x, y, button)
 
 	if button == 1 then
 		local thisMap = self.currentMap
+
+		if self.context then
+			self.context:mousereleased(x, y, button)
+			return
+		end
+
 		for _, mb in ipairs(self.mapButtons) do
 			if mb:inBounds(gui:getMousePos()) then
 				mb:clickFunc()
+				return
 			end
 		end
 
@@ -282,8 +298,8 @@ function playerstate:mousereleased(x, y, button)
 			local msg = self.currentMap.alert:inBounds(x, y)
 			if msg then
 				self.currentMap.alert:removeAlert(msg)
-			elseif self.context.active and self.context:inBounds(x, y) then
-				self.context:handleClick(x, y)
+			-- elseif self.context.active and self.context:inBounds(x, y) then
+			-- 	self.context:handleClick(x, y)
 			elseif #objects > 0 then
 				if self.ct.uid == t.uid then
 					if self.cti < #objects then
@@ -309,7 +325,7 @@ function playerstate:mousereleased(x, y, button)
 		local selection = self:getSelection()
 		if selection and t and selection:isType("entity") and selection.map.uid == self.currentMap.uid then
 			local tlist = self.currentMap:getPossibleTasks(t, selection)
-			self.context:set(x, y, tlist)
+			self.context = context:new(x, y, 1, 1, tlist, selection, {0.1, 0.1, 0.1, 0.75})
 		end
 	end
 
@@ -378,7 +394,7 @@ function playerstate:setCurrentMap(mapObj)
 	self.currentMap = mapObj
 	self.currentMap:select()
 	local t = self.currentMap:getCentermostTile()
-	--self.camera:translate(t:getWorldCenterX(), t:getWorldCenterY(), 1.25)
+	self.camera:translate(t:getWorldCenterX(), t:getWorldCenterY(), 1.25)
 end
 
 function playerstate:setSelection(obj)
