@@ -1,4 +1,5 @@
 local gamestate = require('gamestate.gamestate')
+local gui = require('gui.gui')
 
 local function loadFunc(sself, gstate, entity)
 	local str = entity.label .. " is working on " .. sself.label
@@ -13,11 +14,10 @@ local function loadFunc(sself, gstate, entity)
 end
 
 local function drawFunc(sself, gstate)
-	drawRect(gstate.leftMargin, gstate.topMargin, gstate.width, gstate.height)
+	gui:drawRect(gstate.leftMargin, gstate.topMargin, gstate.width, gstate.height)
 	love.graphics.print(gstate.headerText, gstate.headerPos, gstate.topMargin + 20)
 	love.graphics.print("X Velocity: " .. sself.map.velX, gstate.leftMargin + 20, gstate.topMargin + 20 + (gstate.textHeight + 5))
 	love.graphics.print("Y Velocity: " .. sself.map.velY, gstate.leftMargin + 20, gstate.topMargin + 20 + (gstate.textHeight + 5)*2)
-	drawButton(gstate.leftMargin + 20, gstate.topMargin + 20 + (gstate.textHeight + 5)*3, 40, 20, "test")
 end
 
 local function inputFunc(sself, gstate, entity, input)

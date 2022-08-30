@@ -52,3 +52,6 @@ luac.out
 # Misc
 shipdata.bin
 shipdata.lua
+
+# Here temporarily because I don't think I'm going to keep it
+primitives/

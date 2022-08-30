@@ -6,6 +6,7 @@ local playerstate = require('gamestate.gamestate_player')
 local background = require('gamestate.gamestate_background')
 local builder = require('gamestate.gamestate_builder')
 local data = require('data')
+local gui = require('gui.gui')
 
 TILE_SIZE = 32
 
@@ -76,7 +77,7 @@ local nr, nb, ng = 1, 1, 1
 function love.draw()
 
 	gamestate:draw()
-	d:draw()
+	--d:draw()
 
 	--love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
 end
@@ -86,8 +87,13 @@ function love.textinput(text)
 end
 
 local popped = nil
+local debugly = false
 function love.keypressed(key)
 	gamestate:addInput("keypressed", {key=key})
+
+	if key == 'f4' then
+		debugly = not debugly
+	end
 
 	if key == '=' then
 		gameSpeed = clamp(gameSpeed + 1, 1, 3)
@@ -97,15 +103,15 @@ function love.keypressed(key)
 		gameSpeed = clamp(gameSpeed - 1, 1, 3)
 	end
 
-	if key == 'p' then
+	if key == 'p' and debugly then
 		popped = gamestate:pop()
 	end
 
-	if key == '[' then
+	if key == '[' and debugly then
 		gamestate:push(popped)
 	end
 
-	if key == '1' then
+	if key == '1' and debugly then
 		local top = gamestate:peek()
 		local loadedMap = map:retrieve("base_shuttlecraft")
 --		loadedMap:setOffset(0, 7)
@@ -114,7 +120,7 @@ function love.keypressed(key)
 		-- top:setCurrentMap(loadedMap)
 	end
 
-	if key == 'b' then
+	if key == 'b' and gamestate:peek().label ~= "map builder" then
 		local build = builder:new()
 		gamestate:push(build)
 	end
@@ -127,7 +133,7 @@ function love.keypressed(key)
 		end
 
 		local e = gs:getSelection()
-		local t = gs.maps[1]:getTileAtWorld(getMousePos())
+		local t = gs.maps[1]:getTileAtWorld(gui:getMousePos())
 		if key == 'e' and e and t then
 			local dist = math.sqrt((t.x - e.x)^2 + (t.y - e.y)^2)
 			local function moveFunc(eself, x)

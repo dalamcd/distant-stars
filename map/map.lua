@@ -410,7 +410,7 @@ function map:select()
 	self.selected = true
 end
 
-function map:unselect()
+function map:deselect()
 	self.selected = false
 end
 
@@ -482,6 +482,28 @@ function map:removeEntity(e)
 		end
 	end
 	return false
+end
+
+function map:removeFurniture(f)
+	for idx, furn in ipairs(self.furniture) do
+		if f.uid == furn.uid then
+			table.remove(self.furniture, idx)
+			return true
+		end
+	end
+	return false
+end
+
+function map:removeObject(obj)
+	if obj:isType('furniture') then
+		self:removeFurniture(obj)
+	elseif obj:isType('entity') then
+		self:removeEntity(obj)
+	elseif obj:isType('item') then
+		self:removeItem(obj)
+	else
+		print("ERR: attempted to remove an object from a map where it didn't exist")
+	end
 end
 
 function map:addFurniture(f)

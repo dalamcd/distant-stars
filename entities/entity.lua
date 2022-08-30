@@ -11,6 +11,7 @@ local vacTask = require('tasks.task_entity_vacuum')
 local corpse = require('items.corpse')
 local priorities = require('entities.priorities')
 local schedule = require('entities.schedule')
+local gui      = require('gui.gui')
 
 local entity = class('entity', mapObject)
 
@@ -103,7 +104,7 @@ function entity:update(dt)
 						end
 					end
 
-					if not t then print("entity "..self.dname.."("..self.uid..")".." is very thoroughly trapped") break end
+					if not t then print("entity "..self.label.."("..self.uid..")".." is very thoroughly trapped") break end
 					
 					local function strFunc(tself)
 						return "Moving away from occupied tile"
@@ -151,26 +152,29 @@ function entity:draw()
 			item:draw(self)
 		end
 	end
-	self:drawRoute()
+	if self.selected then
+		self:drawRoute()
+	end
 end
 
 function entity:drawRoute()
+	local c = self.map.camera
 	if #self.route > 1 then
 		for i=1, #self.route - 1 do
-			local startX = self.route[i]:getWorldCenterX()
-			local startY = self.route[i]:getWorldCenterY()
-			local endX = self.route[i+1]:getWorldCenterX()
-			local endY = self.route[i+1]:getWorldCenterY()
-			drawRouteLine({x=startX, y=startY}, {x=endX, y=endY}, self.map.camera)
+			local startX = c:getRelativeX(self.route[i]:getWorldCenterX())
+			local startY = c:getRelativeY(self.route[i]:getWorldCenterY())
+			local endX = c:getRelativeX(self.route[i+1]:getWorldCenterX())
+			local endY = c:getRelativeY(self.route[i+1]:getWorldCenterY())
+			gui:drawLine(startX, startY, endX, endY, {1, 1, 1, 0.3}, 3)
 		end
 	end
 
 	if #self.route > 0 then
-		local startX = self.route[#self.route]:getWorldCenterX()
-		local startY = self.route[#self.route]:getWorldCenterY()
-		local endX = (self.x - 1/2)*TILE_SIZE + self.translationXOffset + self.map.mapTranslationXOffset
-		local endY = (self.y - 1/2)*TILE_SIZE + self.translationYOffset + self.map.mapTranslationYOffset
-		drawRouteLine({x=startX, y=startY}, {x=endX, y=endY}, self.map.camera)
+		local startX = c:getRelativeX(self.route[#self.route]:getWorldCenterX())
+		local startY = c:getRelativeY(self.route[#self.route]:getWorldCenterY())
+		local endX = c:getRelativeX((self.x - 1/2)*TILE_SIZE + self.translationXOffset + self.map.mapTranslationXOffset)
+		local endY = c:getRelativeY((self.y - 1/2)*TILE_SIZE + self.translationYOffset + self.map.mapTranslationYOffset)
+		gui:drawLine(startX, startY, endX, endY, {1, 1, 1, 0.3}, 3)
 	end
 end
 

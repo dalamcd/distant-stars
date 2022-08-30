@@ -7,9 +7,11 @@ local ghost = require('furniture.ghost')
 local hull = require('furniture.hull')
 local entity = require('entities.entity')
 local data = require('data')
-local graphicButton = require('graphicButton')
+local labeledGraphicButton = require('gui.labeledGraphicButton')
+local graphicButton = require('gui.graphicButton')
 local transTask = require('tasks.task_entity_map_trans')
 local map = require('map.map')
+local gui = require('gui.gui')
 
 local playerstate = class('playerstate', gamestate)
 
@@ -38,7 +40,7 @@ end
 function playerstate:update(dt)
 	-- Update debug text area
 	if self.currentMap then
-		local rx, ry = getMousePos()
+		local rx, ry = gui:getMousePos()
 		d:updateTextField("Tile under mouse", "")
 		d:updateTextField("Map under mouse", "")
 
@@ -114,13 +116,13 @@ end
 
 function playerstate:drawRoomDetails()
 	if self.currentMap then
-		local t = self.currentMap:getTileAtWorld(getMousePos())
+		local t = self.currentMap:getTileAtWorld(gui:getMousePos())
 		if t then
 			local r = self.currentMap:inRoom(t.x, t.y)
 			if r then
 				local x = love.graphics.getWidth() - 200
 				local y = 20
-				drawRect(x, 20, 180, 100)
+				gui:drawRect(x, 20, 180, 100)
 				love.graphics.print("Room " .. r.uid, x + 10, y)
 				y = y + love.graphics.getFont():getHeight() + 2
 				if r.attributes then
@@ -138,14 +140,15 @@ function playerstate:drawSelectionBox()
 	if self.selection:isType('stockpile') then
 		self.selection:draw()
 	else
-		rect("line", self.selection:getWorldX(), self.selection:getWorldY(),
-					self.selection.spriteWidth, self.selection.spriteHeight, self.camera)
+		local c = self.camera
+		gui:drawRect(c:getRelativeX(self.selection:getWorldX()), c:getRelativeY(self.selection:getWorldY()),
+					c.scale*self.selection.spriteWidth, c.scale*self.selection.spriteHeight, {0,0,0,0})
 	end
 end
 
 function playerstate:drawSelectionDetails()
 
-	drawRect(self.selectionBoxX -self.selectionBoxPadding,
+	gui:drawRect(self.selectionBoxX - self.selectionBoxPadding,
 	self.selectionBoxY - self.selectionBoxPadding,
 	self.selectionBoxWidth, self.selectionBoxHeight)
 	self.detailIndex = 0
@@ -202,11 +205,11 @@ end
 function playerstate:keypressed(key)
 	local t, e, i, f, s
 	if self.currentMap then
-		t = self.currentMap:getTileAtWorld(getMousePos())
-		e = self.currentMap:getEntitiesAtWorld(getMousePos())[1]
-		i = self.currentMap:getItemsAtWorld(getMousePos())[1]
-		f = self.currentMap:getFurnitureAtWorld(getMousePos())[1]
-		s = self.currentMap:getStockpileAtWorld(getMousePos())
+		t = self.currentMap:getTileAtWorld(gui:getMousePos())
+		e = self.currentMap:getEntitiesAtWorld(gui:getMousePos())[1]
+		i = self.currentMap:getItemsAtWorld(gui:getMousePos())[1]
+		f = self.currentMap:getFurnitureAtWorld(gui:getMousePos())[1]
+		s = self.currentMap:getStockpileAtWorld(gui:getMousePos())
 	end
 	if key =='g' and e then
 		e:die("removed with extreme prejudice")
@@ -253,8 +256,8 @@ end
 function playerstate:mousereleased(x, y, button)
 	local t, objects
 	if self.currentMap then
-		t = self.currentMap:getTileAtWorld(getMousePos())
-		objects = self.currentMap:getObjectsAtWorld(getMousePos())
+		t = self.currentMap:getTileAtWorld(gui:getMousePos())
+		objects = self.currentMap:getObjectsAtWorld(gui:getMousePos())
 	end
 	if not self.ct then self.ct = t end
 	if not self.cti then self.cti = 1 end
@@ -262,13 +265,13 @@ function playerstate:mousereleased(x, y, button)
 	if button == 1 then
 		local thisMap = self.currentMap
 		for _, mb in ipairs(self.mapButtons) do
-			if mb:inBounds(getMousePos()) then
+			if mb:inBounds(gui:getMousePos()) then
 				mb:clickFunc()
 			end
 		end
 
 		for _, m in ipairs(self.maps) do
-			if m:inBounds(getMousePos()) and (not thisMap or m.uid ~= thisMap.uid) then
+			if m:inBounds(gui:getMousePos()) and (not thisMap or m.uid ~= thisMap.uid) then
 				self:clearSelection()
 				self:setCurrentMap(m)
 				thisMap = false
@@ -311,7 +314,7 @@ function playerstate:mousereleased(x, y, button)
 	end
 
 	if button == 3 then
-		local t = self.currentMap:getTileAtWorld(getMousePos())
+		local t = self.currentMap:getTileAtWorld(gui:getMousePos())
 		if t then
 			for _, tile in ipairs(t:getNeighbors()) do
 				print(tile.x, tile.y)
@@ -343,36 +346,36 @@ function playerstate:keysdown()
 	end
 end
 
-function playerstate:addMap(map)
-	map.camera = self.camera
-	table.insert(self.maps, map)
-	self:addMapButton(map)
+function playerstate:addMap(mapObj)
+	mapObj.camera = self.camera
+	table.insert(self.maps, mapObj)
+	self:addMapButton(mapObj)
 end
 
-function playerstate:removeMap(map)
+function playerstate:removeMap(mapObj)
 	for idx, m in ipairs(self.maps) do
-		if m.uid == map.uid then
+		if m.uid == mapObj.uid then
 			table.remove(self.maps, idx)
 			break
 		end
 	end
 end
 
-function playerstate:addMapButton(map)
+function playerstate:addMapButton(mapObj)
 
 	local function clickFunc()
-		self:setCurrentMap(map)
+		self:setCurrentMap(mapObj)
 	end
 
 	local width, height = 150, 90
 	local x, y = 20, 30 + (height + 10)*#self.mapButtons
-	local button = graphicButton:new(x, y, width, height, map.label, map.tileset, map.sprite, clickFunc)
+	local button = labeledGraphicButton:new(x, y, width, height, mapObj.label, mapObj.tileset, mapObj.sprite, clickFunc)
 	table.insert(self.mapButtons, button)
 end
 
-function playerstate:setCurrentMap(map)
-	if self.currentMap then self.currentMap:unselect() end
-	self.currentMap = map
+function playerstate:setCurrentMap(mapObj)
+	if self.currentMap then self.currentMap:deselect() end
+	self.currentMap = mapObj
 	self.currentMap:select()
 	local t = self.currentMap:getCentermostTile()
 	--self.camera:translate(t:getWorldCenterX(), t:getWorldCenterY(), 1.25)

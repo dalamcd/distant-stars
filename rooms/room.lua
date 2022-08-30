@@ -1,6 +1,7 @@
 local class = require('lib.middleclass')
 local utils = require('utils')
 local attribute = require('rooms.attribute')
+local gui = require('gui.gui')
 
 local room = class('room')
 
@@ -117,7 +118,7 @@ function room:draw()
 	local r, g, b, a = love.math.colorFromBytes(gr, gg, gb, 255/3)
 	local color = {r=r, g=g, b=b, a=a}
 	for _, t in ipairs(self.tiles) do
-		drawRect(self.map.camera:getRelativeX((t.x - 1)*TILE_SIZE), self.map.camera:getRelativeY((t.y - 1)*TILE_SIZE), TILE_SIZE*self.map.camera.scale, TILE_SIZE*self.map.camera.scale, color)
+		gui:drawRect(self.map.camera:getRelativeX((t.x - 1)*TILE_SIZE), self.map.camera:getRelativeY((t.y - 1)*TILE_SIZE), TILE_SIZE*self.map.camera.scale, TILE_SIZE*self.map.camera.scale, color)
 	end
 	for _, dt in ipairs(self.doors) do
 		circ("fill", dt.door:getWorldCenterX(), dt.door:getWorldCenterY(), 2, self.map.camera)
@@ -136,8 +137,8 @@ function room:draw()
 		for _, t in ipairs(self.tiles) do
 			local x = self.map.camera:getRelativeX(t:getWorldX())
 			local y = self.map.camera:getRelativeY(t:getWorldY())
-			local color = {r=0.2, g=0.2, b=0.2, a=0.7}
-			drawRect(x, y, TILE_SIZE*self.map.camera.scale, TILE_SIZE*self.map.camera.scale, color, false)
+			local color = {0.2, 0.2, 0.2, 0.7}
+			gui:drawRect(x, y, TILE_SIZE*self.map.camera.scale, TILE_SIZE*self.map.camera.scale, color, 0)
 		end
 	end
 end

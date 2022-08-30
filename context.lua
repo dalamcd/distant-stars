@@ -1,6 +1,6 @@
 local class = require('lib.middleclass')
 local game = require('game')
-local gui = require('gui')
+local gui = require('gui.gui')
 
 local context = class('context')
 
@@ -11,14 +11,14 @@ local textInnerPadding = 3
 
 function context:initialize(state)
 	self.state = state
-	self.color = {r=0.0, g=0.0, b=0.0, a=1.0}
+	self.color = {0.0, 0.0, 0.0, 1.0}
 end
 
 function context:update()
 	if self.active then
 		local mx, my = love.mouse.getPosition()
 		if self:inBounds(mx, my) then
-			self.color.a = 1
+			self.color[4] = 1
 		else
 			local falloff = 20
 			local left = self.x - mx - falloff
@@ -34,12 +34,12 @@ function context:update()
 
 			local dist = math.sqrt(dx^2 + dy^2)
 			if dist < falloff then
-				self.color.a = 1
+				self.color[4] = 1
 			end
 			if dist > 50 then
 				self:clear()
 			else
-				self.color.a = 1/math.sqrt(dist)
+				self.color[4] = 1/math.sqrt(dist)
 			end
 		end
 
@@ -56,7 +56,7 @@ end
 function context:draw()
 
 	if self.active then
-		drawRect(self.x, self.y, self.txtWidth + innerPadding*2, self.txtHeight + bottomPadding, self.color)
+		gui:drawRect(self.x, self.y, self.txtWidth + innerPadding*2, self.txtHeight + bottomPadding, self.color, 1, {1.0, 1.0, 1.0, self.color[4]})
 		for i, item in ipairs(self.items) do
 			self:drawMenuItem(item, i)
 		end
@@ -145,14 +145,19 @@ function context:drawMenuItem(item, index)
 	item.bottom = self.fontHeight + textTopPadding
 
 	if item.highlight then
-		self.color = {r=0.15, g=0.15, b=0.15, a=self.color.a}
-		drawRect(item.left, item.top, item.right, item.bottom, self.color)
+		local a = self.color[4]
+		self.color = {0.15, 0.15, 0.15, a}
+		gui:drawRect(item.left, item.top, item.right, item.bottom, self.color, 1, {1.0, 1.0, 1.0, self.color[4]})
 	else
-		self.color = {r=0, g=0, b=0, a=self.color.a}
-		drawRect(item.left, item.top, item.right, item.bottom, self.color)
+		local a = self.color[4]
+		self.color = {0, 0, 0, a}
+		gui:drawRect(item.left, item.top, item.right, item.bottom, self.color, 1, {1.0, 1.0, 1.0, self.color[4]})
 	end
 
+	love.graphics.push("all")
+	love.graphics.setColor(1.0, 1.0, 1.0, self.color[4])
 	love.graphics.print(item:getContext(), item.left + textInnerPadding, item.top)
+	love.graphics.pop()
 end
 
 return context
