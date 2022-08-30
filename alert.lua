@@ -1,5 +1,5 @@
 local class = require('lib.middleclass')
-local button = require('button')
+local button = require('gui.button')
 
 local alert = class('alert')
 
@@ -16,7 +16,7 @@ end
 function alert:draw()
 	for i, msg in ipairs(self.messages) do
 		msg.x = self.x + msg.xOffset
-		msg:draw({r=1.0, g=0.0, b=0.0, a=0.8})
+		msg:draw()
 	end
 end
 
@@ -41,7 +41,7 @@ function alert:initialize(map)
 end
 
 function alert:addMessage(msg, priority)
-	local b = button:new(self.x, self.y - (self.height+10)*#self.messages, self.width, self.height, msg)
+	local b = button:new(self.x, self.y - (self.height+10)*#self.messages, self.width, self.height, msg, nil, {1.0, 0.0, 0.0, 0.8})
 	b.xOffset = 0
 	b.xStep = 0
 	b.steps = 0

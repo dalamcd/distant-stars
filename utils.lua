@@ -28,6 +28,21 @@ function convertQuadToScale(sprite, newWidth, newHeight)
     return (newWidth/currentWidth), (newHeight/currentHeight)
 end
 
+-- from lua-users.org wiki
+function wrap(str, limit, indent, indent1)
+    indent = indent or ""
+    indent1 = indent1 or indent
+    limit = limit or 72
+    local here = 1-#indent1
+    local function check(sp, st, word, fi)
+       if fi - here > limit then
+          here = st - #indent
+          return "\n"..indent..word
+       end
+    end
+    return indent1..str:gsub("(%s+)()(%S+)()", check)
+ end
+
 function tableValues(t)
     local rt = {}
     for k, v in pairs(t) do
@@ -50,6 +65,7 @@ function fmtValues(...)
     end
     return fmtStr
 end
+
 -- I think this is not a great implementation of this alogorithm
 function midpointCircle(centerX, centerY, radius)
     local points = {}

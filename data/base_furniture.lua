@@ -18,7 +18,7 @@ return {
 		spriteHeight = TILE_SIZE+14,
 		tileWidth = 2,
 		tileHeight = 1,
-		interactTiles =  {
+		interactPoints =  {
 			{x=0, y=1},
 			{x=1, y=1}
 		},
@@ -71,7 +71,8 @@ return {
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE,
 		tileWidth = 1,
-		tileHeight = 1
+		tileHeight = 1,
+		interactPoints = {{x=0, y=0}},
 	},
 	{
 		name = "stool",
@@ -97,7 +98,8 @@ return {
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE,
 		tileWidth = 1,
-		tileHeight = 1
+		tileHeight = 1,
+		interactPoints = {{x=0, y=0}},
 	},
 	{
 		name = "hullBotLeft",
@@ -108,7 +110,8 @@ return {
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE,
 		tileWidth = 1,
-		tileHeight = 1
+		tileHeight = 1,
+		interactPoints = {{x=0, y=0}},
 	},
 	{
 		name = "hullTopRight",
@@ -119,7 +122,8 @@ return {
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE,
 		tileWidth = 1,
-		tileHeight = 1
+		tileHeight = 1,
+		interactPoints = {{x=0, y=0}},
 	},
 	{
 		name = "hullTopLeft",
@@ -130,7 +134,8 @@ return {
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE,
 		tileWidth = 1,
-		tileHeight = 1
+		tileHeight = 1,
+		interactPoints = {{x=0, y=0}},
 	},
 	{
 		name = "hullBotRight",
@@ -141,7 +146,8 @@ return {
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE,
 		tileWidth = 1,
-		tileHeight = 1
+		tileHeight = 1,
+		interactPoints = {{x=0, y=0}},
 	},
 	{
 		name = "wall",
@@ -152,6 +158,55 @@ return {
 		spriteWidth = TILE_SIZE,
 		spriteHeight = TILE_SIZE,
 		tileWidth = 1,
-		tileHeight = 1
+		tileHeight = 1,
+		interactPoints = {{x=0, y=0}},
+	},
+	{
+		name = "testWall1",
+		class = wall,
+		tileset = "floorTile",
+		tilesetX = TILE_SIZE,
+		tilesetY = 0,
+		spriteWidth = TILE_SIZE,
+		spriteHeight = TILE_SIZE,
+		tileWidth = 1,
+		tileHeight = 1,
+		interactPoints = {{x=0, y=0}},
+	},
+	{
+		name = "testWall2",
+		class = wall,
+		tileset = "floorTile",
+		tilesetX = TILE_SIZE,
+		tilesetY = 0,
+		spriteWidth = TILE_SIZE,
+		spriteHeight = TILE_SIZE,
+		tileWidth = 1,
+		tileHeight = 1,
+		interactPoints = {{x=0, y=0}},
+	},
+	{
+		name = "testWall3",
+		class = wall,
+		tileset = "floorTile",
+		tilesetX = TILE_SIZE,
+		tilesetY = 0,
+		spriteWidth = TILE_SIZE,
+		spriteHeight = TILE_SIZE,
+		tileWidth = 1,
+		tileHeight = 1,
+		interactPoints = {{x=0, y=0}},
+	},
+	{
+		name = "testWall4",
+		class = wall,
+		tileset = "floorTile",
+		tilesetX = TILE_SIZE,
+		tilesetY = 0,
+		spriteWidth = TILE_SIZE,
+		spriteHeight = TILE_SIZE,
+		tileWidth = 1,
+		tileHeight = 1,
+		interactPoints = {{x=0, y=0}},
 	},
 }

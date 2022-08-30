@@ -79,7 +79,7 @@ return {
 				name = "stool",
 				label = "stool",
 				class = comfort,
-				x = 3,
+				x = 7,
 				y = 3
 			},
 			{

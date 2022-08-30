@@ -1,6 +1,7 @@
 local class = require('lib.middleclass')
 local furniture = require('furniture.furniture')
 local utils = require('utils')
+local gui   = require('gui.gui')
 
 local ghost = class('ghost', furniture)
 
@@ -10,7 +11,7 @@ function ghost:initialize(objClass, name, map, posX, posY)
 end
 
 function ghost:update(dt)
-	local t = self.map:getTileAtWorld(getMousePos())
+	local t = self.map:getTileAtWorld(gui:getMousePos())
 	if t then
 		self.x = t.x
 		self.y = t.y
@@ -38,8 +39,9 @@ function ghost:draw()
 		love.graphics.setColor(0.6, 0.1, 0.1, 0.4)
 	end
 	furniture.draw(self)
+	local c = self.map.camera
 	for _, t in ipairs(self:getTiles()) do
-		circ("fill", (t.x-1/2)*TILE_SIZE, (t.y-1/2)*TILE_SIZE, 5, self.map.camera)
+		gui:drawCircle(c:getRelativeX((t.x-1/2)*TILE_SIZE), c:getRelativeY((t.y-1/2)*TILE_SIZE), 5*c.scale)
 	end
 	love.graphics.setColor(r, g, b, a)
 	self.x = ox

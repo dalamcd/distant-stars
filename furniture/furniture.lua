@@ -8,6 +8,7 @@ local task = require('tasks.task')
 local walkTask = require('tasks.task_entity_walk')
 local withdrawTask = require('tasks.task_furniture_withdraw')
 local viewContentsTask = require('tasks.task_furniture_view_contents')
+local gui              = require('gui.gui')
 
 local furniture = class('furniture', mapObject)
 
@@ -58,7 +59,6 @@ function furniture:initialize(name, label, map, posX, posY)
 	end
 
 	self.inventory = {}
-	self.output = {}
 	self.interactTiles = interactTiles
 	self.rotation = 0
 	self.originTileWidth = obj.width
@@ -73,9 +73,9 @@ function furniture:draw()
 	local x = self:getWorldX()
 	local y = self:getWorldY()
 	mapObject.draw(self, c:getRelativeX(x), c:getRelativeY(y), c.scale)
-	-- for _, tile in ipairs(self:getInteractionTiles()) do
-	-- 	circ("fill", tile:getWorldCenterX(), tile:getWorldCenterY(), 2, self.map.camera)
-	-- end
+	for _, tile in ipairs(self:getInteractionTiles()) do
+		gui:drawCircle(c:getRelativeX(tile:getWorldCenterX()), c:getRelativeY(tile:getWorldCenterY()), 2*c.scale, {0, 0.2, 0.6, 1})
+	end
 end
 
 function furniture:getPossibleTasks()

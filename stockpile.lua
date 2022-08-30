@@ -2,6 +2,7 @@ local class = require('lib.middleclass')
 local game = require('game')
 local utils = require('utils')
 local room = require('rooms.room')
+local gui = require('gui.gui')
 
 local stockpile = class('stockpile', room)
 
@@ -37,16 +38,14 @@ end
 --			 doubling effected I noticed earlier
 function stockpile:draw()
 	for _, tile in ipairs(self.tiles) do
-		local r, g, b, a = love.graphics.getColor()
-		love.graphics.setColor(1.0, 0.0, 0.0, 0.3)
-		rect("fill", tile:getWorldX(), tile:getWorldY(), TILE_SIZE, TILE_SIZE, self.map.camera)
+		local c = self.map.camera
+		gui:drawRect(c:getRelativeX(tile:getWorldX()), c:getRelativeY(tile:getWorldY()), c.scale*TILE_SIZE, c.scale*TILE_SIZE, {1.0, 0.0, 0.0, 0.3}, 0)
 		if self.selected then
 			love.graphics.setColor(0.0, 1.0, 0.0, 1.0)
 			for _, edge in ipairs(self.edges) do
-				line(edge[1]*TILE_SIZE, edge[2]*TILE_SIZE, edge[3]*TILE_SIZE, edge[4]*TILE_SIZE, self.map.camera)
+				gui:drawLine(edge[1]*TILE_SIZE*c.scale, edge[2]*TILE_SIZE*c.scale, edge[3]*TILE_SIZE*c.scale, edge[4]*TILE_SIZE*c.scale)
 			end
 		end
-		love.graphics.setColor(r, g, b, a)
 	end
 end
 
