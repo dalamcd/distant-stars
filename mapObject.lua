@@ -33,9 +33,19 @@ end
 
 function mapObject:draw(x, y, s, r, nx, ny, nw, nh)
 	-- TODO: modify mapObject to pass a scaleX and a scaleY
-	local sx, sy = s, s
-	drawable.draw(self, x, y, sx, sy, r, nx, ny, nw, nh)
+	--drawable.draw(self, x, y, s, s, r, nx, ny, nw, nh)
+	if self:isType("tile") then
+		drawable.draw(self, x, y, s, s, r, nx, ny, nw, nh)
+	else
+		local nt = {self, x, y, s, s, r, nx, ny, nw, nh}
+		self.map:addToZLayer(self, nt)
+	end
 end
+
+function mapObject:drawZLayers(x, y, s, r, nx, ny, nw, nh)
+	drawable.draw(self, x, y, s, s, r, nx, ny, nw, nh)
+end
+
 
 function mapObject:inBounds(worldX, worldY)
 	local x = worldX - self.map.camera:getRelativeX(self:getWorldX())
@@ -66,11 +76,11 @@ function mapObject:getWorldY()
 end
 
 function mapObject:getWorldCenterY()
-	return drawable.getWorldCenterX(self) + (self.y - 1)*TILE_SIZE + self.mapTranslationYOffset
+	return drawable.getWorldCenterY(self) + (self.y - 1)*TILE_SIZE + self.mapTranslationYOffset
 end
 
 function mapObject:getWorldCenterX()
-	return drawable.getWorldCenterY(self) + (self.x - 1)*TILE_SIZE + self.mapTranslationXOffset
+	return drawable.getWorldCenterX(self) + (self.x - 1)*TILE_SIZE + self.mapTranslationXOffset
 end
 
 function mapObject:isWalkable()

@@ -213,6 +213,7 @@ function map:initialize(label, xOffset, yOffset)
 	self.velX = 0
 	self.velY = 0
 	self.mouseSelection = nil
+	self.zlayers = { lowest = math.huge, highest = -math.huge }
 
 	self.oneSecondTimer = 0
 
@@ -292,6 +293,8 @@ function map:draw()
 			r:draw()
 		end
 
+		self:drawZLayers()
+
 		self.alert:draw()
 	else
 		local x = self.camera:getRelativeX(self.tiles[1]:getWorldX())
@@ -315,6 +318,45 @@ function map:draw()
 	end
 	--]]
 
+end
+
+function map:drawZLayers()
+	for i=self.zlayers.lowest, self.zlayers.highest, 1 do
+		if self.zlayers[i] then
+			for _, layer in ipairs(self.zlayers[i][1]) do
+				drawable.draw(unpack(layer))
+			end
+			for _, layer in ipairs(self.zlayers[i][2]) do
+				drawable.draw(unpack(layer))
+			end
+			for _, layer in ipairs(self.zlayers[i][3]) do
+				drawable.draw(unpack(layer))
+			end
+		end
+	end
+	self.zlayers = { lowest = math.huge, highest = -math.huge }
+end
+
+function map:addToZLayer(obj, tab)
+	if obj.y < self.zlayers.lowest then self.zlayers.lowest = obj.y end
+	if obj.y > self.zlayers.highest then self.zlayers.highest = obj.y end
+	if self.zlayers[obj.y] then
+		if obj:isType('item') then
+			table.insert(self.zlayers[obj.y][1], tab)
+		elseif obj:isType('furniture') then
+			table.insert(self.zlayers[obj.y][2], tab)
+		else
+			table.insert(self.zlayers[obj.y][3], tab)
+		end
+	else
+		if obj:isType('item') then
+			self.zlayers[obj.y] = {{tab}, {}, {}}
+		elseif obj:isType('furniture') then
+			self.zlayers[obj.y] = {{}, {tab}, {}}
+		else
+			self.zlayers[obj.y] = {{}, {}, {tab}}
+		end
+	end
 end
 
 function map:serialize()
