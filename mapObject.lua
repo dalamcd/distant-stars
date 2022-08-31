@@ -33,11 +33,18 @@ end
 
 function mapObject:draw(x, y, s, r, nx, ny, nw, nh)
 	-- TODO: modify mapObject to pass a scaleX and a scaleY
-	--drawable.draw(self, x, y, s, s, r, nx, ny, nw, nh)
+	drawable.draw(self, x, y, s, s, r, nx, ny, nw, nh)
 	if self:isType("tile") then
 		drawable.draw(self, x, y, s, s, r, nx, ny, nw, nh)
 	else
 		local nt = {self, x, y, s, s, r, nx, ny, nw, nh}
+		if self:isType("entity") then
+			nt.typeNum = 3
+		elseif self:isType("furniture") then
+			nt.typeNum = 2
+		else
+			nt.typeNum = 1
+		end
 		self.map:addToZLayer(self, nt)
 	end
 end

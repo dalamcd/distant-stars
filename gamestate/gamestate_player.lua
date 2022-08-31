@@ -150,8 +150,9 @@ function playerstate:drawSelectionBox()
 		self.selection:draw()
 	else
 		local c = self.camera
-		gui:drawRect(c:getRelativeX(self.selection:getWorldX()), c:getRelativeY(self.selection:getWorldY()),
-					c.scale*self.selection.spriteWidth, c.scale*self.selection.spriteHeight, {0,0,0,0})
+		local x = c:getRelativeX(self.selection:getWorldX())
+		local y = c:getRelativeY(self.selection:getWorldY())
+		gui:drawRect(x, y, c.scale*self.selection.spriteWidth, c.scale*self.selection.spriteHeight, {0,0,0,0})
 	end
 end
 

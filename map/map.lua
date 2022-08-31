@@ -259,6 +259,7 @@ end
 
 function map:draw()
 	if self.selected then
+		local sortFunc = function(a, b) return a:getWorldY() < b:getWorldY() end
 		for _, t in ipairs(self.tiles) do
 			t.mapTranslationXOffset = self.mapTranslationXOffset
 			t.mapTranslationYOffset = self.mapTranslationYOffset
@@ -276,13 +277,13 @@ function map:draw()
 				i:draw()
 			end
 		end
-
+		
 		for _, f in ipairs(self.furniture) do
 			f.mapTranslationXOffset = self.mapTranslationXOffset
 			f.mapTranslationYOffset = self.mapTranslationYOffset
 			f:draw()
 		end
-
+		
 		for _, e in ipairs(self.entities) do
 			e.mapTranslationXOffset = self.mapTranslationXOffset
 			e.mapTranslationYOffset = self.mapTranslationYOffset
@@ -321,42 +322,23 @@ function map:draw()
 end
 
 function map:drawZLayers()
-	for i=self.zlayers.lowest, self.zlayers.highest, 1 do
-		if self.zlayers[i] then
-			for _, layer in ipairs(self.zlayers[i][1]) do
-				drawable.draw(unpack(layer))
-			end
-			for _, layer in ipairs(self.zlayers[i][2]) do
-				drawable.draw(unpack(layer))
-			end
-			for _, layer in ipairs(self.zlayers[i][3]) do
-				drawable.draw(unpack(layer))
-			end
-		end
+	local sortFunc = function(a, b)
+		if a.zLayer == b.zLayer then return a.typeNum < b.typeNum end
+		return a.zLayer < b.zLayer
+	end
+	table.sort(self.zlayers, sortFunc)
+	for _, layer in ipairs(self.zlayers) do
+		drawable.draw(unpack(layer))
 	end
 	self.zlayers = { lowest = math.huge, highest = -math.huge }
 end
 
 function map:addToZLayer(obj, tab)
-	if obj.y < self.zlayers.lowest then self.zlayers.lowest = obj.y end
-	if obj.y > self.zlayers.highest then self.zlayers.highest = obj.y end
-	if self.zlayers[obj.y] then
-		if obj:isType('item') then
-			table.insert(self.zlayers[obj.y][1], tab)
-		elseif obj:isType('furniture') then
-			table.insert(self.zlayers[obj.y][2], tab)
-		else
-			table.insert(self.zlayers[obj.y][3], tab)
-		end
-	else
-		if obj:isType('item') then
-			self.zlayers[obj.y] = {{tab}, {}, {}}
-		elseif obj:isType('furniture') then
-			self.zlayers[obj.y] = {{}, {tab}, {}}
-		else
-			self.zlayers[obj.y] = {{}, {}, {tab}}
-		end
-	end
+
+	local y = obj:getWorldY() + obj.spriteHeight
+
+	tab.zLayer = y
+	table.insert(self.zlayers, tab)
 end
 
 function map:serialize()
