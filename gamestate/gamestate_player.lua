@@ -13,6 +13,7 @@ local transTask = require('tasks.task_entity_map_trans')
 local map = require('map.map')
 local gui = require('gui.gui')
 local dropdown = require('gui.dropdown')
+local bundle = require('items.bundle')
 
 local playerstate = class('playerstate', gamestate)
 
@@ -230,7 +231,8 @@ function playerstate:keypressed(key)
 	end
 
 	if key == 'n' and t then
-		t:getAllValues()
+		local bund = bundle:new(furniture:retrieve("bigthing"), "bundle of bigthing", self.currentMap, 5, 2)
+		self.currentMap:addItem(bund)
 	end
 	
 	if key == 'r' then

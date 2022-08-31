@@ -1,5 +1,6 @@
 local item = require('items.item')
 local food = require('items.food')
+local bundle = require('items.bundle')
 return {
 	{
 		name = "yummy chicken",
@@ -22,5 +23,15 @@ return {
 		spriteHeight = TILE_SIZE,
 		maxStack = 50,
 		nourishment = 50
+	},
+	{
+		name = "bundle",
+		class = bundle,
+		tileset = "item",
+		tilesetX = 0,
+		tilesetY = TILE_SIZE,
+		spriteWidth = TILE_SIZE,
+		spriteHeight = TILE_SIZE,
+		maxStack = 1,
 	},
 }

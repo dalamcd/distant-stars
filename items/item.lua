@@ -44,12 +44,12 @@ function item:initialize(name, label, map, posX, posY)
 	return obj
 end
 
-function item:draw(ent)
+function item:draw()
 	local c = self.map.camera
 	local x, y
-	if ent then
-		x = c:getRelativeX(ent:getWorldX())
-		y = c:getRelativeY(ent:getWorldY())
+	if self.owned then
+		x = c:getRelativeX(self.owner:getWorldX())
+		y = c:getRelativeY(self.owner:getWorldY())
 	else
 		x = c:getRelativeX(self:getWorldX())
 		y = c:getRelativeY(self:getWorldY())
