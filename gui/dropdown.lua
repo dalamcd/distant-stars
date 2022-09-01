@@ -19,16 +19,17 @@ function dropdown:initialize(x, y, width, height, label, contents, backgroundCol
 		local btnx = x + self.contentSpacingX
 		local btny = y + self.contentSpacingX + (self.contentSpacingX + self.contentSpacingY)*count
 		local btnheight = self.contentSpacingY
-		local btnwidth = 1 -- Dummy width just to give it a value, width is calulated based on longest button
+		local btnwidth = 1 -- Dummy width just to give it a value; width is calulated based on longest button
 		local btn = button:new(btnx, btny, btnwidth, btnheight, content[1], content[2])
 		table.insert(self.contents, btn)
 		count = count + 1
 	end
-	self.contentWidth = longest + 3*self.contentSpacingX
 	self.buttonWidth = longest + self.contentSpacingX
+	self.contentWidth = longest + 3*self.contentSpacingX
+	self.contentHeight = self.contentSpacingX*(#self.contents + 1) + self.contentSpacingY*#self.contents
 	for _, content in ipairs(self.contents) do
 		local bg = self.backgroundColor
-		content:setBackgroundColor({bg[1]*0.15, bg[2]*0.15, bg[3]*0.15, 0.55})
+		content:setBackgroundColor({bg[1]+0.15, bg[2]+0.15, bg[3]+0.15, 1})
 		content.width = self.buttonWidth
 	end
 	self.selected = false
@@ -47,6 +48,29 @@ function dropdown:update(dt)
 	end
 end
 
+function dropdown:draw()
+	if self.selected then
+		local width, height, label = self.width, self.height, self.label
+		self.width = self.contentWidth
+		self.height = self.contentHeight
+		self.label = ""
+		button.draw(self)
+		self.width, self.height, self.label = width, height, label
+		for _, content in ipairs(self.contents) do
+			if content.selected then
+				local bg = content.backgroundColor
+				content:setBackgroundColor({bg[1]+0.25, bg[2]+0.25, bg[3]+0.25, 1})
+				content:draw()
+				content:setBackgroundColor(bg)
+			else
+				content:draw()
+			end
+		end
+	else
+		button.draw(self)
+	end
+end
+
 function dropdown:adjustPos(x, y)
 	self.x = self.x + x
 	self.y = self.y + y
@@ -56,26 +80,13 @@ function dropdown:adjustPos(x, y)
 	end
 end
 
-function dropdown:draw()
-	if self.selected then
-		local width, height, label = self.width, self.height, self.label
-		self.width = self.contentWidth
-		self.height = self.contentSpacingX*(#self.contents + 1) + self.contentSpacingY*#self.contents
-		self.label = ""
-		button.draw(self)
-		self.width, self.height, self.label = width, height, label
-		for _, content in ipairs(self.contents) do
-			if content.selected then
-				local bg = content.backgroundColor
-				content:setBackgroundColor({bg[1]+0.25, bg[2]+0.25, bg[3]+0.25, 0.40})
-				content:draw()
-				content:setBackgroundColor(bg)
-			else
-				content:draw()
-			end
+function dropdown:mousereleased(x, y, button)
+	if button == 1 then
+		local content = self:contentsInBounds(x, y)
+		if content then
+			content:click()
+			self:deselect()
 		end
-	else
-		button.draw(self)
 	end
 end
 

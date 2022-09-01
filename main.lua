@@ -21,7 +21,7 @@ local gdata
 d = debugtext:new()
 function love.load()
 
-	--love.window.setMode(1025,768, {vsync=true})
+	love.window.setMode(1025,768, {vsync=true})
 
 	love.graphics.setDefaultFilter('nearest', 'nearest')
 	math.randomseed(love.timer.getTime())
@@ -77,7 +77,7 @@ local nr, nb, ng = 1, 1, 1
 function love.draw()
 
 	gamestate:draw()
-	--d:draw()
+	d:draw()
 
 	--love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
 end

@@ -77,6 +77,19 @@ function task:isChild()
 	return false
 end
 
+function task:getType()
+	return "[[task]]"
+end
+
+function task:isType(str)
+	local found = string.find(self:getType(), "[["..str.."]]", nil, true)
+	if found then
+		return true
+	else
+		return false
+	end
+end
+
 function task:__tostring()
 	return self:getDesc()
 end

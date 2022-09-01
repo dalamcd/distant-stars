@@ -2,6 +2,7 @@ local entity = require('entities.entity')
 return {
 	{
 		name = "pawn",
+		label = "human being",
 		class = entity,
 		tileset = "entity",
 		tilesetX = 0,
@@ -11,6 +12,7 @@ return {
 	},
 	{
 		name = "cow",
+		label = "cow",
 		class = entity,
 		tileset = "entity",
 		tilesetX = TILE_SIZE*4,
@@ -20,6 +22,7 @@ return {
 	},
 	{
 		name = "tallpawn",
+		label = "human being",
 		class = entity,
 		tileset = "entity",
 		tilesetX = TILE_SIZE*2,

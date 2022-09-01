@@ -53,7 +53,7 @@ return {
 		},
 		items = {
 			{
-				name = "yummy chicken",
+				name = "chicken",
 				class = food,
 				label = "yummy chicken",
 				x = 3,
@@ -84,8 +84,8 @@ return {
 			},
 			{
 				name = "o2gen",
+				label = "oxygen generator",
 				class = generator,
-				label = "Oxygen Generator",
 				x = 2,
 				y = 6,
 			},
@@ -115,7 +115,7 @@ return {
 		},
 		items = {
 			{
-				name = "yummy chicken",
+				name = "chicken",
 				class = food,
 				label = "yummy chicken",
 				x = 3,

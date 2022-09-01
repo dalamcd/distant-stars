@@ -10,6 +10,7 @@ local wall = require('furniture.wall')
 local map_utils = require('map.map_utils')
 local alert = require('alert')
 local drawable = require('drawable')
+local event = require('event')
 
 local map = class('map')
 map:include(map_utils)

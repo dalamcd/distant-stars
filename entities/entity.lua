@@ -11,7 +11,8 @@ local vacTask = require('tasks.task_entity_vacuum')
 local corpse = require('items.corpse')
 local priorities = require('entities.priorities')
 local schedule = require('entities.schedule')
-local gui      = require('gui.gui')
+local gui = require('gui.gui')
+local event = require('event')
 
 local entity = class('entity', mapObject)
 
@@ -45,6 +46,14 @@ function entity:initialize(name, label, map, posX, posY)
 	else
 		error("attempted to initialize " .. name .. " but no item with that name was found")
 	end
+
+	event:addListener("fart",
+		function(evt)
+			if evt.payload.uid ~= self.uid then
+				print(evt.payload.label .. " farted and " .. self.label .. " noticed immediately")
+			end
+		end
+	)
 
 	self.map = map
 	self.steps = 0
@@ -155,6 +164,11 @@ function entity:draw()
 	if self.selected then
 		self:drawRoute()
 	end
+end
+
+function entity:fart()
+	local evt = event:new(self)
+	event:dispatchEvent("fart", evt)
 end
 
 function entity:drawRoute()
