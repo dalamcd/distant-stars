@@ -1,19 +1,24 @@
 local class = require('lib.middleclass')
 local gamestate = require('gamestate.gamestate')
-local context = require('contextNew')
+local fade = require('gamestate.gamestate_fade')
+local inspector = require('gamestate.gamestate_inspector')
+local context = require('context')
 local camera = require('camera')
 local furniture = require('furniture.furniture')
-local ghost = require('furniture.ghost')
+local unfinished = require('furniture.unfinished')
+local ghost = require('ghost')
 local hull = require('furniture.hull')
 local entity = require('entities.entity')
 local data = require('data')
 local labeledGraphicButton = require('gui.labeledGraphicButton')
 local graphicButton = require('gui.graphicButton')
 local transTask = require('tasks.task_entity_map_trans')
+local installTask = require('tasks.task_entity_install')
 local map = require('map.map')
 local gui = require('gui.gui')
 local dropdown = require('gui.dropdown')
 local bundle = require('items.bundle')
+local event = require('event')
 
 local playerstate = class('playerstate', gamestate)
 
@@ -35,6 +40,37 @@ function playerstate:initialize()
 	self.selectionBoxY = love.graphics.getHeight() - self.selectionBoxHeight
 	self.selectionBoxPadding = 10
 	self.selectionItems = 0
+
+	event:addListener(
+		"fart",
+		function(evt)
+			print(evt.payload.label .. " farted and it was so bad the playerstate noticed")
+		end
+		)
+
+	event:addListener(
+		"base_event_buildRequested",
+		function(evt)
+			self.ghost = ghost:new(evt.payload.bundle.data, "build ghost")
+			self.ghost.bundle = evt.payload.bundle
+			self.ghost.map = evt.payload.map
+			self.ghost.entity = evt.payload.entity
+		end
+	)
+
+	event:addListener(
+		"base_event_buildSubmitted",
+		function(evt)
+			local unf = unfinished:new(evt.payload.bundle.data.name, evt.payload.bundle.label, evt.payload.map, evt.payload.tile.x - evt.payload.map.xOffset, evt.payload.tile.y - evt.payload.map.yOffset)
+			unf:rotate(evt.payload.bundle.rotation)
+			local walkTile = unf:getWalkableTileAround()
+			local insTask = installTask:new(evt.payload.bundle, walkTile, evt.payload.map, unf)
+			evt.payload.map:addFurniture(unf)
+			evt.payload.entity:pushTask(insTask)
+			-- local f = self.ghost:convertToMapObject(pay.label, pay.map, pay.x, pay.y)
+			-- self.currentMap:addFurniture(f)
+		end
+	)
 
 	gamestate.initialize(self, "playerstate", nil, nil, nil, nil, nil, true, true)
 end
@@ -78,19 +114,26 @@ function playerstate:update(dt)
 			self.context = nil
 		end
 	end
+
+	if self.ghost then
+		self.ghost:update(dt)
+	end
+
 	self.camera:update(dt)
 
-	for _, map in ipairs(self.maps) do
-		map:update(dt)
+	for _, m in ipairs(self.maps) do
+		m:update(dt)
 	end
 end
 
 function playerstate:draw()
+	local mx, my = gui:getMousePos()
+
 	if self.background then
 		self.background:draw()
 	end
-	for _, map in ipairs(self.maps) do
-		map:draw()
+	for _, m in ipairs(self.maps) do
+		m:draw()
 	end
 	for _, mapButton in ipairs(self.mapButtons) do
 		mapButton:draw()
@@ -105,6 +148,11 @@ function playerstate:draw()
 	if self.context then
 		self.context:draw()
 	end
+
+	if self.ghost then
+		self.ghost:draw(mx, my, self.camera.scale)
+	end
+
 	self.camera:draw()
 end
 
@@ -231,14 +279,40 @@ function playerstate:keypressed(key)
 	end
 
 	if key == 'n' and t then
-		local bund = bundle:new(furniture:retrieve("bigthing"), "bundle of bigthing", self.currentMap, 5, 2)
+		local bund = bundle:new(furniture:retrieve("dresser"), "nice dresser", self.currentMap, 5, 2)
 		self.currentMap:addItem(bund)
 	end
-	
+
+	if key == 'm' and t then
+		local bund = bundle:new(furniture:retrieve("bigthing"), "nice dresser", self.currentMap, 6, 2)
+		self.currentMap:addItem(bund)
+	end
+
+	-- if key == 'm' and i and i:isType('bundle') then
+	-- 	self.ghost = ghost:new(i.data, i.label)
+	-- end
+
+	if key == 'j' and e then
+		e:fart()
+	end
+
+	if key == 'u' then
+		local unf = unfinished:new("bigthing", "dresser", self.currentMap, 6, 7)
+		self.currentMap:addFurniture(unf)
+	end
+
+	if key == 'y' and f then
+		if f:isType('unfinished') then
+			local unf = f:convertToFurniture()
+			self.currentMap:addFurniture(unf)
+		end
+	end
+
 	if key == 'r' then
-		local m = map:new("loaded map", 0, 0)
-		m:loadMapTable("shipdata.lua")
-		self:addMap(m)
+		-- local m = map:new("loaded map", 0, 0)
+		-- m:loadMapTable("shipdata.lua")
+		-- self:addMap(m)
+		if self.ghost then self.ghost:rotate() end
 	end
 
 	if key == '/' and e and #self.maps > 1 then
@@ -275,6 +349,15 @@ function playerstate:mousereleased(x, y, button)
 
 	if button == 1 then
 		local thisMap = self.currentMap
+
+		if self.ghost and t then
+			bundle.rotation = self.ghost.rotation
+			local evt = event:new({bundle=self.ghost.bundle, map=self.ghost.map, entity=self.ghost.entity, tile=t})
+			event:dispatchEvent("base_event_buildSubmitted", evt)
+			self.ghost = nil
+			-- local f = self.ghost:convertToMapObject("test", self.currentMap, t.x - self.currentMap.xOffset, t.y - self.currentMap.yOffset)
+			-- self.currentMap:addFurniture(f)
+		end
 
 		if self.context then
 			self.context:mousereleased(x, y, button)
@@ -328,14 +411,22 @@ function playerstate:mousereleased(x, y, button)
 		if selection and t and selection:isType("entity") and selection.map.uid == self.currentMap.uid then
 			local tlist = self.currentMap:getPossibleTasks(t, selection)
 			self.context = context:new(x, y, 1, 1, tlist, selection, {0.1, 0.1, 0.1, 0.75})
+			self.context.state = self
+		end
+
+		if self.ghost then
+			self.ghost = nil
 		end
 	end
 
 	if button == 3 then
-		local t = self.currentMap:getTileAtWorld(gui:getMousePos())
 		if t then
-			for _, tile in ipairs(t:getNeighbors()) do
-				print(tile.x, tile.y)
+			local objs = self.currentMap:getObjectsInTile(t)
+			if #objs > 0 then
+				local ins = inspector:new(objs[1])
+				local f = gamestate:getFadeState()
+				gamestate:push(f)
+				gamestate:push(ins)
 			end
 		end
 	end

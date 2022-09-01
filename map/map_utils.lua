@@ -325,8 +325,8 @@ local map_utils = {
 	getTilesInRectangle = function(self, x, y, width, height)
 		local points = {}
 
-		--x = x - self.xOffset
-		--y = y - self.yOffset
+		x = x - self.xOffset
+		y = y - self.yOffset
 		for r=0, width-1 do
 			for c=0, height-1 do
 				table.insert(points, {x=x+r, y=y+c})

@@ -3,7 +3,8 @@ local food = require('items.food')
 local bundle = require('items.bundle')
 return {
 	{
-		name = "yummy chicken",
+		name = "chicken",
+		label = "yummy chicken",
 		class = food,
 		tileset = "item",
 		tilesetX = 0,
@@ -14,7 +15,8 @@ return {
 		nourishment = 50
 	},
 	{
-		name = "yummy pizza",
+		name = " pizza",
+		label = "yummy pizza",
 		class = food,
 		tileset = "item",
 		tilesetX = TILE_SIZE,
@@ -26,6 +28,7 @@ return {
 	},
 	{
 		name = "bundle",
+		label = "bundle",
 		class = bundle,
 		tileset = "item",
 		tilesetX = 0,

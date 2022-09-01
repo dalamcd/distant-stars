@@ -43,28 +43,20 @@ function furniture:initialize(name, label, map, posX, posY)
 
 	self.map = map
 
-	local interactTiles = {}
+	self.interactPoints = obj.interactPoints
 
-	if not obj.interactPoints then
-		local points = {{x=posX+map.xOffset+1, y=posY+map.yOffset},
-						{x=posX+map.xOffset-1, y=posY+map.yOffset},
-						{x=posX+map.xOffset, y=posY+map.yOffset+1},
-						{x=posX+map.xOffset, y=posY+map.yOffset-1}}
-
-		interactTiles = self.map:getTilesFromPoints(points)
-	else
-		for _, p in ipairs(obj.interactPoints) do
-			table.insert(interactTiles, self.map:getTile(posX + p.x + map.xOffset, posY + p.y + map.yOffset))
-		end
+	if not self.interactPoints then
+		self.interactPoints = {
+			{x = 0, y = 1},
+			{x = 1, y = 0},
+			{x = 0, y = -1},
+			{x = -1, y = 0}
+		}
 	end
 
 	self.inventory = {}
-	self.interactTiles = interactTiles
+	self.interactTiles = self:getTilesFromInteractPoints(self.interactPoints)
 	self.rotation = 0
-	self.originTileWidth = obj.width
-	self.originTileHeight = obj.height
-	self.originSpriteWidth = obj.spriteWidth
-	self.originSpriteHeight = obj.spriteHeight
 	return obj
 end
 
@@ -76,6 +68,52 @@ function furniture:draw()
 	for _, tile in ipairs(self:getInteractionTiles()) do
 		gui:drawCircle(c:getRelativeX(tile:getWorldCenterX()), c:getRelativeY(tile:getWorldCenterY()), 2*c.scale, {0, 0.2, 0.6, 1})
 	end
+end
+
+function furniture:getTilesFromInteractPoints(points)
+	local tiles = {}
+	for _, point in ipairs(points) do
+		local t = self.map:getTile(point.x + self.x + self.map.xOffset, point.y + self.y + self.map.yOffset)
+		if t then
+			table.insert(tiles, t)
+		end
+	end
+	return tiles
+end
+
+function furniture:rotate(facing)
+	self.rotation = facing
+	if facing % 2 == 1 then
+		self.width, self.height = self.height, self.width
+		self.spriteWidth, self.spriteHeight = self.spriteHeight, self.spriteWidth
+	end
+
+	local nt = {}
+	if facing == 0 then
+		self.sprite = self.southFacingQuad
+		for _, point in ipairs(self.interactPoints) do
+			table.insert(nt, {x = point.x, y = point.y})
+		end
+	elseif facing == 1 then
+		self.sprite = self.westFacingQuad
+		for _, point in ipairs(self.interactPoints) do
+			table.insert(nt, {x = -point.y, y = point.x})
+		end
+	elseif facing == 2 then
+		self.sprite = self.northFacingQuad
+		for _, point in ipairs(self.interactPoints) do
+			table.insert(nt, {x = point.x, y = -point.y})
+		end
+	elseif facing == 3 then
+		self.sprite = self.eastFacingQuad
+		for _, point in ipairs(self.interactPoints) do
+			table.insert(nt, {x = point.y, y = point.x})
+		end
+	else
+		error("furniture assigned invalid rotation (expected 0 < number < 4, received " .. tostring(facing))
+	end
+	self.interactTiles = self:getTilesFromInteractPoints(nt)
+	self:recalculateOffsets()
 end
 
 function furniture:getPossibleTasks()
@@ -131,7 +169,7 @@ function furniture:getAvailableInteractionTile()
 end
 
 function furniture:getTiles()
-	return self.map:getTilesInRectangle(self.x, self.y, self.width, self.height, true)
+	return self.map:getTilesInRectangle(self.x, self.y, self.width, self.height)
 end
 
 function furniture:getType()

@@ -5,11 +5,13 @@ local defstation = require('furniture.station_default')
 local wall = require('furniture.wall')
 local hull = require('furniture.hull')
 local generator = require('furniture.generator')
-local door      = require('furniture.door')
+local door = require('furniture.door')
+local unfinished = require('furniture.unfinished')
 
 return {
 	{
 		name = "dresser",
+		label = "dresser",
 		class = furniture,
 		tileset = "furniture",
 		tilesetX = 0,
@@ -25,6 +27,7 @@ return {
 	},
 	{
 		name = "station",
+		label = "station",
 		class = station,
 		tileset = "furniture",
 		tilesetX = TILE_SIZE*7,
@@ -40,6 +43,7 @@ return {
 	},
 	{
 		name = "bigthing",
+		label = "big ol' thing",
 		class = furniture,
 		tileset = "furniture",
 		tilesetX = TILE_SIZE*9,
@@ -51,6 +55,7 @@ return {
 	},
 	{
 		name = "o2gen",
+		label = "oxygen generator",
 		class = generator,
 		tileset = "furniture",
 		tilesetX = TILE_SIZE*13,
@@ -63,7 +68,22 @@ return {
 		outputAmount = 14/60
 	},
 	{
+		name = "n2gen",
+		label = "nitrogen generator",
+		class = generator,
+		tileset = "furniture",
+		tilesetX = TILE_SIZE*13,
+		tilesetY = 0,
+		spriteWidth = TILE_SIZE,
+		spriteHeight = TILE_SIZE+11,
+		tileWidth = 1,
+		tileHeight = 1,
+		attribute = "base_nitrogen",
+		outputAmount = 60/60
+	},
+	{
 		name = "door",
+		label = "door",
 		class = door,
 		tileset = "furniture",
 		tilesetX = TILE_SIZE*5,
@@ -76,6 +96,7 @@ return {
 	},
 	{
 		name = "stool",
+		label = "stool",
 		class = comfort,
 		tileset = "furniture",
 		tilesetX = TILE_SIZE*5,
@@ -90,7 +111,21 @@ return {
 		comfortFactor = 15
 	},
 	{
+		name = "unfinished",
+		label = "unfinished",
+		class = unfinished,
+		tileset = "furniture",
+		tilesetX = 0,
+		tilesetY = TILE_SIZE*4,
+		spriteWidth = TILE_SIZE,
+		spriteHeight = TILE_SIZE,
+		tileWidth = 1,
+		tileHeight = 1,
+		interactPoints = {{x=0, y=0}},
+	},
+	{
 		name = "hull",
+		label = "hull",
 		class = hull,
 		tileset = "floorTile",
 		tilesetX = TILE_SIZE*2,
@@ -103,6 +138,7 @@ return {
 	},
 	{
 		name = "hullBotLeft",
+		label = "hull",
 		class = hull,
 		tileset = "floorTile",
 		tilesetX = 0,
@@ -115,6 +151,7 @@ return {
 	},
 	{
 		name = "hullTopRight",
+		label = "hull",
 		class = hull,
 		tileset = "floorTile",
 		tilesetX = TILE_SIZE,
@@ -127,6 +164,7 @@ return {
 	},
 	{
 		name = "hullTopLeft",
+		label = "hull",
 		class = hull,
 		tileset = "floorTile",
 		tilesetX = 0,
@@ -139,6 +177,7 @@ return {
 	},
 	{
 		name = "hullBotRight",
+		label = "hull",
 		class = hull,
 		tileset = "floorTile",
 		tilesetX = TILE_SIZE,
@@ -151,6 +190,7 @@ return {
 	},
 	{
 		name = "wall",
+		label = "hull",
 		class = wall,
 		tileset = "floorTile",
 		tilesetX = TILE_SIZE,
@@ -163,6 +203,7 @@ return {
 	},
 	{
 		name = "testWall1",
+		label = "wall",
 		class = wall,
 		tileset = "floorTile",
 		tilesetX = TILE_SIZE,
@@ -175,6 +216,7 @@ return {
 	},
 	{
 		name = "testWall2",
+		label = "wall",
 		class = wall,
 		tileset = "floorTile",
 		tilesetX = TILE_SIZE,
@@ -187,6 +229,7 @@ return {
 	},
 	{
 		name = "testWall3",
+		label = "wall",
 		class = wall,
 		tileset = "floorTile",
 		tilesetX = TILE_SIZE,
@@ -199,6 +242,7 @@ return {
 	},
 	{
 		name = "testWall4",
+		label = "wall",
 		class = wall,
 		tileset = "floorTile",
 		tilesetX = TILE_SIZE,

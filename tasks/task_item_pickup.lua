@@ -7,7 +7,7 @@ local pickupTask = class('pickupTask', task)
 local function startFunc(self)
 	local p = self:getParams()
 	if self.entity.x ~= self.item.x or self.entity.y ~= self.item.y then
-		local wt = walkTask:new(p.map:getTile(self.item.x, self.item.y), self)
+		local wt = walkTask:new(self.entity.map:getTile(self.item.x, self.item.y), self)
 		self.entity:pushTask(wt)
 	else
 		self:complete()
